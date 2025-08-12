@@ -1,0 +1,142 @@
+{
+  "app": {
+    "title": "PocketPair"
+  },
+  "nav": {
+    "home": "Accueil",
+    "events": "Évènements",
+    "mySeats": "Mes Places",
+    "leaders": "Leaders",
+    "me": "Moi"
+  },
+  "common": {
+    "pullToRefresh": "Tirez pour actualiser..."
+  },
+  "home": {
+    "welcomeBack": "Bon retour",
+    "trackYourEdge": "{username}, suivez votre avantage",
+    "selectClub": "Sélectionner un club",
+    "kpis": {
+      "itm": "ITM",
+      "roi": "ROI",
+      "cashes": "Gains"
+    },
+    "actions": {
+      "upcoming": "À venir",
+      "upcomingSubtitle": "Voir les tournois programmés",
+      "myRegistrations": "Mes inscriptions",
+      "myRegistrationsSubtitle": "Gérer vos places",
+      "leaderboard": "Classement",
+      "leaderboardSubtitle": "Voir les meilleurs joueurs"
+    },
+    "progress": {
+      "title": "Progrès sur {range}",
+      "subtitle": "Suivi de vos performances",
+      "chartPlaceholder": "Le graphique des performances apparaîtra ici",
+      "timeLabels": {
+        "7d": "7J",
+        "30d": "30J",
+        "1y": "1A"
+      }
+    },
+    "tournaments": {
+      "seeAll": "Voir tout",
+      "spotsLeft": "{count} places restantes",
+      "full": "Complet",
+      "register": "S'inscrire"
+    },
+    "results": {
+      "title": "Résultats récents",
+      "seeAll": "Voir tout",
+      "buyIn": "Buy-in",
+      "cash": "Gain"
+    }
+  },
+  "events": {
+    "title": "Évènements",
+    "search": {
+      "placeholder": "Rechercher tournois..."
+    },
+    "filters": {
+      "lowStakes": "Petites Mises",
+      "midStakes": "Mises Moyennes",
+      "highStakes": "Grosses Mises",
+      "deepstack": "Deepstack",
+      "turbo": "Turbo",
+      "freezeout": "Freezeout"
+    },
+    "categories": {
+      "upcoming": "À venir",
+      "live": "En direct",
+      "completed": "Terminés"
+    },
+    "types": {
+      "deepstack": "Deepstack",
+      "turbo": "Turbo",
+      "freezeout": "Freezeout",
+      "bounty": "Bounty"
+    },
+    "status": {
+      "upcoming": "À venir",
+      "live": "En direct",
+      "completed": "Terminé"
+    },
+    "buyIn": "Buy-in",
+    "guarantee": "GTD",
+    "spotsLeft": "{count} places restantes",
+    "full": "Complet",
+    "register": "S'inscrire",
+    "unregister": "Se désinscrire",
+    "viewLive": "Voir en direct",
+    "results": "Résultats",
+    "empty": {
+      "title": "Aucun tournoi trouvé",
+      "subtitle": "Revenez plus tard pour de nouveaux événements"
+    }
+  },
+  "mySeats": {
+    "title": "Mes Places",
+    "stats": {
+      "registered": "Inscrit",
+      "investment": "Investissement",
+      "upcoming": "À venir"
+    },
+    "filters": {
+      "canCancel": "Annulable",
+      "lateReg": "Inscr. tardive",
+      "highStakes": "Grosses Mises",
+      "deepstack": "Deepstack",
+      "turbo": "Turbo"
+    },
+    "categories": {
+      "upcoming": "À venir",
+      "live": "En direct",
+      "completed": "Terminés"
+    },
+    "types": {
+      "deepstack": "Deepstack",
+      "turbo": "Turbo",
+      "freezeout": "Freezeout",
+      "bounty": "Bounty"
+    },
+    "status": {
+      "upcoming": "À venir",
+      "live": "En direct",
+      "completed": "Terminé"
+    },
+    "buyIn": "Buy-in",
+    "tableNotAssigned": "Table non assignée",
+    "position": "Position",
+    "registeredOn": "Inscrit le",
+    "investment": "Investissement",
+    "cancel": "Annuler",
+    "modify": "Modifier",
+    "viewLive": "Voir en direct",
+    "viewResult": "Voir résultat",
+    "empty": {
+      "title": "Aucune inscription trouvée",
+      "subtitle": "Vous ne vous êtes pas encore inscrit à des tournois",
+      "browseEvents": "Parcourir les événements"
+    }
+  }
+}

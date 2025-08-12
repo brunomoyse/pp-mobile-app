@@ -1,0 +1,142 @@
+{
+  "app": {
+    "title": "PocketPair"
+  },
+  "nav": {
+    "home": "Home",
+    "events": "Events", 
+    "mySeats": "My Seats",
+    "leaders": "Leaders",
+    "me": "Me"
+  },
+  "common": {
+    "pullToRefresh": "Pull to refresh..."
+  },
+  "home": {
+    "welcomeBack": "Welcome back",
+    "trackYourEdge": "{username}, track your edge",
+    "selectClub": "Select club",
+    "kpis": {
+      "itm": "ITM",
+      "roi": "ROI", 
+      "cashes": "Cashes"
+    },
+    "actions": {
+      "upcoming": "Upcoming",
+      "upcomingSubtitle": "View scheduled tournaments",
+      "myRegistrations": "My registrations",
+      "myRegistrationsSubtitle": "Manage your seats",
+      "leaderboard": "Leaderboard",
+      "leaderboardSubtitle": "See top players"
+    },
+    "progress": {
+      "title": "Progress over {range}",
+      "subtitle": "Your performance tracking",
+      "chartPlaceholder": "Performance chart will appear here",
+      "timeLabels": {
+        "7d": "7D",
+        "30d": "30D", 
+        "1y": "1Y"
+      }
+    },
+    "tournaments": {
+      "seeAll": "See all",
+      "spotsLeft": "{count} spots left",
+      "full": "Full",
+      "register": "Register"
+    },
+    "results": {
+      "title": "Recent results",
+      "seeAll": "See all",
+      "buyIn": "Buy-in",
+      "cash": "Cash"
+    }
+  },
+  "events": {
+    "title": "Events",
+    "search": {
+      "placeholder": "Search tournaments..."
+    },
+    "filters": {
+      "lowStakes": "Low Stakes",
+      "midStakes": "Mid Stakes",
+      "highStakes": "High Stakes",
+      "deepstack": "Deepstack",
+      "turbo": "Turbo",
+      "freezeout": "Freezeout"
+    },
+    "categories": {
+      "upcoming": "Upcoming",
+      "live": "Live",
+      "completed": "Completed"
+    },
+    "types": {
+      "deepstack": "Deepstack",
+      "turbo": "Turbo",
+      "freezeout": "Freezeout",
+      "bounty": "Bounty"
+    },
+    "status": {
+      "upcoming": "Upcoming",
+      "live": "Live",
+      "completed": "Completed"
+    },
+    "buyIn": "Buy-in",
+    "guarantee": "GTD",
+    "spotsLeft": "{count} spots left",
+    "full": "Full",
+    "register": "Register",
+    "unregister": "Unregister",
+    "viewLive": "View Live",
+    "results": "Results",
+    "empty": {
+      "title": "No tournaments found",
+      "subtitle": "Check back later for new events"
+    }
+  },
+  "mySeats": {
+    "title": "My Seats",
+    "stats": {
+      "registered": "Registered",
+      "investment": "Investment",
+      "upcoming": "Upcoming"
+    },
+    "filters": {
+      "canCancel": "Cancelable",
+      "lateReg": "Late Reg",
+      "highStakes": "High Stakes",
+      "deepstack": "Deepstack",
+      "turbo": "Turbo"
+    },
+    "categories": {
+      "upcoming": "Upcoming",
+      "live": "Live",
+      "completed": "Completed"
+    },
+    "types": {
+      "deepstack": "Deepstack",
+      "turbo": "Turbo",
+      "freezeout": "Freezeout",
+      "bounty": "Bounty"
+    },
+    "status": {
+      "upcoming": "Upcoming",
+      "live": "Live",
+      "completed": "Completed"
+    },
+    "buyIn": "Buy-in",
+    "tableNotAssigned": "Table not assigned",
+    "position": "Position",
+    "registeredOn": "Registered on",
+    "investment": "Investment",
+    "cancel": "Cancel",
+    "modify": "Modify",
+    "viewLive": "View Live",
+    "viewResult": "View Result",
+    "empty": {
+      "title": "No registrations found",
+      "subtitle": "You haven't registered for any tournaments yet",
+      "browseEvents": "Browse Events"
+    }
+  }
+}

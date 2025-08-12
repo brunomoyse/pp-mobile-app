@@ -1,0 +1,142 @@
+{
+  "app": {
+    "title": "PocketPair"
+  },
+  "nav": {
+    "home": "Home",
+    "events": "Evenementen",
+    "mySeats": "Mijn Plaatsen", 
+    "leaders": "Leiders",
+    "me": "Ik"
+  },
+  "common": {
+    "pullToRefresh": "Trek om te vernieuwen..."
+  },
+  "home": {
+    "welcomeBack": "Welkom terug",
+    "trackYourEdge": "{username}, volg je voordeel",
+    "selectClub": "Selecteer club",
+    "kpis": {
+      "itm": "ITM",
+      "roi": "ROI",
+      "cashes": "Winsten"
+    },
+    "actions": {
+      "upcoming": "Komend",
+      "upcomingSubtitle": "Bekijk geplande toernooien",
+      "myRegistrations": "Mijn registraties",
+      "myRegistrationsSubtitle": "Beheer je plaatsen",
+      "leaderboard": "Ranglijst",
+      "leaderboardSubtitle": "Zie topspelers"
+    },
+    "progress": {
+      "title": "Voortgang over {range}",
+      "subtitle": "Je prestatie tracking",
+      "chartPlaceholder": "Prestatiegrafiek verschijnt hier",
+      "timeLabels": {
+        "7d": "7D",
+        "30d": "30D",
+        "1y": "1J"
+      }
+    },
+    "tournaments": {
+      "seeAll": "Alles bekijken",
+      "spotsLeft": "{count} plaatsen over",
+      "full": "Vol",
+      "register": "Registreren"
+    },
+    "results": {
+      "title": "Recente resultaten",
+      "seeAll": "Alles bekijken",
+      "buyIn": "Buy-in",
+      "cash": "Winst"
+    }
+  },
+  "events": {
+    "title": "Evenementen",
+    "search": {
+      "placeholder": "Zoek toernooien..."
+    },
+    "filters": {
+      "lowStakes": "Lage Inzet",
+      "midStakes": "Middel Inzet",
+      "highStakes": "Hoge Inzet",
+      "deepstack": "Deepstack",
+      "turbo": "Turbo",
+      "freezeout": "Freezeout"
+    },
+    "categories": {
+      "upcoming": "Komend",
+      "live": "Live",
+      "completed": "Afgerond"
+    },
+    "types": {
+      "deepstack": "Deepstack",
+      "turbo": "Turbo",
+      "freezeout": "Freezeout",
+      "bounty": "Bounty"
+    },
+    "status": {
+      "upcoming": "Komend",
+      "live": "Live",
+      "completed": "Afgerond"
+    },
+    "buyIn": "Buy-in",
+    "guarantee": "GTD",
+    "spotsLeft": "{count} plaatsen over",
+    "full": "Vol",
+    "register": "Registreren",
+    "unregister": "Uitschrijven",
+    "viewLive": "Bekijk Live",
+    "results": "Resultaten",
+    "empty": {
+      "title": "Geen toernooien gevonden",
+      "subtitle": "Kom later terug voor nieuwe evenementen"
+    }
+  },
+  "mySeats": {
+    "title": "Mijn Plaatsen",
+    "stats": {
+      "registered": "Geregistreerd",
+      "investment": "Investering",
+      "upcoming": "Komend"
+    },
+    "filters": {
+      "canCancel": "Annuleerbaar",
+      "lateReg": "Late Reg",
+      "highStakes": "Hoge Inzet",
+      "deepstack": "Deepstack",
+      "turbo": "Turbo"
+    },
+    "categories": {
+      "upcoming": "Komend",
+      "live": "Live",
+      "completed": "Afgerond"
+    },
+    "types": {
+      "deepstack": "Deepstack",
+      "turbo": "Turbo",
+      "freezeout": "Freezeout",
+      "bounty": "Bounty"
+    },
+    "status": {
+      "upcoming": "Komend",
+      "live": "Live",
+      "completed": "Afgerond"
+    },
+    "buyIn": "Buy-in",
+    "tableNotAssigned": "Tafel niet toegewezen",
+    "position": "Positie",
+    "registeredOn": "Geregistreerd op",
+    "investment": "Investering",
+    "cancel": "Annuleren",
+    "modify": "Wijzigen",
+    "viewLive": "Bekijk Live",
+    "viewResult": "Bekijk Resultaat",
+    "empty": {
+      "title": "Geen registraties gevonden",
+      "subtitle": "Je hebt je nog niet ingeschreven voor toernooien",
+      "browseEvents": "Bekijk Evenementen"
+    }
+  }
+}
