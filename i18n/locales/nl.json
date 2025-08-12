@@ -138,5 +138,35 @@
       "subtitle": "Je hebt je nog niet ingeschreven voor toernooien",
       "browseEvents": "Bekijk Evenementen"
     }
+  },
+  "leaderboard": {
+    "title": "Ranglijst",
+    "yourRank": "Je huidige ranking",
+    "points": "Punten",
+    "tournaments": "toernooien",
+    "itm": "ITM",
+    "avgFinish": "gem. finish",
+    "periods": {
+      "week": "Week",
+      "month": "Maand",
+      "year": "Jaar",
+      "allTime": "Altijd"
+    },
+    "categories": {
+      "overall": "Algemeen",
+      "profit": "Winst",
+      "volume": "Volume"
+    },
+    "filters": {
+      "verified": "Geverifieerd",
+      "club": "Zelfde Club",
+      "highVolume": "Hoog Volume",
+      "recent": "Recent"
+    },
+    "loadMore": "Meer Spelers Laden",
+    "empty": {
+      "title": "Geen spelers gevonden",
+      "subtitle": "Probeer je filters aan te passen"
+    }
   }
 }

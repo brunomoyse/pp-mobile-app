@@ -138,5 +138,35 @@
       "subtitle": "You haven't registered for any tournaments yet",
       "browseEvents": "Browse Events"
     }
+  },
+  "leaderboard": {
+    "title": "Leaderboard",
+    "yourRank": "Your current ranking",
+    "points": "Points",
+    "tournaments": "tournaments",
+    "itm": "ITM",
+    "avgFinish": "avg finish",
+    "periods": {
+      "week": "Week",
+      "month": "Month",
+      "year": "Year",
+      "allTime": "All Time"
+    },
+    "categories": {
+      "overall": "Overall",
+      "profit": "Profit",
+      "volume": "Volume"
+    },
+    "filters": {
+      "verified": "Verified",
+      "club": "Same Club",
+      "highVolume": "High Volume",
+      "recent": "Recent"
+    },
+    "loadMore": "Load More Players",
+    "empty": {
+      "title": "No players found",
+      "subtitle": "Try adjusting your filters"
+    }
   }
 }

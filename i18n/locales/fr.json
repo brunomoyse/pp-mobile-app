@@ -138,5 +138,35 @@
       "subtitle": "Vous ne vous êtes pas encore inscrit à des tournois",
       "browseEvents": "Parcourir les événements"
     }
+  },
+  "leaderboard": {
+    "title": "Classement",
+    "yourRank": "Votre classement actuel",
+    "points": "Points",
+    "tournaments": "tournois",
+    "itm": "ITM",
+    "avgFinish": "fin moy.",
+    "periods": {
+      "week": "Semaine",
+      "month": "Mois",
+      "year": "Année",
+      "allTime": "Tout Temps"
+    },
+    "categories": {
+      "overall": "Général",
+      "profit": "Profit",
+      "volume": "Volume"
+    },
+    "filters": {
+      "verified": "Vérifiés",
+      "club": "Même Club",
+      "highVolume": "Gros Volume",
+      "recent": "Récents"
+    },
+    "loadMore": "Charger Plus de Joueurs",
+    "empty": {
+      "title": "Aucun joueur trouvé",
+      "subtitle": "Essayez d'ajuster vos filtres"
+    }
   }
 }
