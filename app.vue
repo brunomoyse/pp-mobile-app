@@ -4,8 +4,8 @@
       <IonRouterOutlet />
       
       <!-- Premium Bottom Navigation -->
-      <IonTabBar slot="bottom" class="pp-tabbar">
-        <IonTabButton tab="home" href="/" class="pp-tab-button">
+      <IonTabBar slot="bottom" class="pp-tabbar" :selectedTab="currentTab">
+        <IonTabButton tab="index" href="/" class="pp-tab-button">
           <IonIcon :icon="homeOutline" />
           <IonLabel>{{ t('nav.home') }}</IonLabel>
         </IonTabButton>
@@ -50,6 +50,18 @@ import {
 
 // Use custom i18n composable
 const { t } = useI18n()
+
+// Get current route to determine active tab
+const route = useRoute()
+const currentTab = computed(() => {
+  const path = route.path
+  if (path === '/') return 'index'
+  if (path.startsWith('/tournaments')) return 'tournaments'
+  if (path.startsWith('/registrations')) return 'registrations'
+  if (path.startsWith('/leaderboard')) return 'leaderboard'
+  if (path.startsWith('/profile')) return 'profile'
+  return 'index' // default fallback
+})
 </script>
 
 <style>
