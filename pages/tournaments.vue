@@ -258,17 +258,17 @@ const tournaments = ref([
   },
   {
     id: 'T002', 
-    name: 'Wednesday Turbo',
+    name: 'Wednesday Turbo Live',
     type: 'turbo',
-    status: 'upcoming',
+    status: 'live',
     club: 'Liège Poker Club',
     startTime: new Date('2025-08-14T20:30:00'),
-    buyIn: '30€',
-    structure: '15k/15min',
-    registered: 18,
-    maxPlayers: 40,
-    spotsLeft: 22,
-    guarantee: '1.200€',
+    buyIn: '75€',
+    structure: '25k/15min',
+    registered: 52,
+    maxPlayers: 60,
+    spotsLeft: 0,
+    guarantee: '4.500€',
     isRegistered: true
   },
   {
@@ -397,7 +397,7 @@ const handleRefresh = async (ev: CustomEvent) => {
 
 const viewTournament = (tournament: any) => {
   // Navigate to tournament detail page
-  console.log('View tournament:', tournament.id)
+  navigateTo(`/tournament/${tournament.id}`)
 }
 
 const registerTournament = (tournament: any) => {
