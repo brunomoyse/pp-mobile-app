@@ -175,10 +175,10 @@
               <div class="pp-score-main">{{ formatPoints(player.points) }}</div>
               <div class="pp-score-secondary">
                 <span v-if="selectedCategory === 'profit'" class="pp-profit" :class="player.profit >= 0 ? 'pp-profit-positive' : 'pp-profit-negative'">
-                  {{ player.profit >= 0 ? '+' : '' }}€{{ player.profit.toLocaleString() }}
+                  {{ player.profit >= 0 ? '+' : '' }}{{ player.profit.toLocaleString('fr-BE', { maximumFractionDigits: 0 }) }}€
                 </span>
                 <span v-else-if="selectedCategory === 'volume'">
-                  €{{ player.volume.toLocaleString() }}
+                  {{ player.volume.toLocaleString('fr-BE', { maximumFractionDigits: 0 }) }}€
                 </span>
                 <span v-else>
                   {{ player.averageFinish }} {{ t('leaderboard.avgFinish') }}

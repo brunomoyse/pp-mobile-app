@@ -26,7 +26,7 @@
             <div class="pp-stat-label">{{ t('mySeats.stats.registered') }}</div>
           </div>
           <div class="pp-stat-card">
-            <div class="pp-stat-value">€{{ totalInvestment }}</div>
+            <div class="pp-stat-value">{{ totalInvestment }}€</div>
             <div class="pp-stat-label">{{ t('mySeats.stats.investment') }}</div>
           </div>
           <div class="pp-stat-card">
@@ -268,7 +268,7 @@ const registrations = ref([
     status: 'upcoming',
     club: 'Liège Poker Club',
     startTime: new Date('2025-08-14T20:30:00'),
-    buyIn: '€30',
+    buyIn: '30€',
     seatNumber: '4B',
     table: null,
     position: null,
@@ -283,7 +283,7 @@ const registrations = ref([
     status: 'live',
     club: 'Pokah Room Antwerp',
     startTime: new Date('2025-08-12T19:00:00'),
-    buyIn: '€75',
+    buyIn: '75€',
     seatNumber: '7A',
     table: 3,
     position: null,
@@ -298,7 +298,7 @@ const registrations = ref([
     status: 'completed',
     club: 'Liège Poker Club',
     startTime: new Date('2025-08-11T19:30:00'),
-    buyIn: '€40',
+    buyIn: '40€',
     seatNumber: '2C',
     table: 1,
     position: 8,
@@ -314,7 +314,7 @@ const registrations = ref([
     status: 'upcoming',
     club: 'Pokah Room Antwerp',
     startTime: new Date('2025-08-13T19:00:00'),
-    buyIn: '€50',
+    buyIn: '50€',
     seatNumber: '1A',
     table: null,
     position: null,
@@ -337,7 +337,7 @@ const filteredRegistrations = computed(() => {
           case 'lateReg':
             return r.registeredAt > new Date(r.startTime.getTime() - 24 * 60 * 60 * 1000)
           case 'highStakes':
-            return parseInt(r.buyIn.replace(/[€,]/g, '')) > 100
+            return parseInt(r.buyIn.replace(/[€.]/g, '')) > 100
           default:
             return r.type === filter
         }
@@ -352,7 +352,7 @@ const registeredCount = computed(() => registrations.value.length)
 
 const totalInvestment = computed(() => {
   return registrations.value.reduce((total, reg) => {
-    return total + parseInt(reg.buyIn.replace(/[€,]/g, ''))
+    return total + parseInt(reg.buyIn.replace(/[€.]/g, ''))
   }, 0)
 })
 

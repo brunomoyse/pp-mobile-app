@@ -248,12 +248,12 @@ const tournaments = ref([
     status: 'upcoming',
     club: 'Pokah Room Antwerp',
     startTime: new Date('2025-08-13T19:00:00'),
-    buyIn: '€50',
+    buyIn: '50€',
     structure: '20k/20min',
     registered: 24,
     maxPlayers: 60,
     spotsLeft: 36,
-    guarantee: '€2,000',
+    guarantee: '2.000€',
     isRegistered: false
   },
   {
@@ -263,12 +263,12 @@ const tournaments = ref([
     status: 'upcoming',
     club: 'Liège Poker Club',
     startTime: new Date('2025-08-14T20:30:00'),
-    buyIn: '€30',
+    buyIn: '30€',
     structure: '15k/15min',
     registered: 18,
     maxPlayers: 40,
     spotsLeft: 22,
-    guarantee: '€1,200',
+    guarantee: '1.200€',
     isRegistered: true
   },
   {
@@ -278,12 +278,12 @@ const tournaments = ref([
     status: 'upcoming', 
     club: 'Pokah Room Antwerp',
     startTime: new Date('2025-08-16T18:00:00'),
-    buyIn: '€150',
+    buyIn: '150€',
     structure: '50k/30min',
     registered: 45,
     maxPlayers: 50,
     spotsLeft: 5,
-    guarantee: '€7,500',
+    guarantee: '7.500€',
     isRegistered: false
   },
   {
@@ -293,12 +293,12 @@ const tournaments = ref([
     status: 'live',
     club: 'Pokah Room Antwerp',
     startTime: new Date('2025-08-12T19:00:00'),
-    buyIn: '€75',
+    buyIn: '75€',
     structure: '25k/25min',
     registered: 32,
     maxPlayers: 40,
     spotsLeft: 0,
-    guarantee: '€3,000',
+    guarantee: '3.000€',
     isRegistered: true
   },
   {
@@ -308,12 +308,12 @@ const tournaments = ref([
     status: 'completed',
     club: 'Liège Poker Club',
     startTime: new Date('2025-08-11T19:30:00'),
-    buyIn: '€40',
+    buyIn: '40€',
     structure: '20k/20min',
     registered: 28,
     maxPlayers: 30,
     spotsLeft: 0,
-    guarantee: '€1,200',
+    guarantee: '1.200€',
     isRegistered: false
   }
 ])
@@ -338,11 +338,11 @@ const filteredTournaments = computed(() => {
       return selectedFilters.value.some(filter => {
         switch(filter) {
           case 'lowStakes':
-            return parseInt(t.buyIn.replace(/[€,]/g, '')) <= 50
+            return parseInt(t.buyIn.replace(/[€.]/g, '')) <= 50
           case 'midStakes':
-            return parseInt(t.buyIn.replace(/[€,]/g, '')) > 50 && parseInt(t.buyIn.replace(/[€,]/g, '')) <= 100
+            return parseInt(t.buyIn.replace(/[€.]/g, '')) > 50 && parseInt(t.buyIn.replace(/[€.]/g, '')) <= 100
           case 'highStakes':
-            return parseInt(t.buyIn.replace(/[€,]/g, '')) > 100
+            return parseInt(t.buyIn.replace(/[€.]/g, '')) > 100
           default:
             return t.type === filter
         }
