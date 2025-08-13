@@ -1,0 +1,686 @@
+<template>
+  <IonPage class="pp-page">
+    <!-- Header -->
+    <IonHeader :translucent="true" class="pp-header">
+      <IonToolbar class="pp-toolbar">
+        <IonButtons slot="end">
+          <IonButton class="pp-header-button" @click="showSettings = !showSettings">
+            <IonIcon :icon="settingsOutline" />
+          </IonButton>
+        </IonButtons>
+      </IonToolbar>
+    </IonHeader>
+
+    <IonContent :fullscreen="true" class="pp-content">
+      <!-- Pull to refresh -->
+      <IonRefresher slot="fixed" @ionRefresh="handleRefresh">
+        <IonRefresherContent :pulling-text="t('common.pullToRefresh')" refreshing-spinner="dots" />
+      </IonRefresher>
+
+      <!-- Profile Header -->
+      <section class="pp-profile-section">
+        <div class="pp-profile-header">
+          <div class="pp-avatar-container">
+            <div class="pp-avatar-glow"></div>
+            <IonAvatar class="pp-avatar">
+              <img :src="userProfile.avatar" alt="Profile" />
+            </IonAvatar>
+            <IonButton fill="clear" class="pp-edit-avatar" @click="editAvatar">
+              <IonIcon :icon="cameraOutline" />
+            </IonButton>
+          </div>
+          <div class="pp-profile-info">
+            <h1 class="pp-username">{{ userProfile.username }}</h1>
+            <p class="pp-member-since">Member since {{ formatDate(userProfile.memberSince) }}</p>
+            <div class="pp-badges">
+              <div class="pp-badge pp-verified" v-if="userProfile.verified">
+                <IonIcon :icon="checkmarkCircleOutline" />
+                <span>Verified</span>
+              </div>
+              <div class="pp-badge pp-vip" v-if="userProfile.vipLevel">
+                <IonIcon :icon="starOutline" />
+                <span>VIP {{ userProfile.vipLevel }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Stats Overview -->
+      <section class="pp-stats-section">
+        <h2 class="pp-section-title">Your Statistics</h2>
+        <div class="pp-stats-grid">
+          <div class="pp-stat-card">
+            <div class="pp-stat-icon">
+              <IonIcon :icon="trophyOutline" />
+            </div>
+            <div class="pp-stat-content">
+              <div class="pp-stat-value">{{ userStats.totalWins }}</div>
+              <div class="pp-stat-label">Total Wins</div>
+            </div>
+          </div>
+          <div class="pp-stat-card">
+            <div class="pp-stat-icon">
+              <IonIcon :icon="cashOutline" />
+            </div>
+            <div class="pp-stat-content">
+              <div class="pp-stat-value">{{ formatCurrency(userStats.totalWinnings) }}</div>
+              <div class="pp-stat-label">Total Winnings</div>
+            </div>
+          </div>
+          <div class="pp-stat-card">
+            <div class="pp-stat-icon">
+              <IonIcon :icon="calendarOutline" />
+            </div>
+            <div class="pp-stat-content">
+              <div class="pp-stat-value">{{ userStats.tournamentsPlayed }}</div>
+              <div class="pp-stat-label">Tournaments</div>
+            </div>
+          </div>
+          <div class="pp-stat-card">
+            <div class="pp-stat-icon">
+              <IonIcon :icon="trendingUpOutline" />
+            </div>
+            <div class="pp-stat-content">
+              <div class="pp-stat-value">{{ userStats.winRate }}%</div>
+              <div class="pp-stat-label">ITM Rate</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Quick Actions -->
+      <section class="pp-actions-section">
+        <h2 class="pp-section-title">Quick Actions</h2>
+        <div class="pp-action-cards">
+          <div class="pp-action-card" @click="viewRegistrations">
+            <div class="pp-action-icon">
+              <IonIcon :icon="fileTrayFullOutline" />
+            </div>
+            <div class="pp-action-content">
+              <div class="pp-action-title">My Registrations</div>
+              <div class="pp-action-subtitle">{{ upcomingRegistrations }} upcoming</div>
+            </div>
+            <IonIcon :icon="chevronForwardOutline" class="pp-chevron" />
+          </div>
+
+          <div class="pp-action-card" @click="viewHistory">
+            <div class="pp-action-icon">
+              <IonIcon :icon="timeOutline" />
+            </div>
+            <div class="pp-action-content">
+              <div class="pp-action-title">Tournament History</div>
+              <div class="pp-action-subtitle">View past results</div>
+            </div>
+            <IonIcon :icon="chevronForwardOutline" class="pp-chevron" />
+          </div>
+
+          <div class="pp-action-card" @click="viewAchievements">
+            <div class="pp-action-icon">
+              <IonIcon :icon="medalOutline" />
+            </div>
+            <div class="pp-action-content">
+              <div class="pp-action-title">Achievements</div>
+              <div class="pp-action-subtitle">{{ unlockedAchievements }}/{{ totalAchievements }} unlocked</div>
+            </div>
+            <IonIcon :icon="chevronForwardOutline" class="pp-chevron" />
+          </div>
+
+          <div class="pp-action-card" @click="viewFriends">
+            <div class="pp-action-icon">
+              <IonIcon :icon="peopleOutline" />
+            </div>
+            <div class="pp-action-content">
+              <div class="pp-action-title">Friends</div>
+              <div class="pp-action-subtitle">{{ friendsCount }} friends</div>
+            </div>
+            <IonIcon :icon="chevronForwardOutline" class="pp-chevron" />
+          </div>
+        </div>
+      </section>
+
+      <!-- Settings Panel -->
+      <section class="pp-settings-section" v-if="showSettings">
+        <h2 class="pp-section-title">Settings</h2>
+        <div class="pp-settings-list">
+          <div class="pp-setting-item" @click="editProfile">
+            <div class="pp-setting-icon">
+              <IonIcon :icon="personOutline" />
+            </div>
+            <div class="pp-setting-content">
+              <div class="pp-setting-title">Edit Profile</div>
+              <div class="pp-setting-subtitle">Update your information</div>
+            </div>
+            <IonIcon :icon="chevronForwardOutline" class="pp-chevron" />
+          </div>
+
+          <div class="pp-setting-item">
+            <div class="pp-setting-icon">
+              <IonIcon :icon="notificationsOutline" />
+            </div>
+            <div class="pp-setting-content">
+              <div class="pp-setting-title">Notifications</div>
+              <div class="pp-setting-subtitle">Tournament alerts</div>
+            </div>
+            <IonToggle 
+              v-model="notificationsEnabled" 
+              class="pp-toggle"
+            />
+          </div>
+
+          <div class="pp-setting-item">
+            <div class="pp-setting-icon">
+              <IonIcon :icon="moonOutline" />
+            </div>
+            <div class="pp-setting-content">
+              <div class="pp-setting-title">Dark Mode</div>
+              <div class="pp-setting-subtitle">Always enabled</div>
+            </div>
+            <IonToggle 
+              :checked="true" 
+              disabled
+              class="pp-toggle"
+            />
+          </div>
+
+          <div class="pp-setting-item" @click="shareProfile">
+            <div class="pp-setting-icon">
+              <IonIcon :icon="shareOutline" />
+            </div>
+            <div class="pp-setting-content">
+              <div class="pp-setting-title">Share Profile</div>
+              <div class="pp-setting-subtitle">Share with friends</div>
+            </div>
+            <IonIcon :icon="chevronForwardOutline" class="pp-chevron" />
+          </div>
+
+          <div class="pp-setting-item" @click="logout">
+            <div class="pp-setting-icon pp-logout-icon">
+              <IonIcon :icon="logOutOutline" />
+            </div>
+            <div class="pp-setting-content">
+              <div class="pp-setting-title pp-logout-text">Logout</div>
+              <div class="pp-setting-subtitle">Sign out of your account</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </IonContent>
+  </IonPage>
+</template>
+
+<script setup lang="ts">
+import {
+  IonPage,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonButtons,
+  IonButton,
+  IonIcon,
+  IonContent,
+  IonRefresher,
+  IonRefresherContent,
+  IonAvatar,
+  IonToggle,
+} from '@ionic/vue'
+import {
+  settingsOutline,
+  cameraOutline,
+  checkmarkCircleOutline,
+  starOutline,
+  trophyOutline,
+  cashOutline,
+  calendarOutline,
+  trendingUpOutline,
+  fileTrayFullOutline,
+  chevronForwardOutline,
+  timeOutline,
+  medalOutline,
+  peopleOutline,
+  personOutline,
+  notificationsOutline,
+  moonOutline,
+  shareOutline,
+  logOutOutline,
+} from 'ionicons/icons'
+import { ref, computed } from 'vue'
+import avatarUrl from '@/assets/images/jmvdb.png'
+
+// Use custom i18n composable
+const { t } = useI18n()
+
+// Reactive data
+const showSettings = ref(false)
+const notificationsEnabled = ref(true)
+
+// User profile data
+const userProfile = ref({
+  username: 'Jean-Marie VDB',
+  avatar: avatarUrl,
+  memberSince: new Date('2023-01-15'),
+  verified: true,
+  vipLevel: 3,
+})
+
+// User statistics
+const userStats = ref({
+  totalWins: 47,
+  totalWinnings: 12850,
+  tournamentsPlayed: 156,
+  winRate: 34,
+})
+
+// Quick stats
+const upcomingRegistrations = computed(() => 3)
+const unlockedAchievements = computed(() => 23)
+const totalAchievements = computed(() => 45)
+const friendsCount = computed(() => 28)
+
+// Methods
+const handleRefresh = async (ev: CustomEvent) => {
+  setTimeout(() => { (ev.target as any)?.complete?.() }, 1000)
+}
+
+const editAvatar = () => {
+  console.log('Edit avatar clicked')
+}
+
+const viewRegistrations = () => {
+  // Navigate to registrations page
+  console.log('View registrations')
+}
+
+const viewHistory = () => {
+  console.log('View tournament history')
+}
+
+const viewAchievements = () => {
+  console.log('View achievements')
+}
+
+const viewFriends = () => {
+  console.log('View friends')
+}
+
+const editProfile = () => {
+  console.log('Edit profile')
+}
+
+const shareProfile = () => {
+  console.log('Share profile')
+}
+
+const logout = () => {
+  console.log('Logout')
+}
+
+const formatDate = (date: Date) => {
+  return date.toLocaleDateString('en-GB', { 
+    year: 'numeric', 
+    month: 'long' 
+  })
+}
+
+const formatCurrency = (amount: number) => {
+  return `${amount.toLocaleString('fr-BE', { maximumFractionDigits: 0 })}€`
+}
+</script>
+
+<style scoped>
+.pp-page {
+  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #18181a;
+}
+
+/* Header */
+.pp-header {
+  --background: rgba(24, 24, 26, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.pp-toolbar {
+  --background: transparent;
+  --border-color: #24242a;
+  border-bottom: 1px solid #24242a;
+}
+
+.pp-title {
+  color: #fee78a;
+  font-weight: 700;
+  font-size: 18px;
+  margin: 0;
+}
+
+.pp-header-button {
+  --color: #54545f;
+  --color-hover: #fee78a;
+  --background-hover: rgba(254, 231, 138, 0.1);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+/* Content */
+.pp-content {
+  --background: #18181a;
+}
+
+/* Profile Section */
+.pp-profile-section {
+  padding: 20px 16px;
+  border-bottom: 1px solid #24242a;
+}
+
+.pp-profile-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.pp-avatar-container {
+  position: relative;
+}
+
+.pp-avatar-glow {
+  position: absolute;
+  inset: -4px;
+  background: linear-gradient(45deg, #64748b, #475569);
+  border-radius: 50%;
+  filter: blur(8px);
+  opacity: 0.4;
+  animation: pulse 2s ease-in-out infinite alternate;
+}
+
+.pp-avatar {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border: 2px solid #fee78a;
+  box-shadow: 0 4px 16px rgba(254, 231, 138, 0.3);
+}
+
+.pp-avatar img {
+  border-radius: 50%;
+}
+
+.pp-edit-avatar {
+  position: absolute;
+  bottom: -5px;
+  right: -5px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #fee78a;
+  --color: #18181a;
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 0;
+  --padding-bottom: 0;
+  margin: 0;
+  min-width: 32px;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pp-profile-info {
+  flex: 1;
+}
+
+.pp-username {
+  color: #fee78a;
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+}
+
+.pp-member-since {
+  color: #94a3b8;
+  font-size: 14px;
+  margin: 0 0 12px 0;
+}
+
+.pp-badges {
+  display: flex;
+  gap: 8px;
+}
+
+.pp-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.pp-verified {
+  background: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.pp-vip {
+  background: rgba(251, 146, 60, 0.1);
+  color: #fb923c;
+  border: 1px solid rgba(251, 146, 60, 0.3);
+}
+
+/* Sections */
+.pp-stats-section,
+.pp-actions-section,
+.pp-settings-section {
+  padding: 20px 16px;
+  border-bottom: 1px solid #24242a;
+}
+
+.pp-section-title {
+  color: #fee78a;
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 16px 0;
+}
+
+/* Stats Grid */
+.pp-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.pp-stat-card {
+  background: linear-gradient(135deg, #24242a 0%, #1a1a1e 100%);
+  border: 1px solid #54545f;
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.3s ease;
+}
+
+.pp-stat-card:hover {
+  border-color: #fee78a;
+  transform: translateY(-2px);
+}
+
+.pp-stat-icon {
+  width: 40px;
+  height: 40px;
+  background: rgba(254, 231, 138, 0.1);
+  border: 1px solid rgba(254, 231, 138, 0.3);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fee78a;
+  font-size: 20px;
+}
+
+.pp-stat-content {
+  flex: 1;
+}
+
+.pp-stat-value {
+  color: #fee78a;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.pp-stat-label {
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Action Cards */
+.pp-action-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pp-action-card {
+  background: linear-gradient(135deg, #24242a 0%, #1a1a1e 100%);
+  border: 1px solid #54545f;
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.pp-action-card:hover {
+  border-color: #fee78a;
+  transform: translateY(-2px);
+}
+
+.pp-action-icon {
+  width: 40px;
+  height: 40px;
+  background: rgba(100, 116, 139, 0.1);
+  border: 1px solid rgba(100, 116, 139, 0.3);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  font-size: 20px;
+}
+
+.pp-action-content {
+  flex: 1;
+}
+
+.pp-action-title {
+  color: #e2e8f0;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.pp-action-subtitle {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.pp-chevron {
+  color: #54545f;
+  font-size: 20px;
+}
+
+/* Settings */
+.pp-settings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pp-setting-item {
+  background: linear-gradient(135deg, #24242a 0%, #1a1a1e 100%);
+  border: 1px solid #54545f;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.pp-setting-item:hover {
+  border-color: #64748b;
+}
+
+.pp-setting-icon {
+  width: 36px;
+  height: 36px;
+  background: rgba(100, 116, 139, 0.1);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  font-size: 18px;
+}
+
+.pp-logout-icon {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.pp-setting-content {
+  flex: 1;
+}
+
+.pp-setting-title {
+  color: #e2e8f0;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.pp-logout-text {
+  color: #ef4444;
+}
+
+.pp-setting-subtitle {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.pp-toggle {
+  --track-background: #54545f;
+  --track-background-checked: #fee78a;
+  --handle-background: #fff;
+}
+
+/* Animations */
+@keyframes pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+  .pp-profile-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+  }
+  
+  .pp-stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .pp-username {
+    font-size: 20px;
+  }
+}
+</style>
