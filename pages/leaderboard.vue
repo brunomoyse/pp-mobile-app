@@ -10,6 +10,9 @@
           </IonButton>
         </IonButtons>
       </IonToolbar>
+      <IonToolbar class="pp-sub-toolbar">
+        <ClubSelector v-model="selectedClub" />
+      </IonToolbar>
     </IonHeader>
 
     <IonContent :fullscreen="true" class="pp-content">
@@ -225,6 +228,7 @@ import {
   IonSegment,
   IonSegmentButton,
 } from '@ionic/vue'
+import ClubSelector from '@/components/ClubSelector.vue'
 import {
   optionsOutline,
   trendingUpOutline,
@@ -495,6 +499,13 @@ const viewPlayerProfile = (player: any) => {
   --background: transparent;
   --border-color: #24242a;
   border-bottom: 1px solid #24242a;
+}
+
+.pp-sub-toolbar {
+  --background: transparent;
+  --border-color: #24242a;
+  padding: 0 16px;
+  min-height: 44px;
 }
 
 .pp-title {

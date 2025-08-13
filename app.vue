@@ -5,23 +5,23 @@
       
       <!-- Premium Bottom Navigation -->
       <IonTabBar slot="bottom" class="pp-tabbar" :selectedTab="currentTab">
-        <IonTabButton tab="index" href="/" class="pp-tab-button">
+        <IonTabButton tab="index" @click="navigateTo('/')" class="pp-tab-button">
           <IonIcon :icon="homeOutline" />
           <IonLabel>{{ t('nav.home') }}</IonLabel>
         </IonTabButton>
-        <IonTabButton tab="tournaments" href="/tournaments" class="pp-tab-button">
+        <IonTabButton tab="tournaments" @click="navigateTo('/tournaments')" class="pp-tab-button">
           <IonIcon :icon="calendarOutline" />
           <IonLabel>{{ t('nav.events') }}</IonLabel>
         </IonTabButton>
-        <IonTabButton tab="registrations" href="/registrations" class="pp-tab-button">
+        <IonTabButton tab="registrations" @click="navigateTo('/registrations')" class="pp-tab-button">
           <IonIcon :icon="fileTrayFullOutline" />
           <IonLabel>{{ t('nav.mySeats') }}</IonLabel>
         </IonTabButton>
-        <IonTabButton tab="leaderboard" href="/leaderboard" class="pp-tab-button">
+        <IonTabButton tab="leaderboard" @click="navigateTo('/leaderboard')" class="pp-tab-button">
           <IonIcon :icon="trophyOutline" />
           <IonLabel>{{ t('nav.leaders') }}</IonLabel>
         </IonTabButton>
-        <IonTabButton tab="profile" href="/profile" class="pp-tab-button">
+        <IonTabButton tab="profile" @click="navigateTo('/profile')" class="pp-tab-button">
           <IonIcon :icon="personCircleOutline" />
           <IonLabel>{{ t('nav.me') }}</IonLabel>
         </IonTabButton>
@@ -79,6 +79,7 @@ const currentTab = computed(() => {
   border-top: 1px solid #24242a;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 .pp-tab-button {

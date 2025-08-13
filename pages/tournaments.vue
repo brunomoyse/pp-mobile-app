@@ -10,6 +10,9 @@
           </IonButton>
         </IonButtons>
       </IonToolbar>
+      <IonToolbar class="pp-sub-toolbar">
+        <ClubSelector v-model="selectedClub" />
+      </IonToolbar>
     </IonHeader>
 
     <IonContent :fullscreen="true" class="pp-content">
@@ -208,6 +211,7 @@ import {
   IonSegmentButton,
   IonBadge,
 } from '@ionic/vue'
+import ClubSelector from '@/components/ClubSelector.vue'
 import {
   optionsOutline,
   calendarOutline,
@@ -228,6 +232,7 @@ const searchQuery = ref('')
 const showFilters = ref(false)
 const selectedCategory = ref<'upcoming' | 'live' | 'completed'>('upcoming')
 const selectedFilters = ref<string[]>([])
+const selectedClub = ref(null)
 
 // Filter options
 const filters = [
@@ -444,6 +449,13 @@ const viewResults = (tournament: any) => {
   --background: transparent;
   --border-color: #24242a;
   border-bottom: 1px solid #24242a;
+}
+
+.pp-sub-toolbar {
+  --background: transparent;
+  --border-color: #24242a;
+  padding: 0 16px;
+  min-height: 44px;
 }
 
 .pp-title {

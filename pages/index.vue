@@ -172,7 +172,7 @@
                             <p class="pp-tournament-details">{{ t.date }} · {{ t.buyIn }} · {{ t.structure }}</p>
                         </div>
                         <div class="pp-tournament-actions">
-                            <IonChip v-if="t.spotsLeft > 0" class="pp-spots-chip">
+                            <IonChip v-if="t.spotsLeft > 0" class="pp-spots-chip px-3">
                                 {{ $t('home.tournaments.spotsLeft', { count: t.spotsLeft }) }}
                             </IonChip>
                             <IonButton 
@@ -315,7 +315,7 @@ const username = 'Jean-Marie'
 interface Club { id: string; name: string }
 const clubs = ref<Club[]>([
     { id: '1', name: 'Pokah Room Antwerp' },
-    { id: '3', name: 'Liège Poker Club' },
+    { id: '2', name: 'Liège Poker Club' },
 ])
 const activeClub = ref<Club | null>(clubs.value[0])
 
@@ -325,9 +325,9 @@ const setActiveClub = (c: Club) => { activeClub.value = c }
 const kpis = ref({ itm: 34, roi: 18, cashes: 12 })
 
 const nextTournaments = ref([
-    { id: 't1', name: 'Tuesday Deepstack', date: 'Tue · 19:00', buyIn: '€50', structure: '20k/20m', spotsLeft: 8, full: false },
-    { id: 't2', name: 'Weekend Freezeout', date: 'Fri · 20:00', buyIn: '€70', structure: '25k/25m', spotsLeft: 0, full: true },
-    { id: 't3', name: 'Monthly Main', date: 'Sat · 18:00', buyIn: '€150', structure: '50k/30m', spotsLeft: 3, full: false },
+    { id: 't1', name: 'Tuesday Deepstack', date: 'Tue · 19:00', buyIn: '50€', structure: '20k/20m', spotsLeft: 8, full: false },
+    { id: 't2', name: 'Weekend Freezeout', date: 'Fri · 20:00', buyIn: '70€', structure: '25k/25m', spotsLeft: 0, full: true },
+    { id: 't3', name: 'Monthly Main', date: 'Sat · 18:00', buyIn: '150€', structure: '50k/30m', spotsLeft: 3, full: false },
 ])
 
 const recentResults = ref([

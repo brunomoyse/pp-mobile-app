@@ -292,7 +292,7 @@ const viewRegistrations = () => {
 }
 
 const viewHistory = () => {
-  console.log('View tournament history')
+  navigateTo('/tournament-history')
 }
 
 const viewAchievements = () => {
@@ -300,7 +300,7 @@ const viewAchievements = () => {
 }
 
 const viewFriends = () => {
-  console.log('View friends')
+  navigateTo('/friends')
 }
 
 const editProfile = () => {
