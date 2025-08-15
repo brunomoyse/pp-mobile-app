@@ -13,17 +13,22 @@
           <IonIcon :icon="calendarOutline" />
           <IonLabel>{{ t('nav.events') }}</IonLabel>
         </IonTabButton>
-        <IonTabButton tab="registrations" @click="navigateTo('/registrations')" class="pp-tab-button">
+        <IonTabButton 
+          tab="registrations" 
+          @click="handleRegistrationsClick" 
+          class="pp-tab-button"
+          :class="{ 'pp-tab-disabled': !isAuthenticated }"
+        >
           <IonIcon :icon="fileTrayFullOutline" />
-          <IonLabel>{{ t('nav.mySeats') }}</IonLabel>
+          <IonLabel>{{ isAuthenticated ? t('nav.mySeats') : t('nav.mySeats') }}</IonLabel>
         </IonTabButton>
         <IonTabButton tab="leaderboard" @click="navigateTo('/leaderboard')" class="pp-tab-button">
           <IonIcon :icon="trophyOutline" />
           <IonLabel>{{ t('nav.leaders') }}</IonLabel>
         </IonTabButton>
-        <IonTabButton tab="profile" @click="navigateTo('/profile')" class="pp-tab-button">
-          <IonIcon :icon="personCircleOutline" />
-          <IonLabel>{{ t('nav.me') }}</IonLabel>
+        <IonTabButton tab="profile" @click="handleProfileClick" class="pp-tab-button">
+          <IonIcon :icon="isAuthenticated ? personCircleOutline : logInOutline" />
+          <IonLabel>{{ isAuthenticated ? t('nav.me') : t('nav.login') }}</IonLabel>
         </IonTabButton>
       </IonTabBar>
     </IonTabs>
@@ -46,10 +51,16 @@ import {
   fileTrayFullOutline,
   trophyOutline,
   personCircleOutline,
+  logInOutline,
 } from 'ionicons/icons'
+import { useAuth } from '~/composables/useAuth'
 
 // Use custom i18n composable
 const { t } = useI18n()
+const router = useRouter()
+
+// Auth state
+const { isAuthenticated } = useAuth()
 
 // Get current route to determine active tab
 const route = useRoute()
@@ -62,6 +73,24 @@ const currentTab = computed(() => {
   if (path.startsWith('/profile')) return 'profile'
   return 'index' // default fallback
 })
+
+// Handle profile/login click
+const handleProfileClick = () => {
+  if (isAuthenticated.value) {
+    navigateTo('/profile')
+  } else {
+    navigateTo('/login')
+  }
+}
+
+// Handle registrations click
+const handleRegistrationsClick = () => {
+  if (isAuthenticated.value) {
+    navigateTo('/registrations')
+  } else {
+    navigateTo('/login')
+  }
+}
 </script>
 
 <style>
@@ -114,5 +143,9 @@ const currentTab = computed(() => {
   font-size: 11px;
   font-weight: 500;
   margin-top: 2px;
+}
+
+.pp-tab-disabled {
+  opacity: 0.5;
 }
 </style>
