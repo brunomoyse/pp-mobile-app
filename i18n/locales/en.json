@@ -7,32 +7,79 @@
     "events": "Events", 
     "mySeats": "My Seats",
     "leaders": "Leaders",
-    "me": "Me"
+    "me": "Me",
+    "login": "Login"
   },
-  "common": {
-    "pullToRefresh": "Pull to refresh..."
+  "auth": {
+    "login": "Login",
+    "register": "Register",
+    "email": "Email",
+    "password": "Password",
+    "username": "Username",
+    "confirmPassword": "Confirm Password",
+    "rememberMe": "Remember me",
+    "forgotPassword": "Forgot password?",
+    "continueWithGoogle": "Continue with Google",
+    "orContinueWith": "or continue with",
+    "noAccount": "Don't have an account?",
+    "alreadyHaveAccount": "Already have an account?",
+    "continueAsGuest": "Continue as guest",
+    "welcomeBack": "Welcome back",
+    "joinCommunity": "Join our community",
+    "createAccount": "Create Account",
+    "emailRequired": "Email is required",
+    "emailInvalid": "Please enter a valid email",
+    "passwordRequired": "Password is required",
+    "passwordTooShort": "Password must be at least 6 characters",
+    "usernameRequired": "Username is required",
+    "usernameInvalid": "Username must be 3-20 characters with only letters, numbers, and underscores",
+    "passwordsDoNotMatch": "Passwords do not match",
+    "passwordRequirements": "Password requirements:",
+    "passwordLength": "At least 8 characters",
+    "passwordLowercase": "One lowercase letter",
+    "passwordUppercase": "One uppercase letter", 
+    "passwordNumber": "One number",
+    "passwordRequirementsNotMet": "Password does not meet requirements",
+    "agreeToTerms": "I agree to the",
+    "termsAndConditions": "Terms and Conditions",
+    "termsRequired": "Terms Required",
+    "mustAcceptTerms": "You must accept the terms and conditions to register",
+    "termsContent": "By creating an account, you agree to our Terms of Service and Privacy Policy. We're committed to protecting your privacy and ensuring a safe gaming environment.",
+    "registrationSuccess": "Registration Successful!",
+    "welcomeMessage": "Welcome {username}! Your account has been created successfully.",
+    "loginFailed": "Login failed. Please check your credentials.",
+    "registrationFailed": "Registration failed. Please try again.",
+    "googleAuth": "Google Authentication",
+    "googleAuthInfo": "This will redirect you to Google to sign in. Continue?",
+    "forgotPasswordInfo": "Enter your email address and we'll send you a link to reset your password.",
+    "sendResetLink": "Send Reset Link"
   },
   "home": {
+    "welcome": "Welcome",
     "welcomeBack": "Welcome back",
-    "trackYourEdge": "{username}, track your edge",
-    "selectClub": "Select club",
+    "explorePocketPair": "Explore PocketPair",
+    "browseClubs": "Browse all clubs",
+    "trackYourEdge": "Track your edge, {username}",
+    "unlockFeatures": "Unlock Your Poker Journey",
+    "ctaDescription": "Track your performance, register for tournaments, and compete with players across Belgium",
+    "selectClub": "Select Club",
     "kpis": {
-      "itm": "ITM",
-      "roi": "ROI", 
+      "itm": "ITM Rate",
+      "roi": "ROI",
       "cashes": "Cashes"
     },
     "actions": {
-      "upcoming": "Upcoming",
-      "upcomingSubtitle": "View scheduled tournaments",
-      "myRegistrations": "My registrations",
-      "myRegistrationsSubtitle": "Manage your seats",
+      "upcoming": "Upcoming Events",
+      "upcomingSubtitle": "Register for tournaments",
+      "myRegistrations": "My Registrations",
+      "myRegistrationsSubtitle": "View your seats",
       "leaderboard": "Leaderboard",
-      "leaderboardSubtitle": "See top players"
+      "leaderboardSubtitle": "See your ranking"
     },
     "progress": {
-      "title": "Progress over {range}",
-      "subtitle": "Your performance tracking",
-      "chartPlaceholder": "Performance chart will appear here",
+      "title": "Progress ({range})",
+      "subtitle": "Track your performance",
+      "chartPlaceholder": "Performance Chart",
       "timeLabels": {
         "7d": "7D",
         "30d": "30D", 
@@ -40,26 +87,34 @@
       }
     },
     "tournaments": {
-      "seeAll": "See all",
+      "seeAll": "See All",
       "spotsLeft": "{count} spots left",
       "full": "Full",
       "register": "Register"
     },
     "results": {
-      "title": "Recent results",
-      "seeAll": "See all",
+      "title": "Recent Results",
+      "seeAll": "See All",
       "buyIn": "Buy-in",
       "cash": "Cash"
     }
   },
   "events": {
-    "title": "Events",
+    "title": "Tournaments",
+    "register": "Register",
+    "unregister": "Unregister",
+    "full": "Full",
+    "buyIn": "Buy-in",
+    "guarantee": "Guarantee",
+    "spotsLeft": "{count} spots left",
+    "viewLive": "View Live",
+    "results": "Results",
     "search": {
       "placeholder": "Search tournaments..."
     },
     "filters": {
       "lowStakes": "Low Stakes",
-      "midStakes": "Mid Stakes",
+      "midStakes": "Mid Stakes", 
       "highStakes": "High Stakes",
       "deepstack": "Deepstack",
       "turbo": "Turbo",
@@ -78,58 +133,12 @@
     },
     "status": {
       "upcoming": "Upcoming",
-      "live": "Live",
+      "live": "Live", 
       "completed": "Completed"
     },
-    "buyIn": "Buy-in",
-    "guarantee": "GTD",
-    "spotsLeft": "{count} spots left",
-    "full": "Full",
-    "register": "Register",
-    "unregister": "Unregister",
-    "viewLive": "View Live",
-    "results": "Results",
-    "registration": "Registration",
-    "registrationCloses": "Registration closes",
-    "blindsStructure": "Blinds Structure",
-    "level": "Level",
-    "smallBlind": "Small Blind",
-    "bigBlind": "Big Blind",
-    "ante": "Ante",
-    "duration": "Duration",
-    "minutes": "{count} min",
-    "dateTime": "Date & Time",
-    "structure": "Structure",
-    "players": "Players",
-    "tournamentClock": "Tournament Clock",
-    "timeRemaining": "Time Remaining",
-    "smallBigBlind": "Small / Big Blind",
-    "nextLevel": "Next Level",
-    "tableAssignment": "Table Assignment",
-    "viewAllTables": "View All Tables",
-    "table": "Table",
-    "seat": "Seat",
-    "chipStack": "Chip Stack",
-    "moreTables": "+{count} more tables",
-    "playersLeft": "Players Left",
-    "averageStack": "Average Stack",
-    "prizePool": "Prize Pool",
-    "finalResults": "Final Results",
-    "completed": "Completed",
-    "totalPlayers": "Total Players",
-    "yourResult": "Your Result",
-    "payout": "Payout",
-    "noPayout": "No payout",
-    "netProfit": "Net Profit",
-    "completeResults": "Complete Results",
-    "showLess": "Show Less",
-    "showAll": "Show All",
-    "position": "Position",
-    "player": "Player",
-    "loadingDetails": "Loading tournament details...",
     "empty": {
-      "title": "No tournaments found",
-      "subtitle": "Check back later for new events"
+      "title": "No Tournaments Found",
+      "subtitle": "Try adjusting your filters or check back later"
     }
   },
   "mySeats": {
@@ -140,53 +149,21 @@
       "upcoming": "Upcoming"
     },
     "filters": {
-      "canCancel": "Cancelable",
-      "lateReg": "Late Reg",
-      "highStakes": "High Stakes",
-      "deepstack": "Deepstack",
-      "turbo": "Turbo"
-    },
-    "categories": {
       "upcoming": "Upcoming",
       "live": "Live",
       "completed": "Completed"
-    },
-    "types": {
-      "deepstack": "Deepstack",
-      "turbo": "Turbo",
-      "freezeout": "Freezeout",
-      "bounty": "Bounty"
-    },
-    "status": {
-      "upcoming": "Upcoming",
-      "live": "Live",
-      "completed": "Completed"
-    },
-    "buyIn": "Buy-in",
-    "tableNotAssigned": "Table not assigned",
-    "position": "Position",
-    "registeredOn": "Registered on",
-    "investment": "Investment",
-    "cancel": "Cancel",
-    "modify": "Modify",
-    "viewLive": "View Live",
-    "viewResult": "View Result",
-    "empty": {
-      "title": "No registrations found",
-      "subtitle": "You haven't registered for any tournaments yet",
-      "browseEvents": "Browse Events"
     }
   },
   "leaderboard": {
     "title": "Leaderboard",
-    "yourRank": "Your current ranking",
+    "guestTitle": "Join the Competition",
+    "guestSubtitle": "Login to see your ranking and compete with other players",
+    "loginToCompete": "Login to Compete",
+    "yourRank": "Your current rank",
     "points": "Points",
-    "tournaments": "tournaments",
-    "itm": "ITM",
-    "avgFinish": "avg finish",
     "periods": {
       "week": "Week",
-      "month": "Month",
+      "month": "Month", 
       "year": "Year",
       "allTime": "All Time"
     },
@@ -197,14 +174,23 @@
     },
     "filters": {
       "verified": "Verified",
-      "club": "Same Club",
-      "highVolume": "High Volume",
-      "recent": "Recent"
+      "vip": "VIP",
+      "club": "Same Club"
     },
-    "loadMore": "Load More Players",
+    "tournaments": "tournaments",
+    "itm": "ITM",
+    "avgFinish": "avg finish",
+    "loadMore": "Load More",
     "empty": {
-      "title": "No players found",
-      "subtitle": "Try adjusting your filters"
+      "title": "No Rankings Available",
+      "subtitle": "Check back later for updated rankings"
     }
+  },
+  "common": {
+    "ok": "OK",
+    "cancel": "Cancel",
+    "close": "Close",
+    "continue": "Continue",
+    "pullToRefresh": "Pull to refresh"
   }
 }
