@@ -37,23 +37,35 @@
                 <div class="pp-welcome-card">
                     <div class="pp-welcome-content">
                         <div class="pp-welcome-text">
-                            <p class="pp-welcome-label">{{ $t('home.welcomeBack') }}</p>
-                            <h2 class="pp-welcome-title">{{ $t('home.trackYourEdge', { username }) }}</h2>
-                            <p class="pp-club-info">
+                            <p class="pp-welcome-label">{{ isAuthenticated ? $t('home.welcomeBack') : $t('home.welcome') }}</p>
+                            <h2 class="pp-welcome-title">
+                              {{ isAuthenticated 
+                                ? $t('home.trackYourEdge', { username }) 
+                                : $t('home.explorePocketPair')
+                              }}
+                            </h2>
+                            <p v-if="isAuthenticated && activeClub?.name" class="pp-club-info">
                                 <IonIcon :icon="locationOutline" />
                                 {{ activeClub?.name }}
                             </p>
+                            <p v-else class="pp-club-info">
+                                <IonIcon :icon="locationOutline" />
+                                {{ $t('home.browseClubs') }}
+                            </p>
                         </div>
-                        <div class="pp-avatar-container">
+                        <div v-if="isAuthenticated" class="pp-avatar-container">
                             <div class="pp-avatar-glow"></div>
                             <IonAvatar class="pp-avatar">
                                 <img :src="avatarUrl" alt="avatar" />
                             </IonAvatar>
                         </div>
+                        <div v-else class="pp-guest-icon-container">
+                            <img src="@/assets/icon-no-bg.png" alt="PocketPair" class="pp-guest-logo" />
+                        </div>
                     </div>
                     
-                    <!-- Premium KPI Cards -->
-                    <div class="pp-kpi-grid">
+                    <!-- Premium KPI Cards (only for authenticated users) -->
+                    <div v-if="isAuthenticated" class="pp-kpi-grid">
                         <div class="pp-kpi-card">
                             <div class="pp-kpi-label">{{ $t('home.kpis.itm') }}</div>
                             <div class="pp-kpi-value">{{ kpis.itm }}%</div>
@@ -73,6 +85,22 @@
                             <div class="pp-kpi-value">{{ kpis.cashes }}</div>
                             <div class="pp-progress-bar">
                                 <div class="pp-progress-fill" :style="`width: ${Math.min(kpis.cashes * 8, 100)}%`"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Login CTA for guests -->
+                    <div v-else class="pp-login-cta">
+                        <div class="pp-cta-content">
+                            <h3 class="pp-cta-title">{{ $t('home.unlockFeatures') }}</h3>
+                            <p class="pp-cta-subtitle">{{ $t('home.ctaDescription') }}</p>
+                            <div class="pp-cta-buttons">
+                                <IonButton @click="navigateTo('/login')" class="pp-cta-login">
+                                    {{ $t('auth.login') }}
+                                </IonButton>
+                                <IonButton @click="navigateTo('/register')" fill="outline" class="pp-cta-register">
+                                    {{ $t('auth.register') }}
+                                </IonButton>
                             </div>
                         </div>
                     </div>
@@ -176,12 +204,21 @@
                                 {{ $t('home.tournaments.spotsLeft', { count: t.spotsLeft }) }}
                             </IonChip>
                             <IonButton 
+                                v-if="isAuthenticated"
                                 size="small" 
                                 :disabled="t.full" 
                                 @click="register(t)"
                                 :class="t.full ? 'pp-button-disabled' : 'pp-button-primary'"
                             >
                                 {{ t.full ? $t('home.tournaments.full') : $t('home.tournaments.register') }}
+                            </IonButton>
+                            <IonButton 
+                                v-else
+                                size="small" 
+                                @click="navigateTo('/login')"
+                                class="pp-button-secondary"
+                            >
+                                {{ $t('events.register') }}
                             </IonButton>
                         </div>
                     </div>
@@ -241,6 +278,7 @@
                     </div>
                 </IonContent>
             </IonPopover>
+
         </IonContent>
     </IonPage>
 </template>
@@ -270,6 +308,7 @@ import {
     calendarOutline,
     checkmarkOutline,
     chevronDownOutline,
+    diamondOutline,
     fileTrayFullOutline,
     languageOutline,
     locationOutline,
@@ -279,7 +318,9 @@ import {
     trendingUpOutline,
     trophyOutline,
 } from 'ionicons/icons'
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useAuth } from '~/composables/useAuth'
+import { useClubs } from '~/composables/usePokerAPI'
 import avatarUrl from '@/assets/images/jmvdb.png'
 
 // Language switching
@@ -309,17 +350,30 @@ onMounted(() => {
   applyTheme(true)
 })
 
+// Authentication
+const { isAuthenticated, currentUser } = useAuth()
+
+// Clubs
+const { clubs, loading: clubsLoading } = useClubs()
+
 // Player-centric defaults
-const username = 'Jean-Marie'
+const username = computed(() => {
+  if (isAuthenticated.value && currentUser.value) {
+    return currentUser.value.username
+  }
+  return 'Guest' // Fallback for guests
+})
 
-interface Club { id: string; name: string }
-const clubs = ref<Club[]>([
-    { id: '1', name: 'Pokah Room Antwerp' },
-    { id: '2', name: 'Liège Poker Club' },
-])
-const activeClub = ref<Club | null>(clubs.value[0])
+const activeClub = ref<any>(null)
 
-const setActiveClub = (c: Club) => { activeClub.value = c }
+const setActiveClub = (c: any) => { activeClub.value = c }
+
+// Set first club as active when clubs are loaded
+watch(clubs, (newClubs) => {
+  if (newClubs.length > 0 && !activeClub.value) {
+    activeClub.value = newClubs[0]
+  }
+}, { immediate: true })
 
 // KPIs specific to the connected player
 const kpis = ref({ itm: 34, roi: 18, cashes: 12 })
@@ -503,6 +557,26 @@ const register = (t: any) => { /* call registration flow for tournament t */ }
   border-radius: 50%;
 }
 
+/* Guest Icon Container */
+.pp-guest-icon-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  background: #1a1b17;
+  border: 2px solid rgba(254, 231, 138, 0.3);
+  border-radius: 50%;
+  position: relative;
+  padding: 12px;
+}
+
+.pp-guest-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
 /* KPI Cards */
 .pp-kpi-grid {
   display: grid;
@@ -552,6 +626,63 @@ const register = (t: any) => { /* call registration flow for tournament t */ }
   height: 100%;
   background: linear-gradient(90deg, #64748b, #475569);
   transition: width 0.5s ease;
+}
+
+/* Login CTA */
+.pp-login-cta {
+  margin-top: 24px;
+  padding: 24px;
+  background: linear-gradient(135deg, rgba(254, 231, 138, 0.1), rgba(251, 191, 36, 0.05));
+  border: 1px solid rgba(254, 231, 138, 0.3);
+  border-radius: 16px;
+  text-align: center;
+}
+
+.pp-cta-content {
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+.pp-cta-title {
+  color: #fee78a;
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+}
+
+.pp-cta-subtitle {
+  color: #94a3b8;
+  font-size: 14px;
+  line-height: 1.4;
+  margin: 0 0 20px 0;
+}
+
+.pp-cta-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.pp-cta-login {
+  --background: linear-gradient(135deg, #fee78a, #fbbf24);
+  --color: #18181a;
+  --border-radius: 12px;
+  height: 44px;
+  font-weight: 600;
+  font-size: 14px;
+  flex: 1;
+  max-width: 120px;
+}
+
+.pp-cta-register {
+  --color: #fee78a;
+  --border-color: #fee78a;
+  --border-radius: 12px;
+  height: 44px;
+  font-weight: 600;
+  font-size: 14px;
+  flex: 1;
+  max-width: 120px;
 }
 
 /* Action Cards */

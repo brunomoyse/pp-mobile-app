@@ -185,6 +185,11 @@ import {
   searchOutline,
 } from 'ionicons/icons'
 import { ref, computed, onMounted } from 'vue'
+import { useClubs } from '~/composables/usePokerAPI'
+
+definePageMeta({
+    middleware: 'auth'
+})
 
 // Use custom i18n composable
 const { t } = useI18n()
@@ -197,20 +202,15 @@ const selectedClubFilter = ref('all')
 const selectedCategory = ref('discover')
 const followingIds = ref<number[]>([2, 5, 7])
 
-// Available clubs
-const clubs = ref([
-  'Poker Palace',
-  'Royal Flush Club',
-  'Diamond Casino',
-  'Golden Cards',
-  'Ace High Society',
-])
+// Dynamic clubs
+const { clubs: clubsData } = useClubs()
+const clubs = computed(() => clubsData.value.map(club => club.name))
 
 // Players data
 const allPlayers = ref([
   {
     id: 1,
-    username: 'PokerPro2024',
+    username: 'ElFish',
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
     club: 'Poker Palace',
     verified: true,

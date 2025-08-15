@@ -21,8 +21,8 @@
         <IonRefresherContent :pulling-text="t('common.pullToRefresh')" refreshing-spinner="dots" />
       </IonRefresher>
 
-      <!-- Current User Stats -->
-      <section class="pp-section">
+      <!-- Current User Stats (only for authenticated users) -->
+      <section v-if="isAuthenticated" class="pp-section">
         <div class="pp-current-player-card">
           <div class="pp-current-player-header">
             <div class="pp-current-player-info">
@@ -45,6 +45,20 @@
                 <div class="pp-stat-label">{{ t('leaderboard.points') }}</div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Guest user prompt -->
+      <section v-else class="pp-section">
+        <div class="pp-guest-prompt-card">
+          <div class="pp-guest-content">
+            <IonIcon :icon="trophyOutline" class="pp-guest-icon" />
+            <h3 class="pp-guest-title">{{ t('leaderboard.guestTitle') }}</h3>
+            <p class="pp-guest-subtitle">{{ t('leaderboard.guestSubtitle') }}</p>
+            <IonButton @click="goToLogin" class="pp-guest-button">
+              {{ t('leaderboard.loginToCompete') }}
+            </IonButton>
           </div>
         </div>
       </section>
@@ -238,10 +252,14 @@ import {
   chevronDownOutline,
 } from 'ionicons/icons'
 import { ref, computed } from 'vue'
+import { useAuth } from '~/composables/useAuth'
 import avatarUrl from '@/assets/images/jmvdb.png'
 
 // Use custom i18n composable
 const { t } = useI18n()
+
+// Authentication state
+const { isAuthenticated } = useAuth()
 
 // Current user data
 const currentPlayerName = 'Jean-Marie'
@@ -476,6 +494,10 @@ const handleRefresh = async (ev: CustomEvent) => {
   setTimeout(() => { (ev.target as any)?.complete?.() }, 1000)
 }
 
+const goToLogin = () => {
+  navigateTo('/login')
+}
+
 const viewPlayerProfile = (player: any) => {
   console.log('View player profile:', player.id)
   // Navigate to player profile page
@@ -610,6 +632,49 @@ const viewPlayerProfile = (player: any) => {
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+}
+
+/* Guest Prompt Card */
+.pp-guest-prompt-card {
+  background: linear-gradient(135deg, #24242a 0%, #1a1a1e 100%);
+  border: 1px solid #54545f;
+  border-radius: 16px;
+  margin: 0 16px 16px 16px;
+  overflow: hidden;
+}
+
+.pp-guest-content {
+  text-align: center;
+  padding: 32px 24px;
+}
+
+.pp-guest-icon {
+  font-size: 48px;
+  color: #64748b;
+  margin-bottom: 16px;
+}
+
+.pp-guest-title {
+  color: #e2e8f0;
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+}
+
+.pp-guest-subtitle {
+  color: #94a3b8;
+  font-size: 14px;
+  margin: 0 0 24px 0;
+  line-height: 1.4;
+}
+
+.pp-guest-button {
+  --background: linear-gradient(135deg, #fee78a, #fbbf24);
+  --color: #18181a;
+  --border-radius: 12px;
+  height: 44px;
+  font-weight: 600;
+  font-size: 14px;
 }
 
 /* Segments */

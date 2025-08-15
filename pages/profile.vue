@@ -3,7 +3,7 @@
     <!-- Header -->
     <IonHeader :translucent="true" class="pp-header">
       <IonToolbar class="pp-toolbar">
-        <IonButtons slot="end">
+        <IonButtons v-if="isAuthenticated" slot="end">
           <IonButton class="pp-header-button" @click="showSettings = !showSettings">
             <IonIcon :icon="settingsOutline" />
           </IonButton>
@@ -12,13 +12,13 @@
     </IonHeader>
 
     <IonContent :fullscreen="true" class="pp-content">
-      <!-- Pull to refresh -->
-      <IonRefresher slot="fixed" @ionRefresh="handleRefresh">
+      <!-- Pull to refresh (only for authenticated users) -->
+      <IonRefresher v-if="isAuthenticated" slot="fixed" @ionRefresh="handleRefresh">
         <IonRefresherContent :pulling-text="t('common.pullToRefresh')" refreshing-spinner="dots" />
       </IonRefresher>
 
-      <!-- Profile Header -->
-      <section class="pp-profile-section">
+      <!-- Profile Header (only for authenticated users) -->
+      <section v-if="isAuthenticated" class="pp-profile-section">
         <div class="pp-profile-header">
           <div class="pp-avatar-container">
             <div class="pp-avatar-glow"></div>
@@ -46,8 +46,8 @@
         </div>
       </section>
 
-      <!-- Stats Overview -->
-      <section class="pp-stats-section">
+      <!-- Stats Overview (only for authenticated users) -->
+      <section v-if="isAuthenticated" class="pp-stats-section">
         <h2 class="pp-section-title">Your Statistics</h2>
         <div class="pp-stats-grid">
           <div class="pp-stat-card">
@@ -91,56 +91,95 @@
 
       <!-- Quick Actions -->
       <section class="pp-actions-section">
-        <h2 class="pp-section-title">Quick Actions</h2>
+        <h2 class="pp-section-title">{{ isAuthenticated ? 'Quick Actions' : 'Get Started' }}</h2>
         <div class="pp-action-cards">
-          <div class="pp-action-card" @click="viewRegistrations">
-            <div class="pp-action-icon">
-              <IonIcon :icon="fileTrayFullOutline" />
+          <!-- Authenticated user actions -->
+          <template v-if="isAuthenticated">
+            <div class="pp-action-card" @click="viewRegistrations">
+              <div class="pp-action-icon">
+                <IonIcon :icon="fileTrayFullOutline" />
+              </div>
+              <div class="pp-action-content">
+                <div class="pp-action-title">My Registrations</div>
+                <div class="pp-action-subtitle">{{ upcomingRegistrations }} upcoming</div>
+              </div>
+              <IonIcon :icon="chevronForwardOutline" class="pp-chevron" />
             </div>
-            <div class="pp-action-content">
-              <div class="pp-action-title">My Registrations</div>
-              <div class="pp-action-subtitle">{{ upcomingRegistrations }} upcoming</div>
-            </div>
-            <IonIcon :icon="chevronForwardOutline" class="pp-chevron" />
-          </div>
 
-          <div class="pp-action-card" @click="viewHistory">
-            <div class="pp-action-icon">
-              <IonIcon :icon="timeOutline" />
+            <div class="pp-action-card" @click="viewHistory">
+              <div class="pp-action-icon">
+                <IonIcon :icon="timeOutline" />
+              </div>
+              <div class="pp-action-content">
+                <div class="pp-action-title">Tournament History</div>
+                <div class="pp-action-subtitle">View past results</div>
+              </div>
+              <IonIcon :icon="chevronForwardOutline" class="pp-chevron" />
             </div>
-            <div class="pp-action-content">
-              <div class="pp-action-title">Tournament History</div>
-              <div class="pp-action-subtitle">View past results</div>
-            </div>
-            <IonIcon :icon="chevronForwardOutline" class="pp-chevron" />
-          </div>
 
-          <div class="pp-action-card" @click="viewAchievements">
-            <div class="pp-action-icon">
-              <IonIcon :icon="medalOutline" />
+            <div class="pp-action-card" @click="viewAchievements">
+              <div class="pp-action-icon">
+                <IonIcon :icon="medalOutline" />
+              </div>
+              <div class="pp-action-content">
+                <div class="pp-action-title">Achievements</div>
+                <div class="pp-action-subtitle">{{ unlockedAchievements }}/{{ totalAchievements }} unlocked</div>
+              </div>
+              <IonIcon :icon="chevronForwardOutline" class="pp-chevron" />
             </div>
-            <div class="pp-action-content">
-              <div class="pp-action-title">Achievements</div>
-              <div class="pp-action-subtitle">{{ unlockedAchievements }}/{{ totalAchievements }} unlocked</div>
-            </div>
-            <IonIcon :icon="chevronForwardOutline" class="pp-chevron" />
-          </div>
 
-          <div class="pp-action-card" @click="viewFriends">
-            <div class="pp-action-icon">
-              <IonIcon :icon="peopleOutline" />
+            <div class="pp-action-card" @click="viewFriends">
+              <div class="pp-action-icon">
+                <IonIcon :icon="peopleOutline" />
+              </div>
+              <div class="pp-action-content">
+                <div class="pp-action-title">Friends</div>
+                <div class="pp-action-subtitle">{{ friendsCount }} friends</div>
+              </div>
+              <IonIcon :icon="chevronForwardOutline" class="pp-chevron" />
             </div>
-            <div class="pp-action-content">
-              <div class="pp-action-title">Friends</div>
-              <div class="pp-action-subtitle">{{ friendsCount }} friends</div>
+          </template>
+          
+          <!-- Guest user actions -->
+          <template v-else>
+            <div class="pp-action-card" @click="navigateTo('/login')">
+              <div class="pp-action-icon">
+                <IonIcon :icon="logInOutline" />
+              </div>
+              <div class="pp-action-content">
+                <div class="pp-action-title">Login</div>
+                <div class="pp-action-subtitle">Access your account</div>
+              </div>
+              <IonIcon :icon="chevronForwardOutline" class="pp-chevron" />
             </div>
-            <IonIcon :icon="chevronForwardOutline" class="pp-chevron" />
-          </div>
+
+            <div class="pp-action-card" @click="navigateTo('/register')">
+              <div class="pp-action-icon">
+                <IonIcon :icon="personOutline" />
+              </div>
+              <div class="pp-action-content">
+                <div class="pp-action-title">Register</div>
+                <div class="pp-action-subtitle">Create new account</div>
+              </div>
+              <IonIcon :icon="chevronForwardOutline" class="pp-chevron" />
+            </div>
+
+            <div class="pp-action-card" @click="navigateTo('/tournaments')">
+              <div class="pp-action-icon">
+                <IonIcon :icon="calendarOutline" />
+              </div>
+              <div class="pp-action-content">
+                <div class="pp-action-title">Browse Tournaments</div>
+                <div class="pp-action-subtitle">View upcoming events</div>
+              </div>
+              <IonIcon :icon="chevronForwardOutline" class="pp-chevron" />
+            </div>
+          </template>
         </div>
       </section>
 
       <!-- Settings Panel -->
-      <section class="pp-settings-section" v-if="showSettings">
+      <section class="pp-settings-section" v-if="showSettings && isAuthenticated">
         <h2 class="pp-section-title">Settings</h2>
         <div class="pp-settings-list">
           <div class="pp-setting-item" @click="editProfile">
@@ -244,26 +283,53 @@ import {
   shareOutline,
   logOutOutline,
 } from 'ionicons/icons'
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useAuth } from '~/composables/useAuth'
+import { useCurrentUser } from '~/composables/usePokerAPI'
 import avatarUrl from '@/assets/images/jmvdb.png'
 
 // Use custom i18n composable
 const { t } = useI18n()
+const router = useRouter()
+
+// Auth state
+const { isAuthenticated, currentUser, logout: authLogout } = useAuth()
+
+// User data from API
+const { data: apiUserData, loading: userLoading, refetch: refetchUser } = useCurrentUser()
 
 // Reactive data
 const showSettings = ref(false)
 const notificationsEnabled = ref(true)
 
-// User profile data
-const userProfile = ref({
-  username: 'Jean-Marie VDB',
-  avatar: avatarUrl,
-  memberSince: new Date('2023-01-15'),
-  verified: true,
-  vipLevel: 3,
+// User profile data - fallback to mock data for demo
+const userProfile = computed(() => {
+  if (isAuthenticated.value && (currentUser.value || apiUserData.value?.user)) {
+    const user = currentUser.value || apiUserData.value?.user
+    return {
+      username: user.username,
+      avatar: user.avatar || avatarUrl,
+      memberSince: new Date(user.memberSince),
+      verified: user.verified,
+      vipLevel: user.vipLevel,
+      email: user.email,
+      club: user.club,
+    }
+  }
+  
+  // Mock data for demo purposes
+  return {
+    username: 'Jean-Marie VDB',
+    avatar: avatarUrl,
+    memberSince: new Date('2023-01-15'),
+    verified: true,
+    vipLevel: 3,
+    email: 'demo@example.com',
+    club: null,
+  }
 })
 
-// User statistics
+// User statistics - mock data for demo
 const userStats = ref({
   totalWins: 47,
   totalWinnings: 12850,
@@ -272,10 +338,10 @@ const userStats = ref({
 })
 
 // Quick stats
-const upcomingRegistrations = computed(() => 3)
+const upcomingRegistrations = computed(() => isAuthenticated.value ? 3 : 0)
 const unlockedAchievements = computed(() => 23)
 const totalAchievements = computed(() => 45)
-const friendsCount = computed(() => 28)
+const friendsCount = computed(() => isAuthenticated.value ? 28 : 0)
 
 // Methods
 const handleRefresh = async (ev: CustomEvent) => {
@@ -311,8 +377,13 @@ const shareProfile = () => {
   console.log('Share profile')
 }
 
-const logout = () => {
-  console.log('Logout')
+const logout = async () => {
+  try {
+    await authLogout()
+    router.replace('/login')
+  } catch (error) {
+    console.error('Logout failed:', error)
+  }
 }
 
 const formatDate = (date: Date) => {

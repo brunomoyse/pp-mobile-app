@@ -144,14 +144,25 @@
                 >
                   <IonIcon :icon="shareOutline" />
                 </IonButton>
+                <!-- Registration button for authenticated users -->
                 <IonButton 
-                  v-if="tournament.status === 'upcoming' && tournament.spotsLeft > 0"
+                  v-if="isAuthenticated && tournament.status === 'upcoming' && tournament.spotsLeft > 0"
                   @click.stop="registerTournament(tournament)"
                   class="pp-button-primary"
                   size="small"
                 >
                   {{ tournament.isRegistered ? t('events.unregister') : t('events.register') }}
                 </IonButton>
+                <!-- Login prompt for guests -->
+                <IonButton 
+                  v-else-if="!isAuthenticated && tournament.status === 'upcoming' && tournament.spotsLeft > 0"
+                  @click.stop="goToLogin"
+                  class="pp-button-secondary"
+                  size="small"
+                >
+                  {{ t('events.register') }}
+                </IonButton>
+                <!-- Full tournament -->
                 <IonButton 
                   v-else-if="tournament.status === 'upcoming'"
                   disabled
@@ -223,9 +234,13 @@ import {
   shareOutline,
 } from 'ionicons/icons'
 import { ref, computed } from 'vue'
+import { useAuth } from '~/composables/useAuth'
 
 // Use custom i18n composable
 const { t } = useI18n()
+
+// Authentication state
+const { isAuthenticated } = useAuth()
 
 // Reactive data
 const searchQuery = ref('')
@@ -405,7 +420,17 @@ const viewTournament = (tournament: any) => {
   navigateTo(`/tournament/${tournament.id}`)
 }
 
+const goToLogin = () => {
+  navigateTo('/login')
+}
+
 const registerTournament = (tournament: any) => {
+  // Only allow registration if authenticated
+  if (!isAuthenticated.value) {
+    goToLogin()
+    return
+  }
+  
   tournament.isRegistered = !tournament.isRegistered
   if (tournament.isRegistered) {
     tournament.registered++

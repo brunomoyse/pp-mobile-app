@@ -38,12 +38,7 @@
               </div>
               <div class="pp-club-details">
                 <h3 class="pp-club-option-name">{{ club.name }}</h3>
-                <p class="pp-club-location">{{ club.location }}</p>
-                <div class="pp-club-stats">
-                  <span class="pp-club-stat">{{ club.members }} members</span>
-                  <span class="pp-club-separator">•</span>
-                  <span class="pp-club-stat">{{ club.events }} events</span>
-                </div>
+                <p class="pp-club-location">{{ club.city }}, Belgium</p>
               </div>
             </div>
             <IonIcon 
@@ -77,14 +72,13 @@ import {
   checkmarkCircleOutline,
 } from 'ionicons/icons'
 import { ref, computed } from 'vue'
+import { useClubs } from '~/composables/usePokerAPI'
 
 // Props
 interface Club {
-  id: number
+  id: string
   name: string
-  location: string
-  members: number
-  events: number
+  city: string
 }
 
 const props = defineProps<{
@@ -98,44 +92,8 @@ const emit = defineEmits<{
 // Reactive data
 const showModal = ref(false)
 
-// Available clubs
-const clubs = ref<Club[]>([
-  {
-    id: 1,
-    name: 'Poker Palace Brussels',
-    location: 'Brussels, Belgium',
-    members: 1247,
-    events: 42,
-  },
-  {
-    id: 2,
-    name: 'Royal Flush Club',
-    location: 'Antwerp, Belgium',
-    members: 856,
-    events: 38,
-  },
-  {
-    id: 3,
-    name: 'Diamond Casino Ghent',
-    location: 'Ghent, Belgium',
-    members: 692,
-    events: 29,
-  },
-  {
-    id: 4,
-    name: 'Golden Cards Liège',
-    location: 'Liège, Belgium',
-    members: 534,
-    events: 24,
-  },
-  {
-    id: 5,
-    name: 'Ace High Society',
-    location: 'Charleroi, Belgium',
-    members: 423,
-    events: 18,
-  },
-])
+// Dynamic clubs
+const { clubs } = useClubs()
 
 // Computed
 const selectedClub = computed({
