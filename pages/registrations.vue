@@ -245,6 +245,10 @@ import {
 } from 'ionicons/icons'
 import { ref, computed } from 'vue'
 
+definePageMeta({
+    middleware: 'auth'
+})
+
 // Use custom i18n composable
 const { t } = useI18n()
 
