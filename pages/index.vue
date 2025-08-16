@@ -309,7 +309,7 @@ import {
 import { ref, computed, onMounted, watch } from 'vue'
 import { useAuth } from '~/composables/useAuth'
 import { useClubs } from '~/composables/usePokerAPI'
-import avatarUrl from '@/assets/images/jmvdb.png'
+import avatarUrl from '@/assets/images/players/70707070-7070-7070-7070-707070707070.png'
 
 // Language switching
 const { t, locale, switchLanguage } = useI18n()

@@ -317,7 +317,7 @@ import { ref, computed, watch } from 'vue'
 import { useAuth } from '~/composables/useAuth'
 import { useLeaderboardNew } from '~/composables/usePokerAPI'
 import { usePlayerAvatar } from '~/composables/usePlayerAvatar'
-import avatarUrl from '@/assets/images/jmvdb.png'
+import avatarUrl from '@/assets/images/players/70707070-7070-7070-7070-707070707070.png'
 
 // Use custom i18n composable
 const { t } = useI18n()
