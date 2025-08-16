@@ -23,7 +23,7 @@
         <IonRefresherContent :pulling-text="t('common.pullToRefresh')" refreshing-spinner="dots" />
       </IonRefresher>
 
-      <div v-if="tournament">
+      <div v-if="tournament && !tournamentLoading">
         <!-- Tournament Header Info -->
         <section class="pp-section">
           <div class="pp-tournament-header-card">
@@ -42,7 +42,7 @@
                 :class="getStatusClass(tournament.status)"
                 class="pp-status-badge"
               >
-                {{ t(`events.status.${tournament.status}`) }}
+                {{ tournament.liveStatus ? t(`events.status.${tournament.liveStatus.toLowerCase()}`) : t(`events.status.${tournament.status.toLowerCase()}`) }}
               </IonBadge>
             </div>
           </div>
@@ -77,7 +77,14 @@
               <IonIcon :icon="peopleOutline" class="pp-info-icon" />
               <div class="pp-info-content">
                 <div class="pp-info-label">{{ t('events.players') }}</div>
-                <div class="pp-info-value">{{ tournament.registered }}/{{ tournament.maxPlayers }}</div>
+                <div class="pp-info-value">
+                  <span v-if="tournament.status === 'IN_PROGRESS'">
+                    {{ liveStats.playersRemaining }}/{{ tournament.registered }}
+                  </span>
+                  <span v-else>
+                    {{ tournament.registered }}/{{ tournament.maxPlayers }}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -86,7 +93,7 @@
         <!-- Status-Specific Content -->
         
         <!-- UPCOMING Tournament -->
-        <section v-if="tournament.status === 'upcoming'" class="pp-section">
+        <section v-if="tournament.status === 'UPCOMING'" class="pp-section">
           <!-- Registration Status -->
           <div class="pp-registration-card">
             <div class="pp-registration-header">
@@ -161,8 +168,8 @@
           </div>
         </section>
 
-        <!-- LIVE Tournament -->
-        <section v-if="tournament.status === 'live'" class="pp-section">
+        <!-- IN_PROGRESS Tournament -->
+        <section v-if="tournament.status === 'IN_PROGRESS'" class="pp-section">
           <!-- Live Clock -->
           <div class="pp-live-clock-card">
             <div class="pp-clock-header">
@@ -248,7 +255,7 @@
           <div class="pp-live-stats">
             <div class="pp-stat-item">
               <div class="pp-stat-value">{{ liveStats.playersRemaining }}</div>
-              <div class="pp-stat-label">{{ t('events.playersLeft') }}</div>
+              <div class="pp-stat-label">{{ t('events.stillInPlay') }}</div>
             </div>
             <div class="pp-stat-item">
               <div class="pp-stat-value">{{ formatChips(liveStats.averageStack) }}</div>
@@ -262,7 +269,7 @@
         </section>
 
         <!-- COMPLETED Tournament -->
-        <section v-if="tournament.status === 'completed'" class="pp-section">
+        <section v-if="tournament.status === 'COMPLETED'" class="pp-section">
           <!-- Final Results Summary -->
           <div class="pp-results-summary">
             <h3 class="pp-section-title">
@@ -293,7 +300,7 @@
               <div class="pp-podium-position pp-podium-second">
                 <div class="pp-podium-rank">2</div>
                 <IonAvatar class="pp-podium-avatar">
-                  <img :src="finalResults[1]?.avatar || '/assets/images/default-avatar.png'" />
+                  <img :src="finalResults[1]?.avatar || '/assets/images/default-avatar.png'" @error="handleAvatarError" />
                 </IonAvatar>
                 <div class="pp-podium-name">{{ finalResults[1]?.name }}</div>
                 <div class="pp-podium-payout">{{ finalResults[1]?.payout }}</div>
@@ -304,7 +311,7 @@
                 <div class="pp-podium-crown">👑</div>
                 <div class="pp-podium-rank">1</div>
                 <IonAvatar class="pp-podium-avatar">
-                  <img :src="finalResults[0]?.avatar || '/assets/images/default-avatar.png'" />
+                  <img :src="finalResults[0]?.avatar || '/assets/images/default-avatar.png'" @error="handleAvatarError" />
                 </IonAvatar>
                 <div class="pp-podium-name">{{ finalResults[0]?.name }}</div>
                 <div class="pp-podium-payout">{{ finalResults[0]?.payout }}</div>
@@ -314,7 +321,7 @@
               <div class="pp-podium-position pp-podium-third">
                 <div class="pp-podium-rank">3</div>
                 <IonAvatar class="pp-podium-avatar">
-                  <img :src="finalResults[2]?.avatar || '/assets/images/default-avatar.png'" />
+                  <img :src="finalResults[2]?.avatar || '/assets/images/default-avatar.png'" @error="handleAvatarError" />
                 </IonAvatar>
                 <div class="pp-podium-name">{{ finalResults[2]?.name }}</div>
                 <div class="pp-podium-payout">{{ finalResults[2]?.payout }}</div>
@@ -386,9 +393,26 @@
       </div>
 
       <!-- Loading State -->
-      <div v-else class="pp-loading-state">
+      <div v-else-if="tournamentLoading" class="pp-loading-state">
         <IonSpinner name="dots" />
         <p>{{ t('events.loadingDetails') }}</p>
+      </div>
+      
+      <!-- Error State -->
+      <div v-else-if="tournamentError" class="pp-error-state">
+        <IonIcon :icon="alertCircleOutline" class="pp-error-icon" />
+        <h3 class="pp-error-title">Error loading tournament</h3>
+        <p class="pp-error-text">Please try again later</p>
+        <IonButton @click="refetchTournament" class="pp-retry-button">
+          Retry
+        </IonButton>
+      </div>
+      
+      <!-- No Tournament Found -->
+      <div v-else class="pp-error-state">
+        <IonIcon :icon="alertCircleOutline" class="pp-error-icon" />
+        <h3 class="pp-error-title">Tournament not found</h3>
+        <p class="pp-error-text">The tournament you're looking for doesn't exist</p>
       </div>
     </IonContent>
   </IonPage>
@@ -429,8 +453,11 @@ import {
   chevronDownOutline,
   trophyOutline,
   personOutline,
+  alertCircleOutline,
 } from 'ionicons/icons'
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useTournament } from '~/composables/usePokerAPI'
+import { usePlayerAvatar } from '~/composables/usePlayerAvatar'
 
 // Props
 interface Props {
@@ -439,73 +466,67 @@ interface Props {
 const props = defineProps<Props>()
 
 // Use custom i18n composable
-const { t } = useI18n()
+const { t, locale } = useI18n()
+
+// Player avatar helper
+const { getPlayerAvatarWithFallback } = usePlayerAvatar()
 
 // Reactive data
-const tournament = ref<any>(null)
 const showAllResults = ref(false)
 const currentTime = ref(new Date())
 const timer = ref<NodeJS.Timeout | null>(null)
 
-// Mock tournament data (in real app, this would be fetched from API)
-const mockTournaments = [{
-    id: 'T001',
-    name: 'Tuesday Night Deepstack',
-    type: 'deepstack',
-    status: 'upcoming',
-    club: 'Pokah Room Antwerp',
-    startTime: new Date('2025-08-13T19:00:00'),
-    registrationClose: new Date('2025-08-13T22:00:00'),
-    endTime: new Date('2025-08-14T03:30:00'),
-    buyIn: '50€',
-    structure: '20k/20min',
-    registered: 24,
-    maxPlayers: 60,
-    spotsLeft: 36,
-    guarantee: '2.000€',
-    isRegistered: false,
-    totalPlayers: 58,
-    duration: 8.5,
-  },
-  {
-    id: 'T002',
-    name: 'Wednesday Turbo Live',
-    type: 'turbo',
-    status: 'live',
-    club: 'Liège Poker Club',
-    startTime: new Date('2025-08-14T20:30:00'),
-    registrationClose: new Date('2025-08-14T23:30:00'),
-    endTime: new Date('2025-08-15T02:15:00'),
-    buyIn: '75€',
-    structure: '25k/15min',
-    registered: 52,
-    maxPlayers: 60,
-    spotsLeft: 0,
-    guarantee: '4.500€',
-    isRegistered: true,
-    totalPlayers: 52,
-    duration: 5.75,
-  },
-  {
-    id: 'T005',
-    name: 'Monday Night Special',
-    type: 'deepstack',
-    status: 'completed',
-    club: 'Liège Poker Club',
-    startTime: new Date('2025-08-11T19:30:00'),
-    registrationClose: new Date('2025-08-11T22:30:00'),
-    endTime: new Date('2025-08-12T04:15:00'),
-    buyIn: '40€',
-    structure: '20k/20min',
-    registered: 28,
-    maxPlayers: 30,
-    spotsLeft: 0,
-    guarantee: '1.200€',
-    isRegistered: false,
-    totalPlayers: 28,
-    duration: 8.75,
+// Fetch tournament data from API
+const { data: tournamentData, loading: tournamentLoading, error: tournamentError, refetch: refetchTournament } = useTournament(props.tournamentId)
+
+// Transform API data to component format
+const tournament = computed(() => {
+  if (!tournamentData.value?.tournamentComplete) return null
+  
+  const data = tournamentData.value.tournamentComplete.tournament
+  const liveState = tournamentData.value.tournamentComplete.liveState
+  const totalRegistered = tournamentData.value.tournamentComplete.totalRegistered
+  
+  return {
+    id: data.id,
+    name: data.title,
+    title: data.title,
+    description: data.description,
+    type: 'deepstack', // Mock type for now
+    status: data.status || 'UPCOMING', // Use status ENUM from API
+    liveStatus: data.liveStatus, // Keep liveStatus for detailed status display
+    club: data.club.name,
+    clubId: data.clubId,
+    city: data.club.city,
+    startTime: new Date(data.startTime),
+    endTime: data.endTime ? new Date(data.endTime) : null,
+    registrationClose: new Date(data.startTime), // Mock registration close
+    buyIn: `${data.buyInCents / 100}€`,
+    buyInCents: data.buyInCents,
+    structure: '20k/20min', // Mock structure
+    registered: totalRegistered,
+    maxPlayers: data.seatCap,
+    spotsLeft: Math.max(0, data.seatCap - totalRegistered),
+    guarantee: `${Math.floor(data.buyInCents * data.seatCap * 0.9 / 100)}€ GTD`, // Mock guarantee
+    isRegistered: false, // Would need to check user registration
+    totalPlayers: totalRegistered,
+    duration: data.endTime ? 
+      (new Date(data.endTime).getTime() - new Date(data.startTime).getTime()) / (1000 * 60 * 60) : 
+      0,
+    // Live state data
+    liveState
   }
-]
+})
+
+// Tournament players data
+const tournamentPlayers = computed(() => {
+  return tournamentData.value?.tournamentPlayers || []
+})
+
+// Seating chart data
+const seatingChart = computed(() => {
+  return tournamentData.value?.tournamentSeatingChart || null
+})
 
 // Mock blinds structure for turbo tournament (15 min levels)
 const blindsStructure = ref([
@@ -523,43 +544,77 @@ const blindsStructure = ref([
   { level: 12, smallBlind: '1500', bigBlind: '3000', ante: '400', duration: '15' },
 ])
 
-// Live tournament data
-const currentLevel = ref({ level: 6, smallBlind: '200', bigBlind: '400', ante: '50' })
-const nextLevel = ref({ level: 7, smallBlind: '300', bigBlind: '600', ante: '75' })
-const timeRemaining = ref(8 * 60 + 23) // 8:23 in seconds
-
-const userSeat = ref({
-  table: 3,
-  seat: 7,
-  chips: 31750
+// Live tournament data from API
+const currentLevel = computed(() => {
+  const liveState = tournament.value?.liveState
+  if (!liveState) return { level: 1, smallBlind: '25', bigBlind: '50', ante: null }
+  
+  return {
+    level: liveState.currentLevel,
+    smallBlind: liveState.currentSmallBlind.toString(),
+    bigBlind: liveState.currentBigBlind.toString(),
+    ante: liveState.currentAnte ? liveState.currentAnte.toString() : null
+  }
 })
 
-const tablesData = ref([
-  { id: 1, number: 1, activePlayers: 8, maxPlayers: 9 },
-  { id: 2, number: 2, activePlayers: 9, maxPlayers: 9 },
-  { id: 3, number: 3, activePlayers: 7, maxPlayers: 9 },
-  { id: 4, number: 4, activePlayers: 6, maxPlayers: 9 },
-  { id: 5, number: 5, activePlayers: 9, maxPlayers: 9 },
-  { id: 6, number: 6, activePlayers: 5, maxPlayers: 9 },
-  { id: 7, number: 7, activePlayers: 4, maxPlayers: 9 },
-  { id: 8, number: 8, activePlayers: 0, maxPlayers: 9 }
-])
+const nextLevel = ref({ level: 7, smallBlind: '300', bigBlind: '600', ante: '75' }) // Mock next level
+const timeRemaining = ref(8 * 60 + 23) // Mock time remaining
 
-const liveStats = ref({
-  playersRemaining: 44,
-  averageStack: 29536,
-  totalPrizePool: 3900
+// User seat from seating chart
+const userSeat = computed(() => {
+  const chart = seatingChart.value
+  if (!chart) return null
+  
+  // Find user's seat in the seating chart
+  for (const tableData of chart.tables) {
+    for (const seat of tableData.seats) {
+      if (seat.player && seat.assignment.isCurrent) {
+        // Check if this is the current user (would need user ID comparison)
+        return {
+          table: tableData.table.tableNumber,
+          seat: seat.assignment.seatNumber,
+          chips: seat.assignment.stackSize || 0
+        }
+      }
+    }
+  }
+  return null
+})
+
+// Tables data from seating chart
+const tablesData = computed(() => {
+  const chart = seatingChart.value
+  if (!chart) return []
+  
+  return chart.tables.map(tableData => ({
+    id: tableData.table.id,
+    number: tableData.table.tableNumber,
+    activePlayers: tableData.seats.filter(seat => seat.player).length,
+    maxPlayers: tableData.table.maxSeats
+  }))
+})
+
+// Live stats from tournament state
+const liveStats = computed(() => {
+  const liveState = tournament.value?.liveState
+  const tournData = tournament.value
+  
+  return {
+    playersRemaining: liveState?.playersRemaining || 0,
+    averageStack: 25000, // Mock average stack
+    totalPrizePool: tournData ? Math.floor(tournData.buyInCents * tournData.registered * 0.9 / 100) : 0
+  }
 })
 
 // Final results data
 const finalResults = ref([
-  { position: 1, name: 'Alexandre D.', payout: '870€', avatar: '/assets/images/jmvdb.png', isUser: false },
-  { position: 2, name: 'Sophie M.', payout: '580€', avatar: '/assets/images/jmvdb.png', isUser: false },
-  { position: 3, name: 'Thomas B.', payout: '350€', avatar: '/assets/images/jmvdb.png', isUser: false },
-  { position: 4, name: 'Marie L.', payout: '230€', avatar: '/assets/images/jmvdb.png', isUser: false },
-  { position: 5, name: 'Pierre V.', payout: '175€', avatar: '/assets/images/jmvdb.png', isUser: false },
-  { position: 6, name: 'Emma R.', payout: '140€', avatar: '/assets/images/jmvdb.png', isUser: false },
-  { position: 7, name: 'Jean-Marie', payout: '115€', avatar: '/assets/images/jmvdb.png', isUser: true },
+  { position: 1, name: 'Alexandre D.', payout: '870€', avatar: getPlayerAvatarWithFallback('30303030-3030-3030-3030-303030303030'), isUser: false, userId: '30303030-3030-3030-3030-303030303030' },
+  { position: 2, name: 'Sophie M.', payout: '580€', avatar: getPlayerAvatarWithFallback('40404040-4040-4040-4040-404040404040'), isUser: false, userId: '40404040-4040-4040-4040-404040404040' },
+  { position: 3, name: 'Thomas B.', payout: '350€', avatar: getPlayerAvatarWithFallback('50505050-5050-5050-5050-505050505050'), isUser: false, userId: '50505050-5050-5050-5050-505050505050' },
+  { position: 4, name: 'Marie L.', payout: '230€', avatar: getPlayerAvatarWithFallback('60606060-6060-6060-6060-606060606060'), isUser: false, userId: '60606060-6060-6060-6060-606060606060' },
+  { position: 5, name: 'Pierre V.', payout: '175€', avatar: getPlayerAvatarWithFallback('70707070-7070-7070-7070-707070707070'), isUser: false, userId: '70707070-7070-7070-7070-707070707070' },
+  { position: 6, name: 'Emma R.', payout: '140€', avatar: getPlayerAvatarWithFallback('80808080-8080-8080-8080-808080808080'), isUser: false, userId: '80808080-8080-8080-8080-808080808080' },
+  { position: 7, name: 'Jean-Marie', payout: '115€', avatar: getPlayerAvatarWithFallback('90909090-9090-9090-9090-909090909090'), isUser: true, userId: '90909090-9090-9090-9090-909090909090' },
 ])
 
 const userResult = computed(() => {
@@ -569,15 +624,18 @@ const userResult = computed(() => {
 // Methods
 const getStatusClass = (status: string) => {
   switch(status) {
+    case 'UPCOMING':
     case 'upcoming': return 'pp-status-upcoming'
+    case 'IN_PROGRESS':
     case 'live': return 'pp-status-live'  
+    case 'COMPLETED':
     case 'completed': return 'pp-status-completed'
     default: return 'pp-status-default'
   }
 }
 
 const formatDateTime = (date: Date) => {
-  return date.toLocaleDateString('en-GB', { 
+  return date.toLocaleDateString(locale.value, { 
     weekday: 'short',
     day: 'numeric', 
     month: 'short',
@@ -634,32 +692,37 @@ const viewFullSeatingChart = () => {
 }
 
 const handleRefresh = async (ev: CustomEvent) => {
-  // Refresh tournament data
-  setTimeout(() => { (ev.target as any)?.complete?.() }, 1000)
+  try {
+    await refetchTournament()
+  } finally {
+    ;(ev.target as any)?.complete?.()
+  }
+}
+
+const handleAvatarError = (event: Event) => {
+  const img = event.target as HTMLImageElement
+  // Try .png extension if .jpg failed
+  if (img.src.endsWith('.jpg')) {
+    img.src = img.src.replace('.jpg', '.png')
+  } else {
+    // Fallback to default avatar
+    img.src = '/assets/images/jmvdb.png'
+  }
 }
 
 // Live clock updates
 const updateClock = () => {
-  if (tournament.value?.status === 'live' && timeRemaining.value > 0) {
+  if (tournament.value?.status === 'IN_PROGRESS' && timeRemaining.value > 0) {
     timeRemaining.value--
   }
 }
 
 onMounted(() => {
-  // Load tournament data based on ID
   console.log('Loading tournament with ID:', props.tournamentId)
-  const foundTournament = mockTournaments.find(t => t.id === props.tournamentId)
   
-  if (foundTournament) {
-    tournament.value = { ...foundTournament }
-    console.log('Tournament loaded:', tournament.value)
-    
-    // Start timer for live tournaments
-    if (tournament.value.status === 'live') {
-      timer.value = setInterval(updateClock, 1000)
-    }
-  } else {
-    console.error('Tournament not found:', props.tournamentId)
+  // Start timer for live tournaments
+  if (tournament.value?.status === 'IN_PROGRESS') {
+    timer.value = setInterval(updateClock, 1000)
   }
 })
 
@@ -1496,6 +1559,44 @@ onUnmounted(() => {
 .pp-loading-state ion-spinner {
   margin-bottom: 16px;
   --color: #fee78a;
+}
+
+/* Error State */
+.pp-error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.pp-error-icon {
+  color: #ef4444;
+  font-size: 64px;
+  margin-bottom: 16px;
+}
+
+.pp-error-title {
+  color: #ef4444;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+
+.pp-error-text {
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 400;
+  margin: 0 0 16px 0;
+}
+
+.pp-retry-button {
+  --background: linear-gradient(135deg, #64748b, #475569);
+  --color: white;
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: 8px;
 }
 
 /* Animations */

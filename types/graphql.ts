@@ -81,18 +81,104 @@ export interface Club {
 export interface Tournament {
   id: string
   title: string
+  description?: string
+  clubId: string
+  startTime: string
+  endTime?: string
+  buyInCents: number
+  seatCap: number
+  status: 'UPCOMING' | 'IN_PROGRESS' | 'COMPLETED' // ENUM for tabs
+  liveStatus: string | null // Can be 'NOT_STARTED', 'REGISTRATION_OPEN', 'LATE_REGISTRATION', 'IN_PROGRESS', 'BREAK', 'FINAL_TABLE', 'FINISHED', etc.
+  createdAt: string
+  updatedAt: string
   club: Club
   // Extended fields that might be needed for display
   name?: string
   type?: string
-  status?: 'upcoming' | 'live' | 'completed'
-  buyIn?: number
-  startTime?: string
-  endTime?: string
+  buyIn?: string
   maxPlayers?: number
   registeredPlayers?: number
   prizePool?: number
   structure?: string
+}
+
+export interface TournamentLiveState {
+  id: string
+  currentLevel: number
+  playersRemaining: number
+  breakUntil?: string
+  currentSmallBlind: number
+  currentBigBlind: number
+  currentAnte?: number
+  levelStartedAt: string
+  levelDurationMinutes: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface TournamentComplete {
+  tournament: Tournament
+  liveState?: TournamentLiveState
+  totalRegistered: number
+}
+
+export interface TournamentPlayer {
+  registration: {
+    id: string
+    status: string
+    registrationTime: string
+    notes?: string
+  }
+  user: {
+    id: string
+    firstName: string
+    lastName: string
+    username: string
+    email: string
+    isActive: boolean
+  }
+}
+
+export interface SeatAssignment {
+  id: string
+  seatNumber: number
+  stackSize?: number
+  isCurrent: boolean
+  assignedAt: string
+  unassignedAt?: string
+  notes?: string
+}
+
+export interface TableSeat {
+  assignment: SeatAssignment
+  player: {
+    id: string
+    firstName: string
+    lastName: string
+    username: string
+  }
+}
+
+export interface TournamentTable {
+  id: string
+  tableNumber: number
+  maxSeats: number
+  isActive: boolean
+  tableName: string
+  createdAt: string
+}
+
+export interface TournamentSeatingChart {
+  tables: {
+    table: TournamentTable
+    seats: TableSeat[]
+  }[]
+  unassignedPlayers: {
+    id: string
+    firstName: string
+    lastName: string
+    username: string
+  }[]
 }
 
 export interface TournamentRegistration {

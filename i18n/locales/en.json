@@ -134,7 +134,14 @@
     "status": {
       "upcoming": "Upcoming",
       "live": "Live", 
-      "completed": "Completed"
+      "completed": "Completed",
+      "not_started": "Not Started",
+      "registration_open": "Registration Open",
+      "late_registration": "Late Registration",
+      "in_progress": "In Progress",
+      "break": "Break",
+      "final_table": "Final Table",
+      "finished": "Finished"
     },
     "empty": {
       "title": "No Tournaments Found",
@@ -163,6 +170,7 @@
     "chipStack": "Chip Stack",
     "moreTables": "+{count} more tables",
     "playersLeft": "Players Left",
+    "stillInPlay": "Still in Play",
     "averageStack": "Average Stack",
     "prizePool": "Prize Pool",
     "finalResults": "Final Results",
@@ -202,9 +210,13 @@
       "bounty": "Bounty"
     },
     "status": {
-      "upcoming": "Upcoming",
-      "live": "Live",
-      "completed": "Completed"
+      "not_started": "Not Started",
+      "registration_open": "Registration Open",
+      "late_registration": "Late Registration",
+      "in_progress": "In Progress",
+      "break": "Break",
+      "final_table": "Final Table",
+      "finished": "Finished"
     },
     "modify": "Modify",
     "buyIn": "Buy-in",
@@ -245,6 +257,27 @@
     "empty": {
       "title": "No Rankings Available",
       "subtitle": "Check back later for updated rankings"
+    },
+    "pointsCalculation": {
+      "title": "Points Calculation",
+      "howCalculated": "How Leaderboard Points Are Calculated",
+      "baseFormula": "Base Formula:",
+      "formula": "Points = (Field Size × Buy-in Weight × Finish Position Multiplier)",
+      "factors": "Factors:",
+      "fieldSize": "Field Size:",
+      "fieldSizeDesc": "More players = more points available",
+      "buyinWeight": "Buy-in Weight:",
+      "buyinWeightDesc": "Higher stakes tournaments worth more",
+      "finishPosition": "Finish Position:",
+      "finishPositionDesc": "Better finish = higher multiplier",
+      "itmBonus": "ITM Bonus:",
+      "itmBonusDesc": "Extra points for finishing in the money",
+      "examples": "Examples:",
+      "example1Scenario": "1st place, 50 players, €100 buy-in:",
+      "example1Calculation": "50 × 2.0 × 10.0 = <strong>1000 points</strong>",
+      "example2Scenario": "6th place, 30 players, €50 buy-in:",
+      "example2Calculation": "30 × 1.0 × 3.0 = <strong>90 points</strong>",
+      "note": "Points are awarded only for tournaments where you finish in the money (ITM). The exact multipliers may vary based on tournament structure and field size."
     }
   },
   "profile": {
@@ -272,6 +305,7 @@
     "cancel": "Cancel",
     "close": "Close",
     "continue": "Continue",
-    "pullToRefresh": "Pull to refresh"
+    "pullToRefresh": "Pull to refresh",
+    "note": "Note"
   }
 }

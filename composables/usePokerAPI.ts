@@ -15,6 +15,15 @@ const TOURNAMENTS_QUERY = `
     tournaments(clubId: $clubId, from: $from, to: $to, limit: $limit, offset: $offset) {
       id
       title
+      description
+      status
+      liveStatus
+      startTime
+      endTime
+      buyInCents
+      seatCap
+      createdAt
+      updatedAt
       club {
         id
         name
@@ -24,28 +33,102 @@ const TOURNAMENTS_QUERY = `
   }
 `
 
-const TOURNAMENT_QUERY = `
-  query GetTournament($id: ID!) {
-    tournament(id: $id) {
-      id
-      name
-      type
-      status
-      buyIn
-      startTime
-      endTime
-      maxPlayers
-      registeredPlayers
-      prizePool
-      structure
-      description
-      club {
+const TOURNAMENT_COMPLETE_QUERY = `
+  query GetCompleteTournamentData($tournamentId: UUID!) {
+    # Complete tournament data in one call
+    tournamentComplete(tournamentId: $tournamentId) {
+      # Static tournament data
+      tournament {
         id
-        name
-        location
-        logo
-        members
-        events
+        title
+        description
+        clubId
+        startTime
+        endTime
+        buyInCents
+        seatCap
+        status
+        liveStatus
+        createdAt
+        updatedAt
+        club {
+          id
+          name
+          city
+        }
+      }
+
+      # Live state (clock, blinds, level info)
+      liveState {
+        id
+        currentLevel
+        playersRemaining
+        breakUntil
+        currentSmallBlind
+        currentBigBlind
+        currentAnte
+        levelStartedAt
+        levelDurationMinutes
+        createdAt
+        updatedAt
+      }
+
+      # Registration count
+      totalRegistered
+    }
+
+    # All registered players
+    tournamentPlayers(tournamentId: $tournamentId) {
+      registration {
+        id
+        status
+        registrationTime
+        notes
+      }
+      user {
+        id
+        firstName
+        lastName
+        username
+        email
+        isActive
+      }
+    }
+
+    # Live seating chart
+    tournamentSeatingChart(tournamentId: $tournamentId) {
+      tables {
+        table {
+          id
+          tableNumber
+          maxSeats
+          isActive
+          tableName
+          createdAt
+        }
+        seats {
+          assignment {
+            id
+            seatNumber
+            stackSize
+            isCurrent
+            assignedAt
+            unassignedAt
+            notes
+          }
+          player {
+            id
+            firstName
+            lastName
+            username
+          }
+        }
+      }
+      unassignedPlayers {
+        id
+        firstName
+        lastName
+        username
       }
     }
   }
@@ -193,6 +276,36 @@ const USERS_SEARCH_QUERY = `
   }
 `
 
+const LEADERBOARD_QUERY_NEW = `
+  query GetLeaderboard($period: LeaderboardPeriod!, $limit: Int, $clubId: UUID) {
+    leaderboard(period: $period, limit: $limit, clubId: $clubId) {
+      entries {
+        rank
+        user {
+          username
+          firstName
+          lastName
+          email
+          isActive
+        }
+        totalTournaments
+        totalBuyIns
+        totalWinnings
+        netProfit
+        itmPercentage
+        roiPercentage
+        points
+        firstPlaces
+        finalTables
+        averageFinish
+        totalItm
+      }
+      totalPlayers
+      period
+    }
+  }
+`
+
 // GraphQL Mutations
 const REGISTER_TOURNAMENT_MUTATION = `
   mutation RegisterTournament($tournamentId: ID!) {
@@ -263,11 +376,97 @@ export function useTournaments(variables?: Ref<{ clubId?: string; from?: string;
 
 export function useTournament(tournamentId: Ref<string> | string) {
   const variables = computed(() => ({ 
-    id: isRef(tournamentId) ? tournamentId.value : tournamentId 
+    tournamentId: isRef(tournamentId) ? tournamentId.value : tournamentId 
   }))
   
-  return useGraphQLQuery<{ tournament: Tournament }>(
-    TOURNAMENT_QUERY,
+  return useGraphQLQuery<{
+    tournamentComplete: {
+      tournament: {
+        id: string
+        title: string
+        description: string
+        clubId: string
+        startTime: string
+        endTime: string
+        buyInCents: number
+        seatCap: number
+        liveStatus: string
+        createdAt: string
+        updatedAt: string
+        club: {
+          id: string
+          name: string
+          city: string
+        }
+      }
+      liveState: {
+        id: string
+        currentLevel: number
+        playersRemaining: number
+        breakUntil: string | null
+        currentSmallBlind: number
+        currentBigBlind: number
+        currentAnte: number | null
+        levelStartedAt: string
+        levelDurationMinutes: number
+        createdAt: string
+        updatedAt: string
+      } | null
+      totalRegistered: number
+    }
+    tournamentPlayers: {
+      registration: {
+        id: string
+        status: string
+        registrationTime: string
+        notes: string | null
+      }
+      user: {
+        id: string
+        firstName: string
+        lastName: string
+        username: string
+        email: string
+        isActive: boolean
+      }
+    }[]
+    tournamentSeatingChart: {
+      tables: {
+        table: {
+          id: string
+          tableNumber: number
+          maxSeats: number
+          isActive: boolean
+          tableName: string
+          createdAt: string
+        }
+        seats: {
+          assignment: {
+            id: string
+            seatNumber: number
+            stackSize: number | null
+            isCurrent: boolean
+            assignedAt: string
+            unassignedAt: string | null
+            notes: string | null
+          }
+          player: {
+            id: string
+            firstName: string
+            lastName: string
+            username: string
+          }
+        }[]
+      }[]
+      unassignedPlayers: {
+        id: string
+        firstName: string
+        lastName: string
+        username: string
+      }[]
+    }
+  }>(
+    TOURNAMENT_COMPLETE_QUERY,
     variables,
     { cache: true }
   )
@@ -341,6 +540,40 @@ export function useUsersSearch(variables: Ref<{ query: string; clubId?: string; 
       cache: false, // Don't cache search results
       immediate: false // Only search when explicitly called
     }
+  )
+}
+
+export function useLeaderboardNew(variables?: Ref<{ period?: string; limit?: number; clubId?: string }>) {
+  return useGraphQLQuery<{
+    leaderboard: {
+      entries: {
+        rank: number
+        user: {
+          username: string
+          firstName: string
+          lastName: string
+          email: string
+          isActive: boolean
+        }
+        totalTournaments: number
+        totalBuyIns: number
+        totalWinnings: number
+        netProfit: number
+        itmPercentage: number
+        roiPercentage: number
+        points: number
+        firstPlaces: number
+        finalTables: number
+        averageFinish: number
+        totalItm: number
+      }[]
+      totalPlayers: number
+      period: string
+    }
+  }>(
+    LEADERBOARD_QUERY_NEW,
+    variables,
+    { cache: true }
   )
 }
 

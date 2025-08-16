@@ -49,13 +49,22 @@
       <section class="pp-section">
         <IonSegment v-model="selectedCategory" @ionChange="onCategoryChange" class="pp-segment">
           <IonSegmentButton value="upcoming" class="pp-segment-button">
-            <IonLabel>{{ t('events.categories.upcoming') }}</IonLabel>
+            <IonLabel>
+              {{ t('events.categories.upcoming') }}
+              <span class="pp-segment-count">({{ tournamentCounts.upcoming }})</span>
+            </IonLabel>
           </IonSegmentButton>
           <IonSegmentButton value="live" class="pp-segment-button">
-            <IonLabel>{{ t('events.categories.live') }}</IonLabel>
+            <IonLabel>
+              {{ t('events.categories.live') }}
+              <span class="pp-segment-count">({{ tournamentCounts.live }})</span>
+            </IonLabel>
           </IonSegmentButton>
           <IonSegmentButton value="completed" class="pp-segment-button">
-            <IonLabel>{{ t('events.categories.completed') }}</IonLabel>
+            <IonLabel>
+              {{ t('events.categories.completed') }}
+              <span class="pp-segment-count">({{ tournamentCounts.completed }})</span>
+            </IonLabel>
           </IonSegmentButton>
         </IonSegment>
       </section>
@@ -85,7 +94,7 @@
                   :class="getStatusClass(tournament.status)"
                   class="pp-status-badge"
                 >
-                  {{ t(`events.status.${tournament.status}`) }}
+                  {{ tournament.liveStatus ? t(`events.status.${tournament.liveStatus.toLowerCase()}`) : t(`events.status.${tournament.status.toLowerCase()}`) }}
                 </IonBadge>
               </div>
             </div>
@@ -121,14 +130,14 @@
                 </div>
                 <div class="pp-detail-item">
                   <IonIcon :icon="trophyOutline" class="pp-detail-icon" />
-                  <span class="pp-detail-text">{{ t('events.guarantee') }} {{ tournament.guarantee }}</span>
+                  <span class="pp-detail-text">{{ tournament.guarantee }}</span>
                 </div>
               </div>
             </div>
 
             <!-- Tournament Actions -->
-            <div class="pp-tournament-actions">
-              <div class="pp-tournament-spots">
+            <div class="pp-tournament-actions" :class="{ 'pp-actions-completed': tournament.status === 'completed' }">
+              <div v-if="tournament.status !== 'completed'" class="pp-tournament-spots">
                 <span v-if="tournament.spotsLeft > 0" class="pp-spots-text">
                   {{ t('events.spotsLeft', { count: tournament.spotsLeft }) }}
                 </span>
@@ -136,14 +145,6 @@
               </div>
               
               <div class="pp-action-buttons">
-                <IonButton 
-                  fill="clear" 
-                  size="small" 
-                  @click.stop="shareTournament(tournament)"
-                  class="pp-button-secondary"
-                >
-                  <IonIcon :icon="shareOutline" />
-                </IonButton>
                 <!-- Registration button for authenticated users -->
                 <IonButton 
                   v-if="isAuthenticated && tournament.status === 'upcoming' && tournament.spotsLeft > 0"
@@ -249,7 +250,6 @@ import {
   layersOutline,
   peopleOutline,
   trophyOutline,
-  shareOutline,
   alertCircleOutline,
 } from 'ionicons/icons'
 import { ref, computed, watch } from 'vue'
@@ -257,7 +257,7 @@ import { useAuth } from '~/composables/useAuth'
 import { useTournaments } from '~/composables/usePokerAPI'
 
 // Use custom i18n composable
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 // Authentication state
 const { isAuthenticated } = useAuth()
@@ -272,14 +272,8 @@ const clubStore = useClubStore()
 
 // Tournament query variables
 const tournamentVariables = computed(() => {
-  const now = new Date()
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  const weekFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)
-  
   return {
     clubId: clubStore.selectedClub?.id,
-    from: today.toISOString(),
-    to: weekFromNow.toISOString(),
     limit: 50,
     offset: 0
   }
@@ -302,30 +296,49 @@ const filters = [
 const tournaments = computed(() => {
   if (!tournamentsData.value?.tournaments) return []
   
-  // Map API data to display format with mock data for missing fields
-  return tournamentsData.value.tournaments.map((tournament, index) => ({
-    id: tournament.id,
-    name: tournament.title,
-    title: tournament.title,
-    type: ['deepstack', 'turbo', 'freezeout', 'bounty'][index % 4], // Mock type
-    status: index % 3 === 0 ? 'upcoming' : index % 3 === 1 ? 'live' : 'completed',
-    club: tournament.club.name,
-    clubId: tournament.club.id,
-    city: tournament.club.city,
-    startTime: new Date(Date.now() + (index * 24 * 60 * 60 * 1000)), // Mock start time
-    buyIn: `${(index + 1) * 25 + 25}€`, // Mock buy-in
-    structure: ['20k/20min', '25k/15min', '50k/30min', '25k/25min'][index % 4],
-    registered: Math.floor(Math.random() * 50) + 10,
-    maxPlayers: [60, 40, 50, 80][index % 4],
-    spotsLeft: Math.floor(Math.random() * 20),
-    guarantee: `${(index + 1) * 1000 + 1000}€`,
-    isRegistered: Math.random() > 0.7
-  }))
+  // Map API data to display format using status property directly
+  return tournamentsData.value.tournaments.map((tournament, index) => {
+    // Convert ENUM status to lowercase for UI
+    const uiStatus = tournament.status.toLowerCase() as 'upcoming' | 'in_progress' | 'completed'
+    
+    return {
+      id: tournament.id,
+      name: tournament.title,
+      title: tournament.title,
+      type: ['deepstack', 'turbo', 'freezeout', 'bounty'][index % 4], // Mock type until we have type in API
+      status: uiStatus === 'in_progress' ? 'live' : uiStatus, // Map IN_PROGRESS to 'live' for UI
+      liveStatus: tournament.liveStatus, // Keep original liveStatus for detail page
+      club: tournament.club.name,
+      clubId: tournament.club.id,
+      city: tournament.club.city,
+      startTime: new Date(tournament.startTime),
+      endTime: tournament.endTime ? new Date(tournament.endTime) : null,
+      buyIn: `€${tournament.buyInCents / 100}`,
+      structure: ['20k/20min', '25k/15min', '50k/30min', '25k/25min'][index % 4], // Mock until we have structure
+      registered: Math.floor(Math.random() * 50) + 10, // Mock until we have registration count
+      maxPlayers: tournament.seatCap,
+      spotsLeft: Math.max(0, tournament.seatCap - (Math.floor(Math.random() * 50) + 10)), // Mock calculation
+      guarantee: `${Math.floor(tournament.buyInCents * tournament.seatCap * 0.9 / 100)}€ GTD`,
+      isRegistered: Math.random() > 0.7, // Mock until we have user registration status
+      description: tournament.description
+    }
+  })
 })
 
 // Watch for club changes and refetch
 watch(() => clubStore.selectedClub, () => {
   refetchTournaments()
+})
+
+// Tournament counts by category
+const tournamentCounts = computed(() => {
+  if (tournamentsLoading.value || !tournaments.value) return { upcoming: 0, live: 0, completed: 0 }
+  
+  return {
+    upcoming: tournaments.value.filter(t => t.status === 'upcoming').length,
+    live: tournaments.value.filter(t => t.status === 'live').length,
+    completed: tournaments.value.filter(t => t.status === 'completed').length
+  }
 })
 
 // Computed properties
@@ -389,7 +402,7 @@ const getStatusClass = (status: string) => {
 }
 
 const formatDate = (date: Date) => {
-  return date.toLocaleDateString('en-GB', { 
+  return date.toLocaleDateString(locale.value, { 
     weekday: 'short', 
     day: 'numeric', 
     month: 'short' 
@@ -397,7 +410,7 @@ const formatDate = (date: Date) => {
 }
 
 const formatTime = (date: Date) => {
-  return date.toLocaleTimeString('en-GB', { 
+  return date.toLocaleTimeString(locale.value, { 
     hour: '2-digit', 
     minute: '2-digit' 
   })
@@ -437,10 +450,6 @@ const registerTournament = (tournament: any) => {
   }
 }
 
-const shareTournament = (tournament: any) => {
-  // Share tournament functionality
-  console.log('Share tournament:', tournament.id)
-}
 
 const viewLive = (tournament: any) => {
   // Navigate to live tournament view
@@ -551,6 +560,13 @@ const viewResults = (tournament: any) => {
   --background-checked: #fee78a;
   font-size: 14px;
   font-weight: 500;
+}
+
+.pp-segment-count {
+  opacity: 0.7;
+  font-size: 12px;
+  font-weight: 400;
+  margin-left: 4px;
 }
 
 /* Tournament Cards */
@@ -685,6 +701,10 @@ const viewResults = (tournament: any) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.pp-actions-completed {
+  justify-content: flex-end;
 }
 
 .pp-spots-text {
