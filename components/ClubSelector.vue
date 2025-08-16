@@ -5,9 +5,11 @@
       class="pp-club-button"
       @click="showModal = true"
     >
-      <IonIcon :icon="locationOutline" />
-      <span class="pp-club-name">{{ selectedClub?.name || 'Select Club' }}</span>
-      <IonIcon :icon="chevronDownOutline" />
+      <div class="pp-club-left">
+        <IonIcon :icon="locationOutline" />
+        <span class="pp-club-name">{{ clubStore.selectedClubName }}</span>
+      </div>
+      <IonIcon :icon="chevronDownOutline" class="pp-club-arrow" />
     </IonButton>
 
     <!-- Club Selection Modal -->
@@ -26,10 +28,10 @@
       <IonContent class="pp-modal-content">
         <div class="pp-club-list">
           <div 
-            v-for="club in clubs" 
+            v-for="club in clubStore.clubs" 
             :key="club.id"
             class="pp-club-option"
-            :class="{ 'pp-club-selected': selectedClub?.id === club.id }"
+            :class="{ 'pp-club-selected': clubStore.selectedClub?.id === club.id }"
             @click="selectClub(club)"
           >
             <div class="pp-club-info">
@@ -42,7 +44,7 @@
               </div>
             </div>
             <IonIcon 
-              v-if="selectedClub?.id === club.id"
+              v-if="clubStore.selectedClub?.id === club.id"
               :icon="checkmarkCircleOutline" 
               class="pp-club-check"
             />
@@ -71,39 +73,34 @@ import {
   businessOutline,
   checkmarkCircleOutline,
 } from 'ionicons/icons'
-import { ref, computed } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useClubs } from '~/composables/usePokerAPI'
-
-// Props
-interface Club {
-  id: string
-  name: string
-  city: string
-}
-
-const props = defineProps<{
-  modelValue?: Club | null
-}>()
-
-const emit = defineEmits<{
-  'update:modelValue': [club: Club | null]
-}>()
+import { useClubStore, type Club } from '~/stores/useClubStore'
 
 // Reactive data
 const showModal = ref(false)
 
-// Dynamic clubs
+// Store
+const clubStore = useClubStore()
+
+// Dynamic clubs from API
 const { clubs } = useClubs()
 
-// Computed
-const selectedClub = computed({
-  get: () => props.modelValue,
-  set: (value) => emit('update:modelValue', value)
+// Watch for clubs changes and update store
+watch(clubs, (newClubs) => {
+  if (newClubs && newClubs.length > 0) {
+    clubStore.setClubs(newClubs)
+  }
+}, { immediate: true })
+
+// Initialize store from localStorage on mount
+onMounted(() => {
+  clubStore.initializeFromStorage()
 })
 
 // Methods
 const selectClub = (club: Club) => {
-  selectedClub.value = club
+  clubStore.setSelectedClub(club)
   showModal.value = false
 }
 </script>
@@ -124,6 +121,8 @@ const selectClub = (club: Club) => {
   display: flex;
   align-items: center;
   gap: 8px;
+  justify-content: space-between;
+  position: relative;
 }
 
 .pp-club-button:hover {
@@ -132,11 +131,25 @@ const selectClub = (club: Club) => {
   --background: rgba(254, 231, 138, 0.1);
 }
 
+.pp-club-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
 .pp-club-name {
-  max-width: 140px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex: 1;
+  text-align: left;
+}
+
+.pp-club-arrow {
+  flex-shrink: 0;
+  margin-left: 8px;
 }
 
 /* Modal */
@@ -145,16 +158,21 @@ const selectClub = (club: Club) => {
 }
 
 .pp-modal-header {
-  --background: #24242a;
+  --background: #18181a !important;
+  background: #18181a !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .pp-modal-toolbar {
-  --background: transparent;
-  --border-color: #54545f;
+  --background: #18181a !important;
+  background: #18181a !important;
+  --border-color: #24242a;
+  border-bottom: 1px solid #24242a;
 }
 
 .pp-modal-title {
-  color: #fee78a;
+  color: #e2e8f0 !important;
   font-weight: 700;
   font-size: 18px;
 }
@@ -263,8 +281,14 @@ const selectClub = (club: Club) => {
 
 /* Responsive Design */
 @media (max-width: 480px) {
-  .pp-club-name {
-    max-width: 100px;
+  .pp-club-button {
+    --padding-start: 10px;
+    --padding-end: 10px;
+    gap: 6px;
+  }
+  
+  .pp-club-left {
+    gap: 6px;
   }
   
   .pp-club-option {
