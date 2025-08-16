@@ -12,11 +12,7 @@
             </IonToolbar>
             <IonToolbar class="pp-sub-toolbar">
                 <IonButtons slot="start">
-                    <IonButton id="club-select-trigger" class="pp-club-button">
-                        <IonIcon :icon="locationOutline" />
-                        <span class="pp-club-name">{{ activeClub?.name || $t('home.selectClub') }}</span>
-                        <IonIcon :icon="chevronDownOutline" />
-                    </IonButton>
+                    <ClubSelector />
                 </IonButtons>
                 <IonButtons slot="end">
                     <IonButton @click="refresh()" class="pp-header-button">
@@ -44,9 +40,9 @@
                                 : $t('home.explorePocketPair')
                               }}
                             </h2>
-                            <p v-if="isAuthenticated && activeClub?.name" class="pp-club-info">
+                            <p v-if="isAuthenticated && clubStore.selectedClub?.name" class="pp-club-info">
                                 <IonIcon :icon="locationOutline" />
-                                {{ activeClub?.name }}
+                                {{ clubStore.selectedClub?.name }}
                             </p>
                             <p v-else class="pp-club-info">
                                 <IonIcon :icon="locationOutline" />
@@ -247,17 +243,6 @@
                 </div>
             </section>
 
-            <!-- Premium Club Popover -->
-            <IonPopover trigger="club-select-trigger" :dismissOnSelect="true" class="pp-popover">
-                <IonContent class="pp-popover-content">
-                    <div class="pp-popover-items">
-                        <div v-for="c in clubs" :key="c.id" class="pp-popover-item" @click="setActiveClub(c)">
-                            <span class="pp-popover-text">{{ c.name }}</span>
-                            <IonIcon v-if="activeClub?.id === c.id" :icon="checkmarkOutline" class="pp-popover-check" />
-                        </div>
-                    </div>
-                </IonContent>
-            </IonPopover>
 
             <!-- Language Selector Popover -->
             <IonPopover trigger="language-trigger" :dismissOnSelect="true" class="pp-popover">
@@ -303,6 +288,9 @@ import {
     IonTitle,
     IonToolbar,
 } from '@ionic/vue'
+import ClubSelector from '~/components/ClubSelector.vue'
+import { useClubStore } from '~/stores/useClubStore'
+import { useTournaments } from '~/composables/usePokerAPI'
 import {
     calendarNumberOutline,
     calendarOutline,
@@ -364,25 +352,45 @@ const username = computed(() => {
   return 'Guest' // Fallback for guests
 })
 
-const activeClub = ref<any>(null)
+// Club store
+const clubStore = useClubStore()
 
-const setActiveClub = (c: any) => { activeClub.value = c }
-
-// Set first club as active when clubs are loaded
-watch(clubs, (newClubs) => {
-  if (newClubs.length > 0 && !activeClub.value) {
-    activeClub.value = newClubs[0]
+// Tournament query variables
+const tournamentVariables = computed(() => {
+  const now = new Date()
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const weekFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)
+  
+  return {
+    clubId: clubStore.selectedClub?.id,
+    from: today.toISOString(),
+    to: weekFromNow.toISOString(),
+    limit: 3,
+    offset: 0
   }
-}, { immediate: true })
+})
+
+// Fetch tournaments from API
+const { data: tournamentsData, loading: tournamentsLoading } = useTournaments(tournamentVariables)
 
 // KPIs specific to the connected player
 const kpis = ref({ itm: 34, roi: 18, cashes: 12 })
 
-const nextTournaments = ref([
-    { id: 't1', name: 'Tuesday Deepstack', date: 'Tue · 19:00', buyIn: '50€', structure: '20k/20m', spotsLeft: 8, full: false },
-    { id: 't2', name: 'Weekend Freezeout', date: 'Fri · 20:00', buyIn: '70€', structure: '25k/25m', spotsLeft: 0, full: true },
-    { id: 't3', name: 'Monthly Main', date: 'Sat · 18:00', buyIn: '150€', structure: '50k/30m', spotsLeft: 3, full: false },
-])
+// Get next tournaments from API
+const nextTournaments = computed(() => {
+  if (!tournamentsData.value?.tournaments) return []
+  
+  // Map API data to display format with mock data for missing fields
+  return tournamentsData.value.tournaments.slice(0, 3).map((tournament, index) => ({
+    id: tournament.id,
+    name: tournament.title,
+    date: new Date(Date.now() + (index + 1) * 24 * 60 * 60 * 1000).toLocaleDateString('en-GB', { weekday: 'short', hour: '2-digit', minute: '2-digit' }),
+    buyIn: `${(index + 1) * 25 + 25}€`,
+    structure: ['20k/20m', '25k/25m', '50k/30m'][index % 3],
+    spotsLeft: Math.floor(Math.random() * 10),
+    full: Math.random() > 0.7
+  }))
+})
 
 const recentResults = ref([
     { id: 'r1', tournament: 'Tuesday Deepstack', date: 'Aug 05', place: 2, buyIn: 50, cash: 320, profit: 270 },

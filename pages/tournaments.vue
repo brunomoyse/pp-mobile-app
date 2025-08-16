@@ -11,7 +11,7 @@
         </IonButtons>
       </IonToolbar>
       <IonToolbar class="pp-sub-toolbar">
-        <ClubSelector v-model="selectedClub" />
+        <ClubSelector />
       </IonToolbar>
     </IonHeader>
 
@@ -72,12 +72,12 @@
             <!-- Tournament Header -->
             <div class="pp-tournament-header">
               <div class="pp-tournament-info">
-                <h3 class="pp-tournament-name">{{ tournament.name }}</h3>
+                <h3 class="pp-tournament-name">{{ tournament.title || tournament.name }}</h3>
                 <div class="pp-tournament-meta">
-                  <IonChip class="pp-tournament-type" :class="`pp-type-${tournament.type}`">
+                  <IonChip v-if="tournament.type" class="pp-tournament-type" :class="`pp-type-${tournament.type}`">
                     <IonLabel>{{ t(`events.types.${tournament.type}`) }}</IonLabel>
                   </IonChip>
-                  <span class="pp-tournament-club">{{ tournament.club }}</span>
+                  <span class="pp-tournament-club">{{ tournament.club || tournament.club?.name }}</span>
                 </div>
               </div>
               <div class="pp-tournament-status">
@@ -192,8 +192,24 @@
           </div>
         </div>
 
+        <!-- Loading State -->
+        <div v-if="tournamentsLoading" class="pp-loading-state">
+          <IonSpinner name="dots" class="pp-loading-spinner" />
+          <p class="pp-loading-text">Loading tournaments...</p>
+        </div>
+        
+        <!-- Error State -->
+        <div v-else-if="tournamentsError" class="pp-error-state">
+          <IonIcon :icon="alertCircleOutline" class="pp-error-icon" />
+          <h3 class="pp-error-title">Error loading tournaments</h3>
+          <p class="pp-error-text">Please try again later</p>
+          <IonButton @click="refetchTournaments" class="pp-retry-button">
+            Retry
+          </IonButton>
+        </div>
+        
         <!-- Empty State -->
-        <div v-if="filteredTournaments.length === 0" class="pp-empty-state">
+        <div v-else-if="filteredTournaments.length === 0" class="pp-empty-state">
           <IonIcon :icon="calendarOutline" class="pp-empty-icon" />
           <h3 class="pp-empty-title">{{ t('events.empty.title') }}</h3>
           <p class="pp-empty-text">{{ t('events.empty.subtitle') }}</p>
@@ -221,8 +237,10 @@ import {
   IonSegment,
   IonSegmentButton,
   IonBadge,
+  IonSpinner,
 } from '@ionic/vue'
 import ClubSelector from '@/components/ClubSelector.vue'
+import { useClubStore } from '~/stores/useClubStore'
 import {
   optionsOutline,
   calendarOutline,
@@ -232,9 +250,11 @@ import {
   peopleOutline,
   trophyOutline,
   shareOutline,
+  alertCircleOutline,
 } from 'ionicons/icons'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useAuth } from '~/composables/useAuth'
+import { useTournaments } from '~/composables/usePokerAPI'
 
 // Use custom i18n composable
 const { t } = useI18n()
@@ -247,7 +267,26 @@ const searchQuery = ref('')
 const showFilters = ref(false)
 const selectedCategory = ref<'upcoming' | 'live' | 'completed'>('upcoming')
 const selectedFilters = ref<string[]>([])
-const selectedClub = ref(null)
+// Club store
+const clubStore = useClubStore()
+
+// Tournament query variables
+const tournamentVariables = computed(() => {
+  const now = new Date()
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const weekFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)
+  
+  return {
+    clubId: clubStore.selectedClub?.id,
+    from: today.toISOString(),
+    to: weekFromNow.toISOString(),
+    limit: 50,
+    offset: 0
+  }
+})
+
+// Fetch tournaments from API
+const { data: tournamentsData, loading: tournamentsLoading, error: tournamentsError, refetch: refetchTournaments } = useTournaments(tournamentVariables)
 
 // Filter options
 const filters = [
@@ -259,87 +298,40 @@ const filters = [
   { key: 'freezeout', label: 'Freezeout' },
 ]
 
-// Mock tournament data
-const tournaments = ref([
-  {
-    id: 'T001',
-    name: 'Tuesday Night Deepstack',
-    type: 'deepstack',
-    status: 'upcoming',
-    club: 'Pokah Room Antwerp',
-    startTime: new Date('2025-08-13T19:00:00'),
-    buyIn: '50€',
-    structure: '20k/20min',
-    registered: 24,
-    maxPlayers: 60,
-    spotsLeft: 36,
-    guarantee: '2.000€',
-    isRegistered: false
-  },
-  {
-    id: 'T002', 
-    name: 'Wednesday Turbo Live',
-    type: 'turbo',
-    status: 'live',
-    club: 'Liège Poker Club',
-    startTime: new Date('2025-08-14T20:30:00'),
-    buyIn: '75€',
-    structure: '25k/15min',
-    registered: 52,
-    maxPlayers: 60,
-    spotsLeft: 0,
-    guarantee: '4.500€',
-    isRegistered: true
-  },
-  {
-    id: 'T003',
-    name: 'Weekend Main Event',
-    type: 'freezeout',
-    status: 'upcoming', 
-    club: 'Pokah Room Antwerp',
-    startTime: new Date('2025-08-16T18:00:00'),
-    buyIn: '150€',
-    structure: '50k/30min',
-    registered: 45,
-    maxPlayers: 50,
-    spotsLeft: 5,
-    guarantee: '7.500€',
-    isRegistered: false
-  },
-  {
-    id: 'T004',
-    name: 'Thursday Bounty Hunter',
-    type: 'bounty',
-    status: 'live',
-    club: 'Pokah Room Antwerp',
-    startTime: new Date('2025-08-12T19:00:00'),
-    buyIn: '75€',
-    structure: '25k/25min',
-    registered: 32,
-    maxPlayers: 40,
-    spotsLeft: 0,
-    guarantee: '3.000€',
-    isRegistered: true
-  },
-  {
-    id: 'T005',
-    name: 'Monday Night Special',
-    type: 'deepstack',
-    status: 'completed',
-    club: 'Liège Poker Club',
-    startTime: new Date('2025-08-11T19:30:00'),
-    buyIn: '40€',
-    structure: '20k/20min',
-    registered: 28,
-    maxPlayers: 30,
-    spotsLeft: 0,
-    guarantee: '1.200€',
-    isRegistered: false
-  }
-])
+// Get tournaments from API
+const tournaments = computed(() => {
+  if (!tournamentsData.value?.tournaments) return []
+  
+  // Map API data to display format with mock data for missing fields
+  return tournamentsData.value.tournaments.map((tournament, index) => ({
+    id: tournament.id,
+    name: tournament.title,
+    title: tournament.title,
+    type: ['deepstack', 'turbo', 'freezeout', 'bounty'][index % 4], // Mock type
+    status: index % 3 === 0 ? 'upcoming' : index % 3 === 1 ? 'live' : 'completed',
+    club: tournament.club.name,
+    clubId: tournament.club.id,
+    city: tournament.club.city,
+    startTime: new Date(Date.now() + (index * 24 * 60 * 60 * 1000)), // Mock start time
+    buyIn: `${(index + 1) * 25 + 25}€`, // Mock buy-in
+    structure: ['20k/20min', '25k/15min', '50k/30min', '25k/25min'][index % 4],
+    registered: Math.floor(Math.random() * 50) + 10,
+    maxPlayers: [60, 40, 50, 80][index % 4],
+    spotsLeft: Math.floor(Math.random() * 20),
+    guarantee: `${(index + 1) * 1000 + 1000}€`,
+    isRegistered: Math.random() > 0.7
+  }))
+})
+
+// Watch for club changes and refetch
+watch(() => clubStore.selectedClub, () => {
+  refetchTournaments()
+})
 
 // Computed properties
 const filteredTournaments = computed(() => {
+  if (tournamentsLoading.value) return []
+  
   let filtered = tournaments.value.filter(t => t.status === selectedCategory.value)
   
   // Apply search filter
@@ -412,7 +404,11 @@ const formatTime = (date: Date) => {
 }
 
 const handleRefresh = async (ev: CustomEvent) => {
-  setTimeout(() => { (ev.target as any)?.complete?.() }, 1000)
+  try {
+    await refetchTournaments()
+  } finally {
+    ;(ev.target as any)?.complete?.()
+  }
 }
 
 const viewTournament = (tournament: any) => {
@@ -746,6 +742,59 @@ const viewResults = (tournament: any) => {
   border-radius: 8px;
   --padding-start: 16px;
   --padding-end: 16px;
+}
+
+/* Loading State */
+.pp-loading-state {
+  text-align: center;
+  padding: 48px 24px;
+}
+
+.pp-loading-spinner {
+  --color: #fee78a;
+  font-size: 32px;
+  margin-bottom: 16px;
+}
+
+.pp-loading-text {
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 400;
+  margin: 0;
+}
+
+/* Error State */
+.pp-error-state {
+  text-align: center;
+  padding: 48px 24px;
+}
+
+.pp-error-icon {
+  color: #ef4444;
+  font-size: 64px;
+  margin-bottom: 16px;
+}
+
+.pp-error-title {
+  color: #ef4444;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+
+.pp-error-text {
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 400;
+  margin: 0 0 16px 0;
+}
+
+.pp-retry-button {
+  --background: linear-gradient(135deg, #64748b, #475569);
+  --color: white;
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: 8px;
 }
 
 /* Empty State */
