@@ -3,11 +3,6 @@
     <!-- Header -->
     <IonHeader :translucent="true" class="pp-header">
       <IonToolbar class="pp-toolbar">
-        <IonButtons v-if="isAuthenticated" slot="end">
-          <IonButton class="pp-header-button" @click="showSettings = !showSettings">
-            <IonIcon :icon="settingsOutline" />
-          </IonButton>
-        </IonButtons>
       </IonToolbar>
     </IonHeader>
 
@@ -179,7 +174,7 @@
       </section>
 
       <!-- Settings Panel -->
-      <section class="pp-settings-section" v-if="showSettings && isAuthenticated">
+      <section class="pp-settings-section" v-if="isAuthenticated">
         <h2 class="pp-section-title">Settings</h2>
         <div class="pp-settings-list">
           <div class="pp-setting-item" @click="editProfile">
@@ -207,31 +202,6 @@
             />
           </div>
 
-          <div class="pp-setting-item">
-            <div class="pp-setting-icon">
-              <IonIcon :icon="moonOutline" />
-            </div>
-            <div class="pp-setting-content">
-              <div class="pp-setting-title">Dark Mode</div>
-              <div class="pp-setting-subtitle">Always enabled</div>
-            </div>
-            <IonToggle 
-              :checked="true" 
-              disabled
-              class="pp-toggle"
-            />
-          </div>
-
-          <div class="pp-setting-item" @click="shareProfile">
-            <div class="pp-setting-icon">
-              <IonIcon :icon="shareOutline" />
-            </div>
-            <div class="pp-setting-content">
-              <div class="pp-setting-title">Share Profile</div>
-              <div class="pp-setting-subtitle">Share with friends</div>
-            </div>
-            <IonIcon :icon="chevronForwardOutline" class="pp-chevron" />
-          </div>
 
           <div class="pp-setting-item" @click="logout">
             <div class="pp-setting-icon pp-logout-icon">
@@ -262,9 +232,9 @@ import {
   IonRefresherContent,
   IonAvatar,
   IonToggle,
+  IonModal,
 } from '@ionic/vue'
 import {
-  settingsOutline,
   cameraOutline,
   checkmarkCircleOutline,
   starOutline,
@@ -279,13 +249,11 @@ import {
   peopleOutline,
   personOutline,
   notificationsOutline,
-  moonOutline,
-  shareOutline,
   logOutOutline,
 } from 'ionicons/icons'
 import { ref, computed, onMounted } from 'vue'
 import { useAuth } from '~/composables/useAuth'
-import { useCurrentUser } from '~/composables/usePokerAPI'
+import { useCurrentUser, useProfileUpdate } from '~/composables/usePokerAPI'
 import avatarUrl from '@/assets/images/jmvdb.png'
 
 // Use custom i18n composable
@@ -297,23 +265,35 @@ const { isAuthenticated, currentUser, logout: authLogout } = useAuth()
 
 // User data from API
 const { data: apiUserData, loading: userLoading, refetch: refetchUser } = useCurrentUser()
+const { mutate: updateProfile, loading: updating, error: updateError } = useProfileUpdate()
 
 // Reactive data
-const showSettings = ref(false)
+const showEditProfile = ref(false)
 const notificationsEnabled = ref(true)
 
 // User profile data - fallback to mock data for demo
 const userProfile = computed(() => {
-  if (isAuthenticated.value && (currentUser.value || apiUserData.value?.user)) {
-    const user = currentUser.value || apiUserData.value?.user
+  if (isAuthenticated.value && (currentUser.value || apiUserData.value?.me)) {
+    const user = currentUser.value || apiUserData.value?.me
+    
+    // Calculate display name based on preference
+    let displayName = user.username
+    if (user.display_preference === 'real_name' && user.first_name && user.last_name) {
+      displayName = `${user.first_name} ${user.last_name}`
+    } else if (user.display_preference === 'both' && user.first_name && user.last_name && user.username) {
+      displayName = `${user.first_name} "${user.username}" ${user.last_name}`
+    } else if (user.display_name) {
+      displayName = user.display_name
+    }
+    
     return {
-      username: user.username,
+      username: displayName,
       avatar: user.avatar || avatarUrl,
-      memberSince: new Date(user.memberSince),
-      verified: user.verified,
-      vipLevel: user.vipLevel,
+      memberSince: new Date(user.created_at || '2023-01-15'),
+      verified: user.is_active,
+      vipLevel: null,
       email: user.email,
-      club: user.club,
+      club: null,
     }
   }
   
@@ -370,12 +350,21 @@ const viewFriends = () => {
 }
 
 const editProfile = () => {
-  console.log('Edit profile')
+  showEditProfile.value = true
 }
 
-const shareProfile = () => {
-  console.log('Share profile')
+const handleProfileSave = async (profileData: any) => {
+  try {
+    const result = await updateProfile({ input: profileData })
+    if (result) {
+      showEditProfile.value = false
+      await refetchUser()
+    }
+  } catch (error) {
+    console.error('Profile update failed:', error)
+  }
 }
+
 
 const logout = async () => {
   try {
@@ -736,6 +725,13 @@ const formatCurrency = (amount: number) => {
 @keyframes pulse {
   0%, 100% { opacity: 0.3; }
   50% { opacity: 0.6; }
+}
+
+/* Modal Styles */
+.pp-edit-modal {
+  --width: 100%;
+  --height: 100%;
+  --border-radius: 0;
 }
 
 /* Responsive Design */

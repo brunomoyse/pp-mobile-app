@@ -139,7 +139,45 @@
     "empty": {
       "title": "No Tournaments Found",
       "subtitle": "Try adjusting your filters or check back later"
-    }
+    },
+    "dateTime": "Date & Time",
+    "structure": "Structure",
+    "players": "Players",
+    "registration": "Registration",
+    "registrationCloses": "Registration Closes",
+    "blindsStructure": "Blinds Structure",
+    "level": "Level",
+    "smallBlind": "Small Blind",
+    "bigBlind": "Big Blind",
+    "ante": "Ante",
+    "duration": "Duration",
+    "minutes": "{count} min",
+    "tournamentClock": "Tournament Clock",
+    "timeRemaining": "Time Remaining",
+    "smallBigBlind": "Small / Big Blind",
+    "nextLevel": "Next Level",
+    "tableAssignment": "Table Assignment",
+    "viewAllTables": "View All Tables",
+    "table": "Table",
+    "seat": "Seat",
+    "chipStack": "Chip Stack",
+    "moreTables": "+{count} more tables",
+    "playersLeft": "Players Left",
+    "averageStack": "Average Stack",
+    "prizePool": "Prize Pool",
+    "finalResults": "Final Results",
+    "completed": "Completed",
+    "totalPlayers": "Total Players",
+    "yourResult": "Your Result",
+    "payout": "Payout",
+    "noPayout": "No payout",
+    "netProfit": "Net Profit",
+    "completeResults": "Complete Results",
+    "showLess": "Show Less",
+    "showAll": "Show All",
+    "position": "Position",
+    "player": "Player",
+    "loadingDetails": "Loading tournament details..."
   },
   "mySeats": {
     "title": "My Seats",
@@ -152,7 +190,30 @@
       "upcoming": "Upcoming",
       "live": "Live",
       "completed": "Completed"
-    }
+    },
+    "categories": {
+      "upcoming": "Upcoming",
+      "live": "Live",
+      "completed": "Completed"
+    },
+    "types": {
+      "deepstack": "Deepstack",
+      "turbo": "Turbo",
+      "bounty": "Bounty"
+    },
+    "status": {
+      "upcoming": "Upcoming",
+      "live": "Live",
+      "completed": "Completed"
+    },
+    "modify": "Modify",
+    "buyIn": "Buy-in",
+    "tableNotAssigned": "Table not assigned",
+    "registeredOn": "Registered on",
+    "investment": "Investment",
+    "viewLive": "View Live",
+    "viewResult": "View Result",
+    "position": "Position"
   },
   "leaderboard": {
     "title": "Leaderboard",
@@ -185,6 +246,26 @@
       "title": "No Rankings Available",
       "subtitle": "Check back later for updated rankings"
     }
+  },
+  "profile": {
+    "editProfile": "Edit Profile",
+    "personalInfo": "Personal Information",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "username": "Username",
+    "email": "Email",
+    "phone": "Phone",
+    "displayPreferences": "Display Preferences",
+    "displayName": "Display Name",
+    "realName": "Real Name",
+    "both": "Both",
+    "preview": "Preview",
+    "howYourNameAppears": "How your name will appear",
+    "save": "Save Changes",
+    "cancel": "Cancel",
+    "saving": "Saving...",
+    "profileUpdated": "Profile updated successfully",
+    "errorUpdating": "Error updating profile"
   },
   "common": {
     "ok": "OK",
