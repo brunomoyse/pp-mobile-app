@@ -55,34 +55,42 @@ export interface GraphQLMutationResult<T = any> {
 export interface User {
   id: string
   email: string
-  firstName: string
-  lastName: string
   username: string
+  first_name: string
+  last_name: string
   phone: string
-  isActive: boolean
+  is_active: boolean
   role: string
+  created_at: string
+  updated_at: string
+  display_preference: 'real_name' | 'username' | 'both'
+  display_name?: string
 }
 
 export interface Club {
   id: string
   name: string
-  location: string
-  members: number
-  events: number
+  city: string
+  // Extended fields that might be needed
+  location?: string
+  members?: number
+  events?: number
   logo?: string
 }
 
 export interface Tournament {
   id: string
-  name: string
-  type: string
-  status: 'upcoming' | 'live' | 'completed'
-  buyIn: number
-  startTime: string
+  title: string
+  club: Club
+  // Extended fields that might be needed for display
+  name?: string
+  type?: string
+  status?: 'upcoming' | 'live' | 'completed'
+  buyIn?: number
+  startTime?: string
   endTime?: string
   maxPlayers?: number
-  registeredPlayers: number
-  club: Club
+  registeredPlayers?: number
   prizePool?: number
   structure?: string
 }

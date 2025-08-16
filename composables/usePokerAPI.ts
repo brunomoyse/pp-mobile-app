@@ -11,24 +11,14 @@ import type {
 
 // GraphQL Queries
 const TOURNAMENTS_QUERY = `
-  query GetTournaments($clubId: ID, $status: String, $limit: Int, $offset: Int) {
-    tournaments(clubId: $clubId, status: $status, limit: $limit, offset: $offset) {
+  query ListTournaments($clubId: UUID, $from: DateTime, $to: DateTime, $limit: Int, $offset: Int) {
+    tournaments(clubId: $clubId, from: $from, to: $to, limit: $limit, offset: $offset) {
       id
-      name
-      type
-      status
-      buyIn
-      startTime
-      endTime
-      maxPlayers
-      registeredPlayers
-      prizePool
-      structure
+      title
       club {
         id
         name
-        location
-        logo
+        city
       }
     }
   }
@@ -61,21 +51,38 @@ const TOURNAMENT_QUERY = `
   }
 `
 
+const ME_QUERY = `
+  query GetMe {
+    me {
+      id
+      email
+      username
+      first_name
+      last_name
+      phone
+      is_active
+      role
+      created_at
+      updated_at
+      display_preference
+      display_name
+    }
+  }
+`
+
 const USER_PROFILE_QUERY = `
   query GetUserProfile($id: ID!) {
     user(id: $id) {
       id
-      username
       email
-      avatar
-      verified
-      vipLevel
-      memberSince
-      club {
-        id
-        name
-        location
-      }
+      username
+      first_name
+      last_name
+      phone
+      is_active
+      role
+      created_at
+      updated_at
     }
   }
 `
@@ -117,10 +124,15 @@ const LEADERBOARD_QUERY = `
       trend
       user {
         id
+        email
         username
-        avatar
-        verified
-        vipLevel
+        first_name
+        last_name
+        phone
+        is_active
+        role
+        created_at
+        updated_at
       }
       club {
         id
@@ -168,16 +180,15 @@ const USERS_SEARCH_QUERY = `
   query SearchUsers($query: String!, $clubId: ID, $limit: Int) {
     searchUsers(query: $query, clubId: $clubId, limit: $limit) {
       id
+      email
       username
-      avatar
-      verified
-      vipLevel
-      totalWins
-      totalWinnings
-      club {
-        id
-        name
-      }
+      first_name
+      last_name
+      phone
+      is_active
+      role
+      created_at
+      updated_at
     }
   }
 `
@@ -225,20 +236,24 @@ const UPDATE_PROFILE_MUTATION = `
   mutation UpdateProfile($input: UpdateProfileInput!) {
     updateProfile(input: $input) {
       id
-      username
       email
-      avatar
-      club {
-        id
-        name
-      }
+      username
+      first_name
+      last_name
+      phone
+      is_active
+      role
+      created_at
+      updated_at
+      display_preference
+      display_name
     }
   }
 `
 
 // Composables for specific API operations
 
-export function useTournaments(variables?: Ref<{ clubId?: string; status?: string; limit?: number; offset?: number }>) {
+export function useTournaments(variables?: Ref<{ clubId?: string; from?: string; to?: string; limit?: number; offset?: number }>) {
   return useGraphQLQuery<{ tournaments: Tournament[] }>(
     TOURNAMENTS_QUERY,
     variables,
@@ -254,6 +269,14 @@ export function useTournament(tournamentId: Ref<string> | string) {
   return useGraphQLQuery<{ tournament: Tournament }>(
     TOURNAMENT_QUERY,
     variables,
+    { cache: true }
+  )
+}
+
+export function useMe() {
+  return useGraphQLQuery<{ me: User }>(
+    ME_QUERY,
+    undefined,
     { cache: true }
   )
 }
@@ -379,27 +402,26 @@ export function useCurrentUser() {
     }
   }
 
-  // Extract user ID from token (assuming JWT)
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]))
-    return useUserProfile(payload.sub || payload.userId)
-  } catch {
-    return {
-      data: ref(null),
-      loading: ref(false),
-      error: ref([{ message: 'Invalid token' }]),
-      refetch: () => Promise.resolve(),
-      refresh: () => Promise.resolve(),
-    }
+  // Use the me query instead of extracting user ID from token
+  const result = useMe()
+  
+  return {
+    data: computed(() => result.data.value?.me || null),
+    loading: result.loading,
+    error: result.error,
+    refetch: result.refetch,
+    refresh: result.refresh,
   }
 }
 
-export function usePaginatedTournaments(clubId?: Ref<string | undefined>) {
+export function usePaginatedTournaments(clubId?: Ref<string | undefined>, dateRange?: Ref<{ from?: string; to?: string }>) {
   const page = ref(1)
   const limit = 20
   
   const variables = computed(() => ({
     clubId: clubId?.value,
+    from: dateRange?.value?.from,
+    to: dateRange?.value?.to,
     offset: (page.value - 1) * limit,
     limit,
   }))
