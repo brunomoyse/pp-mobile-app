@@ -5,6 +5,7 @@ import nl from '~/i18n/locales/nl.json'
 
 export default defineNuxtPlugin(({ vueApp }) => {
   const i18n = createI18n({
+    legacy: false, // Use Composition API mode
     globalInjection: true,
     locale: 'en',
     fallbackLocale: 'en',

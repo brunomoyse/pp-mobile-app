@@ -10,7 +10,7 @@
         </IonButtons>
       </IonToolbar>
       <IonToolbar class="pp-sub-toolbar">
-        <ClubSelector v-model="selectedClub" />
+        <ClubSelector />
       </IonToolbar>
     </IonHeader>
 
@@ -222,6 +222,7 @@ import {
 } from 'ionicons/icons'
 import { ref, computed, watch } from 'vue'
 import ClubSelector from '@/components/ClubSelector.vue'
+import { useClubStore } from '~/stores/useClubStore'
 import { usePaginatedTournaments, useTournamentRegistration } from '@/composables/usePokerAPI'
 import type { Tournament } from '@/types/graphql'
 
@@ -233,7 +234,7 @@ const searchQuery = ref('')
 const showFilters = ref(false)
 const selectedCategory = ref<'upcoming' | 'live' | 'completed'>('upcoming')
 const selectedFilters = ref<string[]>([])
-const selectedClub = ref(null)
+const clubStore = useClubStore()
 
 // Filter options
 const filters = [
@@ -245,7 +246,7 @@ const filters = [
 ]
 
 // GraphQL Data Fetching
-const clubIdRef = computed(() => selectedClub.value?.id)
+const clubIdRef = computed(() => clubStore.selectedClub?.id)
 
 const {
   data: tournamentsData,
@@ -367,7 +368,7 @@ const formatCurrency = (amount: number) => {
 }
 
 // Watch for club changes to refetch data
-watch(selectedClub, () => {
+watch(() => clubStore.selectedClub, () => {
   refreshTournaments()
 })
 </script>

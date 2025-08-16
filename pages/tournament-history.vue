@@ -11,7 +11,7 @@
         <IonTitle class="pp-title">Tournament History</IonTitle>
       </IonToolbar>
       <IonToolbar class="pp-sub-toolbar">
-        <ClubSelector v-model="selectedClub" />
+        <ClubSelector />
       </IonToolbar>
     </IonHeader>
 
@@ -109,6 +109,7 @@ import {
   IonRefresherContent,
 } from '@ionic/vue'
 import ClubSelector from '@/components/ClubSelector.vue'
+import { useClubStore } from '~/stores/useClubStore'
 import {
   arrowBackOutline,
   trophyOutline,
@@ -123,7 +124,7 @@ definePageMeta({
 const { t } = useI18n()
 
 // Club selector
-const selectedClub = ref(null)
+const clubStore = useClubStore()
 
 // Tournament history data
 const historyStats = ref({

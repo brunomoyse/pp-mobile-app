@@ -16,7 +16,7 @@
         </IonButtons>
       </IonToolbar>
       <IonToolbar class="pp-sub-toolbar">
-        <ClubSelector v-model="selectedClub" />
+        <ClubSelector />
       </IonToolbar>
     </IonHeader>
 
@@ -173,6 +173,7 @@ import {
   IonBadge,
 } from '@ionic/vue'
 import ClubSelector from '@/components/ClubSelector.vue'
+import { useClubStore } from '~/stores/useClubStore'
 import {
   arrowBackOutline,
   optionsOutline,
@@ -197,7 +198,7 @@ const { t } = useI18n()
 // Reactive data
 const showFilters = ref(false)
 const searchQuery = ref('')
-const selectedClub = ref(null)
+const clubStore = useClubStore()
 const selectedClubFilter = ref('all')
 const selectedCategory = ref('discover')
 const followingIds = ref<number[]>([2, 5, 7])

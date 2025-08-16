@@ -11,7 +11,7 @@
         </IonButtons>
       </IonToolbar>
       <IonToolbar class="pp-sub-toolbar">
-        <ClubSelector v-model="selectedClub" />
+        <ClubSelector />
       </IonToolbar>
     </IonHeader>
 
@@ -232,6 +232,7 @@ import {
   IonBadge,
 } from '@ionic/vue'
 import ClubSelector from '@/components/ClubSelector.vue'
+import { useClubStore } from '~/stores/useClubStore'
 import {
   optionsOutline,
   calendarOutline,
@@ -256,7 +257,7 @@ const { t } = useI18n()
 const showFilters = ref(false)
 const selectedCategory = ref<'upcoming' | 'live' | 'completed'>('upcoming')
 const selectedFilters = ref<string[]>([])
-const selectedClub = ref(null)
+const clubStore = useClubStore()
 
 // Filter options
 const filters = [

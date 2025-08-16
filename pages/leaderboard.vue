@@ -11,7 +11,7 @@
         </IonButtons>
       </IonToolbar>
       <IonToolbar class="pp-sub-toolbar">
-        <ClubSelector v-model="selectedClub" />
+        <ClubSelector />
       </IonToolbar>
     </IonHeader>
 
@@ -243,6 +243,7 @@ import {
   IonSegmentButton,
 } from '@ionic/vue'
 import ClubSelector from '@/components/ClubSelector.vue'
+import { useClubStore } from '~/stores/useClubStore'
 import {
   optionsOutline,
   trendingUpOutline,
@@ -415,13 +416,8 @@ const allPlayers = ref([
 ])
 
 // Available clubs for filtering
-const availableClubs = ref([
-  'All Clubs',
-  'Pokah Room Antwerp',
-  'Liège Poker Club', 
-  'Brussels Poker Club'
-])
-const selectedClub = ref('All Clubs')
+// Club store
+const clubStore = useClubStore()
 
 // Computed properties
 const filteredPlayers = computed(() => {

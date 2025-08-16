@@ -4,29 +4,33 @@
       <IonRouterOutlet />
       
       <!-- Premium Bottom Navigation -->
-      <IonTabBar slot="bottom" class="pp-tabbar" :selectedTab="currentTab">
-        <IonTabButton tab="index" @click="navigateTo('/')" class="pp-tab-button">
+      <IonTabBar slot="bottom" class="pp-tabbar">
+        <IonTabButton tab="home" href="/" class="pp-tab-button">
           <IonIcon :icon="homeOutline" />
           <IonLabel>{{ t('nav.home') }}</IonLabel>
         </IonTabButton>
-        <IonTabButton tab="tournaments" @click="navigateTo('/tournaments')" class="pp-tab-button">
+        <IonTabButton tab="tournaments" href="/tournaments" class="pp-tab-button">
           <IonIcon :icon="calendarOutline" />
           <IonLabel>{{ t('nav.events') }}</IonLabel>
         </IonTabButton>
         <IonTabButton 
           tab="registrations" 
-          @click="handleRegistrationsClick" 
+          :href="isAuthenticated ? '/registrations' : '/login'"
           class="pp-tab-button"
           :class="{ 'pp-tab-disabled': !isAuthenticated }"
         >
           <IonIcon :icon="fileTrayFullOutline" />
-          <IonLabel>{{ isAuthenticated ? t('nav.mySeats') : t('nav.mySeats') }}</IonLabel>
+          <IonLabel>{{ t('nav.mySeats') }}</IonLabel>
         </IonTabButton>
-        <IonTabButton tab="leaderboard" @click="navigateTo('/leaderboard')" class="pp-tab-button">
+        <IonTabButton tab="leaderboard" href="/leaderboard" class="pp-tab-button">
           <IonIcon :icon="trophyOutline" />
           <IonLabel>{{ t('nav.leaders') }}</IonLabel>
         </IonTabButton>
-        <IonTabButton tab="profile" @click="handleProfileClick" class="pp-tab-button">
+        <IonTabButton 
+          tab="profile" 
+          :href="isAuthenticated ? '/profile' : '/login'" 
+          class="pp-tab-button"
+        >
           <IonIcon :icon="isAuthenticated ? personCircleOutline : logInOutline" />
           <IonLabel>{{ isAuthenticated ? t('nav.me') : t('nav.login') }}</IonLabel>
         </IonTabButton>
@@ -59,38 +63,8 @@ import { useAuth } from '~/composables/useAuth'
 const { t } = useI18n()
 const router = useRouter()
 
-// Auth state
+// Authentication state
 const { isAuthenticated } = useAuth()
-
-// Get current route to determine active tab
-const route = useRoute()
-const currentTab = computed(() => {
-  const path = route.path
-  if (path === '/') return 'index'
-  if (path.startsWith('/tournaments')) return 'tournaments'
-  if (path.startsWith('/registrations')) return 'registrations'
-  if (path.startsWith('/leaderboard')) return 'leaderboard'
-  if (path.startsWith('/profile')) return 'profile'
-  return 'index' // default fallback
-})
-
-// Handle profile/login click
-const handleProfileClick = () => {
-  if (isAuthenticated.value) {
-    navigateTo('/profile')
-  } else {
-    navigateTo('/login')
-  }
-}
-
-// Handle registrations click
-const handleRegistrationsClick = () => {
-  if (isAuthenticated.value) {
-    navigateTo('/registrations')
-  } else {
-    navigateTo('/login')
-  }
-}
 </script>
 
 <style>
