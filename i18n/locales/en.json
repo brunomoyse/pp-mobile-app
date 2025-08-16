@@ -171,6 +171,8 @@
     "moreTables": "+{count} more tables",
     "playersLeft": "Players Left",
     "stillInPlay": "Still in Play",
+    "breakTime": "Break Time",
+    "onBreak": "On Break",
     "averageStack": "Average Stack",
     "prizePool": "Prize Pool",
     "finalResults": "Final Results",

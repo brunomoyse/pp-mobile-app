@@ -172,6 +172,8 @@
     "moreTables": "+{count} meer tafels",
     "playersLeft": "Spelers Over",
     "stillInPlay": "Nog in Spel",
+    "breakTime": "Pauze Tijd",
+    "onBreak": "In Pauze",
     "averageStack": "Gemiddelde Stack",
     "prizePool": "Prize Pool",
     "finalResults": "Eindresultaten",

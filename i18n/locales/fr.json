@@ -172,6 +172,8 @@
     "moreTables": "+{count} tables de plus",
     "playersLeft": "Joueurs Restants",
     "stillInPlay": "Encore en Jeu",
+    "breakTime": "Temps de Pause",
+    "onBreak": "En Pause",
     "averageStack": "Tapis Moyen",
     "prizePool": "Prize Pool",
     "finalResults": "Résultats Finaux",

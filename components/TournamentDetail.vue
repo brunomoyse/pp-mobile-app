@@ -183,10 +183,12 @@
             <div class="pp-clock-display">
               <div class="pp-time-remaining">
                 <div class="pp-time-value">{{ formatTimeRemaining(timeRemaining) }}</div>
-                <div class="pp-time-label">{{ t('events.timeRemaining') }}</div>
+                <div class="pp-time-label">
+                  {{ currentLevel.isBreak ? t('events.breakTime') : t('events.timeRemaining') }}
+                </div>
               </div>
               
-              <div class="pp-current-blinds">
+              <div class="pp-current-blinds" v-if="!currentLevel.isBreak">
                 <div class="pp-blinds-current">
                   <span class="pp-sb-current">{{ currentLevel.smallBlind }}</span>
                   <span class="pp-blinds-separator">/</span>
@@ -196,6 +198,11 @@
                 <div v-if="currentLevel.ante" class="pp-ante-current">
                   {{ t('events.ante') }}: {{ currentLevel.ante }}
                 </div>
+              </div>
+              
+              <div class="pp-break-info" v-else>
+                <div class="pp-break-text">{{ t('events.onBreak') }}</div>
+                <div class="pp-break-label">{{ t('events.nextLevel') }}: {{ nextLevel.smallBlind }}/{{ nextLevel.bigBlind }}</div>
               </div>
             </div>
             
@@ -455,8 +462,8 @@ import {
   personOutline,
   alertCircleOutline,
 } from 'ionicons/icons'
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useTournament } from '~/composables/usePokerAPI'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { useTournament, useTournamentClock } from '~/composables/usePokerAPI'
 import { usePlayerAvatar } from '~/composables/usePlayerAvatar'
 
 // Props
@@ -478,6 +485,14 @@ const timer = ref<NodeJS.Timeout | null>(null)
 
 // Fetch tournament data from API
 const { data: tournamentData, loading: tournamentLoading, error: tournamentError, refetch: refetchTournament } = useTournament(props.tournamentId)
+
+// Subscribe to tournament clock updates
+const { 
+  data: clockData, 
+  connected: clockConnected, 
+  error: clockError,
+  sendConnectionInit: debugSendInit
+} = useTournamentClock(props.tournamentId)
 
 // Transform API data to component format
 const tournament = computed(() => {
@@ -544,21 +559,58 @@ const blindsStructure = ref([
   { level: 12, smallBlind: '1500', bigBlind: '3000', ante: '400', duration: '15' },
 ])
 
-// Live tournament data from API
+// Live tournament data from subscription or API fallback
 const currentLevel = computed(() => {
+  // Use subscription data if available
+  if (clockData.value?.tournamentClockUpdates) {
+    const clock = clockData.value.tournamentClockUpdates
+    return {
+      level: clock.currentLevel,
+      smallBlind: clock.smallBlind.toString(),
+      bigBlind: clock.bigBlind.toString(),
+      ante: clock.ante ? clock.ante.toString() : null,
+      isBreak: clock.isBreak
+    }
+  }
+  
+  // Fallback to liveState from API
   const liveState = tournament.value?.liveState
-  if (!liveState) return { level: 1, smallBlind: '25', bigBlind: '50', ante: null }
+  if (!liveState) return { level: 1, smallBlind: '25', bigBlind: '50', ante: null, isBreak: false }
   
   return {
     level: liveState.currentLevel,
     smallBlind: liveState.currentSmallBlind.toString(),
     bigBlind: liveState.currentBigBlind.toString(),
-    ante: liveState.currentAnte ? liveState.currentAnte.toString() : null
+    ante: liveState.currentAnte ? liveState.currentAnte.toString() : null,
+    isBreak: false // API doesn't provide break info, subscription does
   }
 })
 
-const nextLevel = ref({ level: 7, smallBlind: '300', bigBlind: '600', ante: '75' }) // Mock next level
-const timeRemaining = ref(8 * 60 + 23) // Mock time remaining
+const nextLevel = computed(() => {
+  // Use subscription data if available
+  if (clockData.value?.tournamentClockUpdates?.nextLevelPreview) {
+    const next = clockData.value.tournamentClockUpdates.nextLevelPreview
+    return {
+      level: next.levelNumber,
+      smallBlind: next.smallBlind.toString(),
+      bigBlind: next.bigBlind.toString(),
+      ante: next.ante ? next.ante.toString() : null
+    }
+  }
+  
+  // Mock fallback
+  return { level: 7, smallBlind: '300', bigBlind: '600', ante: '75' }
+})
+
+const timeRemaining = computed(() => {
+  // Use subscription data if available
+  if (clockData.value?.tournamentClockUpdates) {
+    return clockData.value.tournamentClockUpdates.timeRemainingSeconds
+  }
+  
+  // Mock fallback
+  return 8 * 60 + 23
+})
 
 // User seat from seating chart
 const userSeat = computed(() => {
@@ -710,23 +762,30 @@ const handleAvatarError = (event: Event) => {
   }
 }
 
-// Live clock updates
-const updateClock = () => {
-  if (tournament.value?.status === 'IN_PROGRESS' && timeRemaining.value > 0) {
-    timeRemaining.value--
-  }
-}
-
 onMounted(() => {
   console.log('Loading tournament with ID:', props.tournamentId)
+  console.log('Tournament clock subscription connected:', clockConnected.value)
   
-  // Start timer for live tournaments
-  if (tournament.value?.status === 'IN_PROGRESS') {
-    timer.value = setInterval(updateClock, 1000)
+  // Expose debug method to global scope for manual testing
+  if (process.client) {
+    // @ts-ignore
+    window.debugSendInit = debugSendInit
+    console.log('Debug method available: window.debugSendInit()')
   }
+  
+  // Watch for clock errors and log them
+  watch(clockError, (errors) => {
+    if (errors && errors.length > 0) {
+      console.error('🚨 Tournament clock subscription errors:', errors)
+      errors.forEach((err, index) => {
+        console.error(`🚨 Clock Error ${index + 1}:`, err)
+      })
+    }
+  }, { immediate: true })
 })
 
 onUnmounted(() => {
+  // Timer cleanup no longer needed since we use subscription
   if (timer.value) {
     clearInterval(timer.value)
   }
@@ -1128,6 +1187,26 @@ onUnmounted(() => {
 .pp-next-ante {
   color: #94a3b8;
   font-weight: 400;
+}
+
+/* Break Display */
+.pp-break-info {
+  text-align: center;
+}
+
+.pp-break-text {
+  color: #f59e0b;
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.pp-break-label {
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 /* Seating Chart */
