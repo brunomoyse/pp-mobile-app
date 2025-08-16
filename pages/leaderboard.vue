@@ -5,8 +5,8 @@
       <IonToolbar class="pp-toolbar">
         <IonTitle class="pp-title">{{ t('leaderboard.title') }}</IonTitle>
         <IonButtons slot="end">
-          <IonButton @click="showFilters = !showFilters" class="pp-header-button">
-            <IonIcon :icon="optionsOutline" />
+          <IonButton @click="showPointsInfo = true" class="pp-header-button">
+            <IonIcon :icon="informationCircleOutline" />
           </IonButton>
         </IonButtons>
       </IonToolbar>
@@ -97,19 +97,6 @@
         </div>
       </section>
 
-      <!-- Filter Pills -->
-      <section v-if="showFilters" class="pp-section">
-        <div class="pp-filters">
-          <IonChip 
-            v-for="filter in filters" 
-            :key="filter.key"
-            :class="selectedFilters.includes(filter.key) ? 'pp-chip-active' : 'pp-chip-inactive'"
-            @click="toggleFilter(filter.key)"
-          >
-            <IonLabel>{{ t(`leaderboard.filters.${filter.key}`) }}</IonLabel>
-          </IonChip>
-        </div>
-      </section>
 
       <!-- Leaderboard List -->
       <section class="pp-section">
@@ -119,7 +106,7 @@
           <div class="pp-podium-position pp-podium-second">
             <div class="pp-podium-rank">2</div>
             <IonAvatar class="pp-podium-avatar">
-              <img :src="topThreePlayers[1].avatar" :alt="topThreePlayers[1].name" />
+              <img :src="topThreePlayers[1].avatar" :alt="topThreePlayers[1].name" @error="handleAvatarError" />
             </IonAvatar>
             <div class="pp-podium-name">{{ topThreePlayers[1].name }}</div>
             <div class="pp-podium-points">{{ formatPoints(topThreePlayers[1].points) }}</div>
@@ -130,7 +117,7 @@
             <div class="pp-podium-crown">👑</div>
             <div class="pp-podium-rank">1</div>
             <IonAvatar class="pp-podium-avatar">
-              <img :src="topThreePlayers[0].avatar" :alt="topThreePlayers[0].name" />
+              <img :src="topThreePlayers[0].avatar" :alt="topThreePlayers[0].name" @error="handleAvatarError" />
             </IonAvatar>
             <div class="pp-podium-name">{{ topThreePlayers[0].name }}</div>
             <div class="pp-podium-points">{{ formatPoints(topThreePlayers[0].points) }}</div>
@@ -140,15 +127,31 @@
           <div class="pp-podium-position pp-podium-third">
             <div class="pp-podium-rank">3</div>
             <IonAvatar class="pp-podium-avatar">
-              <img :src="topThreePlayers[2].avatar" :alt="topThreePlayers[2].name" />
+              <img :src="topThreePlayers[2].avatar" :alt="topThreePlayers[2].name" @error="handleAvatarError" />
             </IonAvatar>
             <div class="pp-podium-name">{{ topThreePlayers[2].name }}</div>
             <div class="pp-podium-points">{{ formatPoints(topThreePlayers[2].points) }}</div>
           </div>
         </div>
 
+        <!-- Loading State -->
+        <div v-if="leaderboardLoading" class="pp-loading-state">
+          <IonSpinner name="dots" class="pp-loading-spinner" />
+          <p class="pp-loading-text">Loading leaderboard...</p>
+        </div>
+        
+        <!-- Error State -->
+        <div v-else-if="leaderboardError" class="pp-error-state">
+          <IonIcon :icon="alertCircleOutline" class="pp-error-icon" />
+          <h3 class="pp-error-title">Error loading leaderboard</h3>
+          <p class="pp-error-text">Please try again later</p>
+          <IonButton @click="refetchLeaderboard" class="pp-retry-button">
+            Retry
+          </IonButton>
+        </div>
+        
         <!-- Rest of Leaderboard -->
-        <div class="pp-leaderboard-list">
+        <div v-else class="pp-leaderboard-list">
           <div 
             v-for="(player, index) in remainingPlayers" 
             :key="player.id" 
@@ -171,25 +174,23 @@
 
             <div class="pp-player-info">
               <IonAvatar class="pp-player-avatar">
-                <img :src="player.avatar" :alt="player.name" />
+                <img :src="player.avatar" :alt="player.name" @error="handleAvatarError" />
               </IonAvatar>
               <div class="pp-player-details">
                 <h4 class="pp-player-name">
                   {{ player.name }}
-                  <IonIcon v-if="player.isVerified" :icon="checkmarkCircleOutline" class="pp-verified-icon" />
                 </h4>
                 <div class="pp-player-stats">
                   <span class="pp-player-stat">{{ player.tournaments }} {{ t('leaderboard.tournaments') }}</span>
                   <span class="pp-player-separator">•</span>
                   <span class="pp-player-stat">{{ player.winRate }}% {{ t('leaderboard.itm') }}</span>
-                  <span class="pp-player-separator">•</span>
-                  <span class="pp-player-stat">{{ player.club }}</span>
                 </div>
               </div>
             </div>
 
             <div class="pp-player-score">
               <div class="pp-score-main">{{ formatPoints(player.points) }}</div>
+              <div class="pp-score-label">{{ t('leaderboard.points') }}</div>
               <div class="pp-score-secondary">
                 <span v-if="selectedCategory === 'profit'" class="pp-profit" :class="player.profit >= 0 ? 'pp-profit-positive' : 'pp-profit-negative'">
                   {{ player.profit >= 0 ? '+' : '' }}{{ player.profit.toLocaleString('fr-BE', { maximumFractionDigits: 0 }) }}€
@@ -198,7 +199,7 @@
                   {{ player.volume.toLocaleString('fr-BE', { maximumFractionDigits: 0 }) }}€
                 </span>
                 <span v-else>
-                  {{ player.averageFinish }} {{ t('leaderboard.avgFinish') }}
+                  {{ player.tournaments }} {{ t('leaderboard.tournaments') }}
                 </span>
               </div>
             </div>
@@ -220,6 +221,63 @@
           <p class="pp-empty-text">{{ t('leaderboard.empty.subtitle') }}</p>
         </div>
       </section>
+
+      <!-- Points Info Modal -->
+      <IonModal :is-open="showPointsInfo" @did-dismiss="showPointsInfo = false" class="pp-info-modal">
+        <IonHeader class="pp-modal-header">
+          <IonToolbar class="pp-modal-toolbar">
+            <IonTitle class="pp-modal-title">{{ t('leaderboard.pointsCalculation.title') }}</IonTitle>
+            <IonButtons slot="end">
+              <IonButton @click="showPointsInfo = false" class="pp-modal-close">
+                <IonIcon :icon="closeOutline" />
+              </IonButton>
+            </IonButtons>
+          </IonToolbar>
+        </IonHeader>
+        
+        <IonContent class="pp-modal-content">
+          <div class="pp-info-content">
+            <h3 class="pp-info-title">{{ t('leaderboard.pointsCalculation.howCalculated') }}</h3>
+            
+            <div class="pp-formula-section">
+              <h4 class="pp-formula-title">{{ t('leaderboard.pointsCalculation.baseFormula') }}</h4>
+              <div class="pp-formula-box">
+                <code class="pp-formula">
+                  {{ t('leaderboard.pointsCalculation.formula') }}
+                </code>
+              </div>
+            </div>
+            
+            <div class="pp-factors-section">
+              <h4 class="pp-factors-title">{{ t('leaderboard.pointsCalculation.factors') }}</h4>
+              <ul class="pp-factors-list">
+                <li><strong>{{ t('leaderboard.pointsCalculation.fieldSize') }}</strong> {{ t('leaderboard.pointsCalculation.fieldSizeDesc') }}</li>
+                <li><strong>{{ t('leaderboard.pointsCalculation.buyinWeight') }}</strong> {{ t('leaderboard.pointsCalculation.buyinWeightDesc') }}</li>
+                <li><strong>{{ t('leaderboard.pointsCalculation.finishPosition') }}</strong> {{ t('leaderboard.pointsCalculation.finishPositionDesc') }}</li>
+                <li><strong>{{ t('leaderboard.pointsCalculation.itmBonus') }}</strong> {{ t('leaderboard.pointsCalculation.itmBonusDesc') }}</li>
+              </ul>
+            </div>
+            
+            <div class="pp-examples-section">
+              <h4 class="pp-examples-title">{{ t('leaderboard.pointsCalculation.examples') }}</h4>
+              <div class="pp-example">
+                <div class="pp-example-scenario">{{ t('leaderboard.pointsCalculation.example1Scenario') }}</div>
+                <div class="pp-example-calculation" v-html="t('leaderboard.pointsCalculation.example1Calculation')"></div>
+              </div>
+              <div class="pp-example">
+                <div class="pp-example-scenario">{{ t('leaderboard.pointsCalculation.example2Scenario') }}</div>
+                <div class="pp-example-calculation" v-html="t('leaderboard.pointsCalculation.example2Calculation')"></div>
+              </div>
+            </div>
+            
+            <div class="pp-note-section">
+              <p class="pp-note">
+                <strong>{{ t('common.note') }}:</strong> {{ t('leaderboard.pointsCalculation.note') }}
+              </p>
+            </div>
+          </div>
+        </IonContent>
+      </IonModal>
     </IonContent>
   </IonPage>
 </template>
@@ -241,19 +299,24 @@ import {
   IonLabel,
   IonSegment,
   IonSegmentButton,
+  IonSpinner,
+  IonModal,
 } from '@ionic/vue'
 import ClubSelector from '@/components/ClubSelector.vue'
 import { useClubStore } from '~/stores/useClubStore'
 import {
-  optionsOutline,
   trendingUpOutline,
   trendingDownOutline,
-  checkmarkCircleOutline,
   trophyOutline,
   chevronDownOutline,
+  alertCircleOutline,
+  informationCircleOutline,
+  closeOutline,
 } from 'ionicons/icons'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useAuth } from '~/composables/useAuth'
+import { useLeaderboardNew } from '~/composables/usePokerAPI'
+import { usePlayerAvatar } from '~/composables/usePlayerAvatar'
 import avatarUrl from '@/assets/images/jmvdb.png'
 
 // Use custom i18n composable
@@ -262,188 +325,86 @@ const { t } = useI18n()
 // Authentication state
 const { isAuthenticated } = useAuth()
 
+// Player avatar helper
+const { getPlayerAvatarWithFallback } = usePlayerAvatar()
+
 // Current user data
 const currentPlayerName = 'Jean-Marie'
 const currentPlayerRank = 7
 const currentPlayerPoints = 1250
 
 // Reactive data
-const showFilters = ref(false)
-const selectedPeriod = ref<'week' | 'month' | 'year' | 'allTime'>('month')
+const showPointsInfo = ref(false)
+const selectedPeriod = ref<'week' | 'month' | 'year' | 'allTime'>('allTime')
 const selectedCategory = ref<'overall' | 'profit' | 'volume'>('overall')
-const selectedFilters = ref<string[]>([])
 const displayLimit = ref(20)
 const hasMorePlayers = ref(true)
 
-// Filter options
-const filters = [
-  { key: 'verified', label: 'Verified Players' },
-  { key: 'club', label: 'Same Club' },
-  { key: 'highVolume', label: 'High Volume' },
-  { key: 'recent', label: 'Recently Active' },
-]
-
-// Mock leaderboard data
-const allPlayers = ref([
-  {
-    id: 'p1',
-    rank: 1,
-    name: 'Alexandre D.',
-    avatar: avatarUrl,
-    points: 2840,
-    profit: 12500,
-    volume: 45000,
-    tournaments: 28,
-    winRate: 42,
-    club: 'Pokah Room Antwerp',
-    rankChange: 0,
-    isVerified: true,
-    isCurrentUser: false,
-    averageFinish: 3.2
-  },
-  {
-    id: 'p2',
-    rank: 2,
-    name: 'Sophie M.',
-    avatar: avatarUrl,
-    points: 2650,
-    profit: 9800,
-    volume: 38000,
-    tournaments: 24,
-    winRate: 38,
-    club: 'Liège Poker Club',
-    rankChange: 1,
-    isVerified: true,
-    isCurrentUser: false,
-    averageFinish: 3.8
-  },
-  {
-    id: 'p3',
-    rank: 3,
-    name: 'Thomas B.',
-    avatar: avatarUrl,
-    points: 2420,
-    profit: 8200,
-    volume: 32000,
-    tournaments: 22,
-    winRate: 35,
-    club: 'Pokah Room Antwerp',
-    rankChange: -1,
-    isVerified: false,
-    isCurrentUser: false,
-    averageFinish: 4.1
-  },
-  {
-    id: 'p4',
-    rank: 4,
-    name: 'Marie L.',
-    avatar: avatarUrl,
-    points: 2180,
-    profit: 7600,
-    volume: 29000,
-    tournaments: 20,
-    winRate: 40,
-    club: 'Brussels Poker Club',
-    rankChange: 2,
-    isVerified: true,
-    isCurrentUser: false,
-    averageFinish: 3.5
-  },
-  {
-    id: 'p5',
-    rank: 5,
-    name: 'Pierre V.',
-    avatar: avatarUrl,
-    points: 1980,
-    profit: 6200,
-    volume: 26500,
-    tournaments: 19,
-    winRate: 32,
-    club: 'Liège Poker Club',
-    rankChange: 0,
-    isVerified: false,
-    isCurrentUser: false,
-    averageFinish: 4.8
-  },
-  {
-    id: 'p6',
-    rank: 6,
-    name: 'Emma R.',
-    avatar: avatarUrl,
-    points: 1750,
-    profit: 4800,
-    volume: 23000,
-    tournaments: 17,
-    winRate: 35,
-    club: 'Pokah Room Antwerp',
-    rankChange: -2,
-    isVerified: true,
-    isCurrentUser: false,
-    averageFinish: 4.2
-  },
-  {
-    id: 'p7',
-    rank: 7,
-    name: 'Jean-Marie',
-    avatar: avatarUrl,
-    points: 1250,
-    profit: 2700,
-    volume: 18500,
-    tournaments: 14,
-    winRate: 34,
-    club: 'Pokah Room Antwerp',
-    rankChange: 1,
-    isVerified: false,
-    isCurrentUser: true,
-    averageFinish: 4.5
-  },
-  {
-    id: 'p8',
-    rank: 8,
-    name: 'Lucas G.',
-    avatar: avatarUrl,
-    points: 1180,
-    profit: 2200,
-    volume: 16800,
-    tournaments: 13,
-    winRate: 31,
-    club: 'Brussels Poker Club',
-    rankChange: -1,
-    isVerified: false,
-    isCurrentUser: false,
-    averageFinish: 5.1
-  }
-])
-
-// Available clubs for filtering
 // Club store
 const clubStore = useClubStore()
 
+// Leaderboard query variables
+const leaderboardVariables = computed(() => {
+  const periodMap = {
+    'week': 'LAST_7_DAYS',
+    'month': 'LAST_30_DAYS', 
+    'year': 'LAST_YEAR',
+    'allTime': 'ALL_TIME'
+  }
+  
+  return {
+    period: periodMap[selectedPeriod.value] || 'ALL_TIME',
+    limit: 50,
+    clubId: clubStore.selectedClub?.id
+  }
+})
+
+// Fetch leaderboard from API
+const { data: leaderboardData, loading: leaderboardLoading, error: leaderboardError, refetch: refetchLeaderboard } = useLeaderboardNew(leaderboardVariables)
+
+
+// Get leaderboard data from API
+const allPlayers = computed(() => {
+  if (!leaderboardData.value?.leaderboard?.entries) return []
+  
+  return leaderboardData.value.leaderboard.entries.map((entry, index) => {
+    const user = entry.user
+    const displayName = user.firstName && user.lastName 
+      ? `${user.firstName} ${user.lastName.charAt(0)}.` 
+      : user.username
+    
+    return {
+      id: user.username,
+      userId: user.id, // Add user ID for avatar
+      rank: entry.rank,
+      name: displayName,
+      avatar: getPlayerAvatarWithFallback(user.id),
+      points: entry.points,
+      profit: entry.netProfit / 100, // Convert cents to euros
+      volume: entry.totalBuyIns / 100, // Convert cents to euros
+      tournaments: entry.totalTournaments,
+      winRate: Math.round(entry.itmPercentage),
+      club: 'Unknown Club', // Not in API response
+      rankChange: 0, // Not available from API
+      isVerified: user.isActive, // Use isActive as verified status
+      isCurrentUser: false, // Would need to check against current user
+      firstPlaces: entry.firstPlaces,
+      finalTables: entry.finalTables,
+      roi: Math.round(entry.roiPercentage),
+      averageFinish: entry.averageFinish,
+      totalItm: entry.totalItm
+    }
+  })
+})
+
+// Watch for club changes and refetch
+watch(() => clubStore.selectedClub, () => {
+  refetchLeaderboard()
+})
+
 // Computed properties
 const filteredPlayers = computed(() => {
-  let filtered = [...allPlayers.value]
-  
-  // Apply filters
-  if (selectedFilters.value.length > 0) {
-    filtered = filtered.filter(player => {
-      return selectedFilters.value.some(filter => {
-        switch(filter) {
-          case 'verified':
-            return player.isVerified
-          case 'club':
-            return player.club === 'Pokah Room Antwerp' // Current user's club
-          case 'highVolume':
-            return player.volume > 25000
-          case 'recent':
-            return player.tournaments >= 15
-          default:
-            return true
-        }
-      })
-    })
-  }
-
-  return filtered
+  return [...allPlayers.value]
 })
 
 const topThreePlayers = computed(() => {
@@ -455,18 +416,10 @@ const remainingPlayers = computed(() => {
 })
 
 // Methods
-const toggleFilter = (filterKey: string) => {
-  const index = selectedFilters.value.indexOf(filterKey)
-  if (index > -1) {
-    selectedFilters.value.splice(index, 1)
-  } else {
-    selectedFilters.value.push(filterKey)
-  }
-}
 
 const onPeriodChange = (e: CustomEvent) => {
   selectedPeriod.value = e.detail.value
-  // Here you would typically fetch new data based on the period
+  refetchLeaderboard()
 }
 
 const onCategoryChange = (e: CustomEvent) => {
@@ -486,8 +439,11 @@ const loadMorePlayers = () => {
 }
 
 const handleRefresh = async (ev: CustomEvent) => {
-  // Simulate data refresh
-  setTimeout(() => { (ev.target as any)?.complete?.() }, 1000)
+  try {
+    await refetchLeaderboard()
+  } finally {
+    ;(ev.target as any)?.complete?.()
+  }
 }
 
 const goToLogin = () => {
@@ -497,6 +453,17 @@ const goToLogin = () => {
 const viewPlayerProfile = (player: any) => {
   console.log('View player profile:', player.id)
   // Navigate to player profile page
+}
+
+const handleAvatarError = (event: Event) => {
+  const img = event.target as HTMLImageElement
+  // Try .png extension if .jpg failed
+  if (img.src.endsWith('.jpg')) {
+    img.src = img.src.replace('.jpg', '.png')
+  } else {
+    // Fallback to default avatar
+    img.src = avatarUrl
+  }
 }
 </script>
 
@@ -917,7 +884,17 @@ const viewPlayerProfile = (player: any) => {
   margin-bottom: 2px;
 }
 
+.pp-score-label {
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
 .pp-score-secondary {
+  color: #94a3b8;
   font-size: 11px;
   font-weight: 500;
 }
@@ -928,6 +905,59 @@ const viewPlayerProfile = (player: any) => {
 
 .pp-profit-negative {
   color: #ef4444;
+}
+
+/* Loading State */
+.pp-loading-state {
+  text-align: center;
+  padding: 48px 24px;
+}
+
+.pp-loading-spinner {
+  --color: #fee78a;
+  font-size: 32px;
+  margin-bottom: 16px;
+}
+
+.pp-loading-text {
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 400;
+  margin: 0;
+}
+
+/* Error State */
+.pp-error-state {
+  text-align: center;
+  padding: 48px 24px;
+}
+
+.pp-error-icon {
+  color: #ef4444;
+  font-size: 64px;
+  margin-bottom: 16px;
+}
+
+.pp-error-title {
+  color: #ef4444;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+
+.pp-error-text {
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 400;
+  margin: 0 0 16px 0;
+}
+
+.pp-retry-button {
+  --background: linear-gradient(135deg, #64748b, #475569);
+  --color: white;
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: 8px;
 }
 
 /* Load More */
@@ -967,5 +997,136 @@ const viewPlayerProfile = (player: any) => {
   font-size: 14px;
   font-weight: 400;
   margin: 0;
+}
+
+/* Points Info Modal */
+.pp-info-modal {
+  --backdrop-opacity: 0.6;
+}
+
+.pp-modal-header {
+  --background: #18181a !important;
+  background: #18181a !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.pp-modal-toolbar {
+  --background: #18181a !important;
+  background: #18181a !important;
+  --border-color: #24242a;
+  border-bottom: 1px solid #24242a;
+}
+
+.pp-modal-title {
+  color: #e2e8f0 !important;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.pp-modal-close {
+  --color: #54545f;
+  --color-hover: #fee78a;
+}
+
+.pp-modal-content {
+  --background: #18181a;
+}
+
+.pp-info-content {
+  padding: 20px;
+  color: #e2e8f0;
+}
+
+.pp-info-title {
+  color: #fee78a;
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 20px 0;
+}
+
+.pp-formula-section,
+.pp-factors-section,
+.pp-examples-section,
+.pp-note-section {
+  margin-bottom: 20px;
+}
+
+.pp-formula-title,
+.pp-factors-title,
+.pp-examples-title {
+  color: #fee78a;
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+}
+
+.pp-formula-box {
+  background: #24242a;
+  border: 1px solid #54545f;
+  border-radius: 8px;
+  padding: 12px;
+  margin: 8px 0;
+}
+
+.pp-formula {
+  color: #22c55e;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.pp-factors-list {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.pp-factors-list li {
+  color: #94a3b8;
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.pp-factors-list strong {
+  color: #e2e8f0;
+}
+
+.pp-example {
+  background: #24242a;
+  border: 1px solid #54545f;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 8px;
+}
+
+.pp-example-scenario {
+  color: #94a3b8;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.pp-example-calculation {
+  color: #e2e8f0;
+  font-size: 14px;
+  font-family: 'Courier New', monospace;
+}
+
+.pp-example-calculation strong {
+  color: #fee78a;
+}
+
+.pp-note {
+  color: #94a3b8;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
+  padding: 12px;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 8px;
+}
+
+.pp-note strong {
+  color: #22c55e;
 }
 </style>

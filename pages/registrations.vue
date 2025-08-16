@@ -93,7 +93,7 @@
                   :class="getStatusClass(registration.status)"
                   class="pp-status-badge"
                 >
-                  {{ t(`mySeats.status.${registration.status}`) }}
+                  {{ t(`mySeats.status.${registration.status.toLowerCase()}`) }}
                 </IonBadge>
               </div>
             </div>

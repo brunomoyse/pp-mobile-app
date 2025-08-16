@@ -104,7 +104,7 @@
                   :class="getStatusClass(tournament.status)"
                   class="pp-status-badge"
                 >
-                  {{ t(`events.status.${tournament.status}`) }}
+                  {{ t(`events.status.${tournament.status.toLowerCase()}`) }}
                 </IonBadge>
               </div>
             </div>

@@ -79,7 +79,7 @@
           >
             <div class="pp-player-info">
               <IonAvatar class="pp-player-avatar">
-                <img :src="player.avatar" :alt="player.username" />
+                <img :src="player.avatar" :alt="player.username" @error="handleAvatarError" />
               </IonAvatar>
               <div class="pp-player-details">
                 <div class="pp-player-header">
@@ -187,6 +187,7 @@ import {
 } from 'ionicons/icons'
 import { ref, computed, onMounted } from 'vue'
 import { useClubs } from '~/composables/usePokerAPI'
+import { usePlayerAvatar } from '~/composables/usePlayerAvatar'
 
 definePageMeta({
     middleware: 'auth'
@@ -195,13 +196,16 @@ definePageMeta({
 // Use custom i18n composable
 const { t } = useI18n()
 
+// Player avatar helper
+const { getPlayerAvatarWithFallback } = usePlayerAvatar()
+
 // Reactive data
 const showFilters = ref(false)
 const searchQuery = ref('')
 const clubStore = useClubStore()
 const selectedClubFilter = ref('all')
 const selectedCategory = ref('discover')
-const followingIds = ref<number[]>([2, 5, 7])
+const followingIds = ref<string[]>(['40404040-4040-4040-4040-404040404040', '70707070-7070-7070-7070-707070707070', '90909090-9090-9090-9090-909090909090'])
 
 // Dynamic clubs
 const { clubs: clubsData } = useClubs()
@@ -210,9 +214,9 @@ const clubs = computed(() => clubsData.value.map(club => club.name))
 // Players data
 const allPlayers = ref([
   {
-    id: 1,
+    id: '30303030-3030-3030-3030-303030303030',
     username: 'ElFish',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
+    avatar: getPlayerAvatarWithFallback('30303030-3030-3030-3030-303030303030'),
     club: 'Poker Palace',
     verified: true,
     vipLevel: 2,
@@ -221,9 +225,9 @@ const allPlayers = ref([
     recentAchievement: 'Won Sunday Million Qualifier',
   },
   {
-    id: 2,
+    id: '40404040-4040-4040-4040-404040404040',
     username: 'CardShark88',
-    avatar: 'https://images.unsplash.com/photo-1494790108755-2616b72a2fc9?w=150&h=150&fit=crop&crop=face',
+    avatar: getPlayerAvatarWithFallback('40404040-4040-4040-4040-404040404040'),
     club: 'Royal Flush Club',
     verified: false,
     vipLevel: 1,
@@ -232,9 +236,9 @@ const allPlayers = ref([
     recentAchievement: 'First place in Deep Stack',
   },
   {
-    id: 3,
+    id: '50505050-5050-5050-5050-505050505050',
     username: 'AllInAnna',
-    avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
+    avatar: getPlayerAvatarWithFallback('50505050-5050-5050-5050-505050505050'),
     club: 'Diamond Casino',
     verified: true,
     vipLevel: 3,
@@ -243,9 +247,9 @@ const allPlayers = ref([
     recentAchievement: 'Tournament Series Champion',
   },
   {
-    id: 4,
+    id: '60606060-6060-6060-6060-606060606060',
     username: 'BluffMaster',
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+    avatar: getPlayerAvatarWithFallback('60606060-6060-6060-6060-606060606060'),
     club: 'Golden Cards',
     verified: false,
     vipLevel: 0,
@@ -254,9 +258,9 @@ const allPlayers = ref([
     recentAchievement: null,
   },
   {
-    id: 5,
+    id: '70707070-7070-7070-7070-707070707070',
     username: 'RiverRat',
-    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face',
+    avatar: getPlayerAvatarWithFallback('70707070-7070-7070-7070-707070707070'),
     club: 'Ace High Society',
     verified: true,
     vipLevel: 2,
@@ -265,9 +269,9 @@ const allPlayers = ref([
     recentAchievement: 'High Roller Winner',
   },
   {
-    id: 6,
+    id: '80808080-8080-8080-8080-808080808080',
     username: 'FoldQueen',
-    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face',
+    avatar: getPlayerAvatarWithFallback('80808080-8080-8080-8080-808080808080'),
     club: 'Poker Palace',
     verified: false,
     vipLevel: 1,
@@ -276,9 +280,9 @@ const allPlayers = ref([
     recentAchievement: 'Turbo Champion',
   },
   {
-    id: 7,
+    id: '90909090-9090-9090-9090-909090909090',
     username: 'ChipLeader',
-    avatar: 'https://images.unsplash.com/photo-1507591064344-4c6ce005b128?w=150&h=150&fit=crop&crop=face',
+    avatar: getPlayerAvatarWithFallback('90909090-9090-9090-9090-909090909090'),
     club: 'Royal Flush Club',
     verified: true,
     vipLevel: 3,
@@ -287,9 +291,9 @@ const allPlayers = ref([
     recentAchievement: 'Monthly Leaderboard #1',
   },
   {
-    id: 8,
+    id: 'a0a0a0a0-a0a0-a0a0-a0a0-a0a0a0a0a0a0',
     username: 'TiltControl',
-    avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop&crop=face',
+    avatar: getPlayerAvatarWithFallback('a0a0a0a0-a0a0-a0a0-a0a0-a0a0a0a0a0a0'),
     club: 'Diamond Casino',
     verified: false,
     vipLevel: 0,
@@ -348,17 +352,17 @@ const onCategoryChange = (event: any) => {
   selectedCategory.value = event.detail.value
 }
 
-const isFollowing = (playerId: number) => {
+const isFollowing = (playerId: string) => {
   return followingIds.value.includes(playerId)
 }
 
-const followPlayer = (playerId: number) => {
+const followPlayer = (playerId: string) => {
   if (!followingIds.value.includes(playerId)) {
     followingIds.value.push(playerId)
   }
 }
 
-const unfollowPlayer = (playerId: number) => {
+const unfollowPlayer = (playerId: string) => {
   const index = followingIds.value.indexOf(playerId)
   if (index > -1) {
     followingIds.value.splice(index, 1)
@@ -367,6 +371,17 @@ const unfollowPlayer = (playerId: number) => {
 
 const formatCurrency = (amount: number) => {
   return `${amount.toLocaleString('fr-BE', { maximumFractionDigits: 0 })}€`
+}
+
+const handleAvatarError = (event: Event) => {
+  const img = event.target as HTMLImageElement
+  // Try .png extension if .jpg failed
+  if (img.src.endsWith('.jpg')) {
+    img.src = img.src.replace('.jpg', '.png')
+  } else {
+    // Fallback to default avatar
+    img.src = '/assets/images/jmvdb.png'
+  }
 }
 </script>
 

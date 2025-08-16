@@ -357,14 +357,8 @@ const clubStore = useClubStore()
 
 // Tournament query variables
 const tournamentVariables = computed(() => {
-  const now = new Date()
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  const weekFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)
-  
   return {
     clubId: clubStore.selectedClub?.id,
-    from: today.toISOString(),
-    to: weekFromNow.toISOString(),
     limit: 3,
     offset: 0
   }
