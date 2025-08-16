@@ -1,5 +1,5 @@
 import { computed, type Ref } from 'vue'
-import { useGraphQLQuery, useGraphQLMutation } from './useGraphQL'
+import { useGraphQLQuery, useGraphQLMutation, useGraphQLSubscription } from './useGraphQL'
 import type {
   User,
   Club,
@@ -302,6 +302,29 @@ const LEADERBOARD_QUERY_NEW = `
       }
       totalPlayers
       period
+    }
+  }
+`
+
+// GraphQL Subscriptions
+const TOURNAMENT_CLOCK_SUBSCRIPTION = `
+  subscription TournamentClockUpdates($tournamentId: UUID!) {
+    tournamentClockUpdates(tournamentId: $tournamentId) {
+      tournamentId
+      status
+      currentLevel
+      timeRemainingSeconds
+      smallBlind
+      bigBlind
+      ante
+      isBreak
+      nextLevelPreview {
+        levelNumber
+        smallBlind
+        bigBlind
+        ante
+        durationMinutes
+      }
     }
   }
 `
@@ -685,4 +708,37 @@ export function usePaginatedTournaments(clubId?: Ref<string | undefined>, dateRa
     hasNextPage,
     hasPrevPage,
   }
+}
+
+// Tournament Clock Subscription
+export function useTournamentClock(tournamentId: Ref<string> | string) {
+  const variables = computed(() => {
+    const id = isRef(tournamentId) ? tournamentId.value : tournamentId
+    console.log('🎯 Tournament clock subscription for ID:', id)
+    return { tournamentId: id }
+  })
+  
+  return useGraphQLSubscription<{
+    tournamentClockUpdates: {
+      tournamentId: string
+      status: string
+      currentLevel: number
+      timeRemainingSeconds: number
+      smallBlind: number
+      bigBlind: number
+      ante: number | null
+      isBreak: boolean
+      nextLevelPreview: {
+        levelNumber: number
+        smallBlind: number
+        bigBlind: number
+        ante: number | null
+        durationMinutes: number
+      }
+    }
+  }>(
+    TOURNAMENT_CLOCK_SUBSCRIPTION,
+    variables,
+    { immediate: true }
+  )
 }
