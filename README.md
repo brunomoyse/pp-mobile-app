@@ -103,7 +103,6 @@ pp-mobile/
 │   ├── css/
 │   │   └── main.css           # Global styles & Ionic variables
 │   └── images/
-│       └── jmvdb.png          # User avatar
 ├── composables/
 │   └── useI18n.ts             # Custom i18n composable
 ├── i18n/
