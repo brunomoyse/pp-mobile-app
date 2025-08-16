@@ -16,7 +16,7 @@
         <!-- Logo Section -->
         <div class="pp-logo-section">
           <div class="pp-logo">
-            <IonIcon :icon="diamondOutline" />
+            <img src="@/assets/icon-no-bg.png" alt="PocketPair" class="pp-logo-image" />
           </div>
           <h1 class="pp-app-title">PocketPair</h1>
           <p class="pp-app-subtitle">{{ t('auth.joinCommunity') }}</p>
@@ -138,8 +138,8 @@
               class="pp-checkbox"
               :disabled="isLoading"
             />
-            <IonLabel class="pp-terms-label">
-              {{ t('auth.agreeToTerms') }}
+            <div class="pp-terms-label">
+              <div>{{ t('auth.agreeToTerms') }}</div>
               <IonButton
                 fill="clear"
                 size="small"
@@ -149,7 +149,7 @@
               >
                 {{ t('auth.termsAndConditions') }}
               </IonButton>
-            </IonLabel>
+            </div>
           </div>
 
           <!-- Error Display -->
@@ -190,7 +190,7 @@
 
         <!-- Login Link -->
         <div class="pp-login-link">
-          <span>{{ t('auth.alreadyHaveAccount') }}</span>
+          <div>{{ t('auth.alreadyHaveAccount') }}</div>
           <IonButton
             fill="clear"
             @click="goToLogin"
@@ -201,17 +201,6 @@
           </IonButton>
         </div>
 
-        <!-- Guest Access -->
-        <div class="pp-guest-access">
-          <IonButton
-            fill="clear"
-            @click="continueAsGuest"
-            class="pp-guest-button"
-            :disabled="isLoading"
-          >
-            {{ t('auth.continueAsGuest') }}
-          </IonButton>
-        </div>
       </div>
     </IonContent>
   </IonPage>
@@ -230,13 +219,11 @@ import {
   IonItem,
   IonInput,
   IonCheckbox,
-  IonLabel,
   IonSpinner,
   alertController,
 } from '@ionic/vue'
 import {
   arrowBackOutline,
-  diamondOutline,
   personOutline,
   mailOutline,
   lockClosedOutline,
@@ -461,9 +448,6 @@ const goToLogin = () => {
   router.push('/login')
 }
 
-const continueAsGuest = () => {
-  router.replace('/')
-}
 
 // Error message helper
 const getErrorMessage = (errors: any[]): string => {
@@ -533,6 +517,12 @@ const getErrorMessage = (errors: any[]): string => {
   font-size: 35px;
   color: #18181a;
   box-shadow: 0 8px 32px rgba(254, 231, 138, 0.3);
+}
+
+.pp-logo-image {
+  width: 45px;
+  height: 45px;
+  object-fit: contain;
 }
 
 .pp-app-title {
@@ -665,6 +655,10 @@ const getErrorMessage = (errors: any[]): string => {
   color: #94a3b8;
   font-size: 12px;
   line-height: 1.4;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
 }
 
 .pp-terms-link {
@@ -756,8 +750,7 @@ const getErrorMessage = (errors: any[]): string => {
 }
 
 /* Links */
-.pp-login-link,
-.pp-guest-access {
+.pp-login-link {
   text-align: center;
   margin-bottom: 16px;
 }
@@ -765,6 +758,10 @@ const getErrorMessage = (errors: any[]): string => {
 .pp-login-link {
   color: #94a3b8;
   font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
 }
 
 .pp-link-button {
@@ -774,11 +771,6 @@ const getErrorMessage = (errors: any[]): string => {
   margin: 0;
 }
 
-.pp-guest-button {
-  --color: #64748b;
-  font-size: 14px;
-  margin: 0;
-}
 
 /* Responsive Design */
 @media (max-width: 480px) {
@@ -794,6 +786,11 @@ const getErrorMessage = (errors: any[]): string => {
     width: 60px;
     height: 60px;
     font-size: 30px;
+  }
+  
+  .pp-logo-image {
+    width: 38px;
+    height: 38px;
   }
   
   .pp-input-group {
