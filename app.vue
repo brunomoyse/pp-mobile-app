@@ -5,31 +5,47 @@
       
       <!-- Premium Bottom Navigation -->
       <IonTabBar slot="bottom" class="pp-tabbar">
-        <IonTabButton tab="home" href="/" class="pp-tab-button">
+        <IonTabButton 
+          tab="home" 
+          @click="navigateTo('/')"
+          class="pp-tab-button"
+          :class="{ 'tab-selected': route.path === '/' }"
+        >
           <IonIcon :icon="homeOutline" />
           <IonLabel>{{ t('nav.home') }}</IonLabel>
         </IonTabButton>
-        <IonTabButton tab="tournaments" href="/tournaments" class="pp-tab-button">
+        <IonTabButton 
+          tab="tournaments" 
+          @click="navigateTo('/tournaments')"
+          class="pp-tab-button"
+          :class="{ 'tab-selected': route.path === '/tournaments' }"
+        >
           <IonIcon :icon="calendarOutline" />
           <IonLabel>{{ t('nav.events') }}</IonLabel>
         </IonTabButton>
         <IonTabButton 
           tab="registrations" 
-          :href="isAuthenticated ? '/registrations' : '/login'"
+          @click="navigateTo(isAuthenticated ? '/registrations' : '/login')"
           class="pp-tab-button"
-          :class="{ 'pp-tab-disabled': !isAuthenticated }"
+          :class="{ 'tab-selected': route.path === '/registrations', 'pp-tab-disabled': !isAuthenticated }"
         >
           <IonIcon :icon="fileTrayFullOutline" />
           <IonLabel>{{ t('nav.mySeats') }}</IonLabel>
         </IonTabButton>
-        <IonTabButton tab="leaderboard" href="/leaderboard" class="pp-tab-button">
+        <IonTabButton 
+          tab="leaderboard" 
+          @click="navigateTo('/leaderboard')"
+          class="pp-tab-button"
+          :class="{ 'tab-selected': route.path === '/leaderboard' }"
+        >
           <IonIcon :icon="trophyOutline" />
           <IonLabel>{{ t('nav.leaders') }}</IonLabel>
         </IonTabButton>
         <IonTabButton 
           tab="profile" 
-          :href="isAuthenticated ? '/profile' : '/login'" 
+          @click="navigateTo(isAuthenticated ? '/profile' : '/login')"
           class="pp-tab-button"
+          :class="{ 'tab-selected': route.path === '/profile' || route.path === '/login' }"
         >
           <IonIcon :icon="isAuthenticated ? personCircleOutline : logInOutline" />
           <IonLabel>{{ isAuthenticated ? t('nav.me') : t('nav.login') }}</IonLabel>
@@ -62,6 +78,7 @@ import { useAuth } from '~/composables/useAuth'
 // Use custom i18n composable
 const { t } = useI18n()
 const router = useRouter()
+const route = useRoute()
 
 // Authentication state
 const { isAuthenticated } = useAuth()
