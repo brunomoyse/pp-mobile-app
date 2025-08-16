@@ -202,14 +202,20 @@
               
               <div class="pp-break-info" v-else>
                 <div class="pp-break-text">{{ t('events.onBreak') }}</div>
-                <div class="pp-break-label">{{ t('events.nextLevel') }}: {{ nextLevel.smallBlind }}/{{ nextLevel.bigBlind }}</div>
+                <div class="pp-break-label" v-if="!nextLevel.isBreak">
+                  {{ t('events.nextLevel') }}: {{ nextLevel.smallBlind }}/{{ nextLevel.bigBlind }}
+                </div>
+                <div class="pp-break-label" v-else>
+                  {{ t('events.nextLevel') }}: {{ t('events.break') }}
+                </div>
               </div>
             </div>
             
             <div class="pp-next-level">
               <span class="pp-next-label">{{ t('events.nextLevel') }}:</span>
-              <span class="pp-next-blinds">{{ nextLevel.smallBlind }}/{{ nextLevel.bigBlind }}</span>
-              <span v-if="nextLevel.ante" class="pp-next-ante">{{ t('events.ante') }}: {{ nextLevel.ante }}</span>
+              <span v-if="nextLevel.isBreak" class="pp-next-break">{{ t('events.break') }}</span>
+              <span v-else class="pp-next-blinds">{{ nextLevel.smallBlind }}/{{ nextLevel.bigBlind }}</span>
+              <span v-if="nextLevel.ante && !nextLevel.isBreak" class="pp-next-ante">{{ t('events.ante') }}: {{ nextLevel.ante }}</span>
             </div>
           </div>
 
@@ -502,6 +508,14 @@ const tournament = computed(() => {
   const liveState = tournamentData.value.tournamentComplete.liveState
   const totalRegistered = tournamentData.value.tournamentComplete.totalRegistered
   
+  // Debug logging to see what we're getting
+  console.log('📊 Tournament data debug:', {
+    title: data.title,
+    totalRegistered,
+    seatCap: data.seatCap,
+    registeredVsCapacity: `${totalRegistered}/${data.seatCap}`
+  })
+  
   return {
     id: data.id,
     name: data.title,
@@ -590,16 +604,21 @@ const nextLevel = computed(() => {
   // Use subscription data if available
   if (clockData.value?.tournamentClockUpdates?.nextLevelPreview) {
     const next = clockData.value.tournamentClockUpdates.nextLevelPreview
+    
+    // Check if next level is a break (blinds are 0/0 or specifically marked)
+    const isBreak = (next.smallBlind === 0 && next.bigBlind === 0) || next.levelNumber === 0
+    
     return {
       level: next.levelNumber,
       smallBlind: next.smallBlind.toString(),
       bigBlind: next.bigBlind.toString(),
-      ante: next.ante ? next.ante.toString() : null
+      ante: next.ante ? next.ante.toString() : null,
+      isBreak
     }
   }
   
   // Mock fallback
-  return { level: 7, smallBlind: '300', bigBlind: '600', ante: '75' }
+  return { level: 7, smallBlind: '300', bigBlind: '600', ante: '75', isBreak: false }
 })
 
 const timeRemaining = computed(() => {
@@ -763,25 +782,11 @@ const handleAvatarError = (event: Event) => {
 }
 
 onMounted(() => {
-  console.log('Loading tournament with ID:', props.tournamentId)
-  console.log('Tournament clock subscription connected:', clockConnected.value)
-  
   // Expose debug method to global scope for manual testing
   if (process.client) {
     // @ts-ignore
     window.debugSendInit = debugSendInit
-    console.log('Debug method available: window.debugSendInit()')
   }
-  
-  // Watch for clock errors and log them
-  watch(clockError, (errors) => {
-    if (errors && errors.length > 0) {
-      console.error('🚨 Tournament clock subscription errors:', errors)
-      errors.forEach((err, index) => {
-        console.error(`🚨 Clock Error ${index + 1}:`, err)
-      })
-    }
-  }, { immediate: true })
 })
 
 onUnmounted(() => {
@@ -1187,6 +1192,12 @@ onUnmounted(() => {
 .pp-next-ante {
   color: #94a3b8;
   font-weight: 400;
+}
+
+.pp-next-break {
+  color: #f59e0b;
+  font-weight: 600;
+  font-size: 14px;
 }
 
 /* Break Display */

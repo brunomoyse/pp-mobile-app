@@ -714,7 +714,6 @@ export function usePaginatedTournaments(clubId?: Ref<string | undefined>, dateRa
 export function useTournamentClock(tournamentId: Ref<string> | string) {
   const variables = computed(() => {
     const id = isRef(tournamentId) ? tournamentId.value : tournamentId
-    console.log('🎯 Tournament clock subscription for ID:', id)
     return { tournamentId: id }
   })
   
