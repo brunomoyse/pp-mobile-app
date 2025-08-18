@@ -11,14 +11,7 @@
                 </IonButtons>
             </IonToolbar>
             <IonToolbar class="pp-sub-toolbar">
-                <IonButtons slot="start">
-                    <ClubSelector />
-                </IonButtons>
-                <IonButtons slot="end">
-                    <IonButton @click="refresh()" class="pp-header-button">
-                        <IonIcon :icon="refreshOutline" />
-                    </IonButton>
-                </IonButtons>
+                <ClubSelector />
             </IonToolbar>
         </IonHeader>
 
@@ -365,7 +358,7 @@ const tournamentVariables = computed(() => {
 })
 
 // Fetch tournaments from API
-const { data: tournamentsData, loading: tournamentsLoading } = useTournaments(tournamentVariables)
+const { data: tournamentsData, loading: tournamentsLoading, refresh: refreshTournaments } = useTournaments(tournamentVariables)
 
 // KPIs specific to the connected player
 const kpis = ref({ itm: 34, roi: 18, cashes: 12 })
@@ -407,10 +400,21 @@ const onRangeChange = (e: CustomEvent) => { selectedRange.value = e.detail.value
 const currency = (n: number) => { return `${n.toLocaleString('fr-BE', { maximumFractionDigits: 0 })}€` }
 
 const handleRefresh = async (ev: CustomEvent) => {
-    setTimeout(() => { (ev.target as any)?.complete?.() }, 700)
+    // Refresh tournaments data
+    if (refreshTournaments) {
+        await refreshTournaments()
+    }
+    
+    // Complete the refresh animation
+    setTimeout(() => { (ev.target as any)?.complete?.() }, 100)
 }
 
-const refresh = () => { /* hook to your data reload */ }
+const refresh = async () => {
+    // Manual refresh from header button
+    if (refreshTournaments) {
+        await refreshTournaments()
+    }
+}
 const openProfile = () => { /* navigate to profile or open modal */ }
 const register = (t: any) => { /* call registration flow for tournament t */ }
 </script>

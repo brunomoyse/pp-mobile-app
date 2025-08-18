@@ -219,6 +219,30 @@
             </div>
           </div>
 
+          <!-- Blinds Structure -->
+          <div class="pp-blinds-card">
+            <h3 class="pp-section-title">
+              <IonIcon :icon="timerOutline" />
+              {{ t('events.blindsStructure') }}
+            </h3>
+            <div class="pp-blinds-table">
+              <div class="pp-blinds-header">
+                <span>{{ t('events.level') }}</span>
+                <span>{{ t('events.smallBlind') }}</span>
+                <span>{{ t('events.bigBlind') }}</span>
+                <span>{{ t('events.ante') }}</span>
+                <span>{{ t('events.duration') }}</span>
+              </div>
+              <div v-for="level in blindsStructure" :key="level.level" class="pp-blinds-row">
+                <span class="pp-level">{{ level.level }}</span>
+                <span class="pp-sb">{{ level.smallBlind }}</span>
+                <span class="pp-bb">{{ level.bigBlind }}</span>
+                <span class="pp-ante">{{ level.ante || '-' }}</span>
+                <span class="pp-duration">{{ t('events.minutes', { count: level.duration }) }}</span>
+              </div>
+            </div>
+          </div>
+
           <!-- Table Assignment Quick View -->
           <div class="pp-seating-card">
             <div class="pp-seating-header">
