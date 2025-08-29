@@ -221,6 +221,9 @@
       "bounty": "Bounty"
     },
     "status": {
+      "upcoming": "À venir",
+      "live": "En direct",
+      "completed": "Terminé",
       "not_started": "Pas commencé",
       "registration_open": "Inscriptions ouvertes",
       "late_registration": "Inscription tardive",

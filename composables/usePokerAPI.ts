@@ -33,56 +33,79 @@ const TOURNAMENTS_QUERY = `
   }
 `
 
-const TOURNAMENT_COMPLETE_QUERY = `
-  query GetCompleteTournamentData($tournamentId: UUID!) {
-    # Complete tournament data in one call
-    tournamentComplete(tournamentId: $tournamentId) {
-      # Static tournament data
-      tournament {
+const TOURNAMENT_QUERY = `
+  query GetTournament($id: UUID!) {
+    tournament(id: $id) {
+      id
+      title
+      description
+      startTime
+      endTime
+      buyInCents
+      status
+      liveStatus
+      structure {
         id
-        title
-        description
-        clubId
-        startTime
-        endTime
-        buyInCents
-        seatCap
+        tournamentId
+        levelNumber
+        smallBlind
+        bigBlind
+        ante
+        durationMinutes
+        isBreak
+        breakDurationMinutes
+      }
+      clock {
+        id
+        tournamentId
         status
-        liveStatus
-        createdAt
-        updatedAt
-        club {
+        currentLevel
+        timeRemainingSeconds
+        levelStartedAt
+        levelEndTime
+        totalPauseDurationSeconds
+        autoAdvance
+        currentStructure {
           id
-          name
-          city
+          tournamentId
+          levelNumber
+          smallBlind
+          bigBlind
+          ante
+          durationMinutes
+          isBreak
+          breakDurationMinutes
+        }
+        nextStructure {
+          id
+          tournamentId
+          levelNumber
+          smallBlind
+          bigBlind
+          ante
+          durationMinutes
+          isBreak
+          breakDurationMinutes
         }
       }
-
-      # Live state (clock, blinds, level info)
-      liveState {
+      registrations {
         id
-        currentLevel
-        playersRemaining
-        breakUntil
-        currentSmallBlind
-        currentBigBlind
-        currentAnte
-        levelStartedAt
-        levelDurationMinutes
-        createdAt
-        updatedAt
+        userId
+        registrationTime
+        status
+        notes
       }
-
-      # Registration count
-      totalRegistered
     }
+  }
+`
 
-    # All registered players
+const TOURNAMENT_PLAYERS_QUERY = `
+  query GetTournamentPlayers($tournamentId: UUID!) {
     tournamentPlayers(tournamentId: $tournamentId) {
       registration {
         id
-        status
         registrationTime
+        status
         notes
       }
       user {
@@ -91,44 +114,7 @@ const TOURNAMENT_COMPLETE_QUERY = `
         lastName
         username
         email
-        isActive
-      }
-    }
-
-    # Live seating chart
-    tournamentSeatingChart(tournamentId: $tournamentId) {
-      tables {
-        table {
-          id
-          tableNumber
-          maxSeats
-          isActive
-          tableName
-          createdAt
-        }
-        seats {
-          assignment {
-            id
-            seatNumber
-            stackSize
-            isCurrent
-            assignedAt
-            unassignedAt
-            notes
-          }
-          player {
-            id
-            firstName
-            lastName
-            username
-          }
-        }
-      }
-      unassignedPlayers {
-        id
-        firstName
-        lastName
-        username
+        role
       }
     }
   }
@@ -282,6 +268,7 @@ const LEADERBOARD_QUERY_NEW = `
       entries {
         rank
         user {
+          id
           username
           firstName
           lastName
@@ -310,20 +297,75 @@ const LEADERBOARD_QUERY_NEW = `
 const TOURNAMENT_CLOCK_SUBSCRIPTION = `
   subscription TournamentClockUpdates($tournamentId: UUID!) {
     tournamentClockUpdates(tournamentId: $tournamentId) {
+      id
       tournamentId
       status
       currentLevel
       timeRemainingSeconds
-      smallBlind
-      bigBlind
-      ante
-      isBreak
-      nextLevelPreview {
+      levelStartedAt
+      levelEndTime
+      totalPauseDurationSeconds
+      autoAdvance
+      currentStructure {
+        id
+        tournamentId
         levelNumber
         smallBlind
         bigBlind
         ante
         durationMinutes
+        isBreak
+        breakDurationMinutes
+      }
+      nextStructure {
+        id
+        tournamentId
+        levelNumber
+        smallBlind
+        bigBlind
+        ante
+        durationMinutes
+        isBreak
+        breakDurationMinutes
+      }
+    }
+  }
+`
+
+// Tournament Clock Query
+const TOURNAMENT_CLOCK_QUERY = `
+  query GetTournamentClock($tournamentId: ID!) {
+    tournamentClock(tournamentId: $tournamentId) {
+      id
+      tournamentId
+      status
+      currentLevel
+      timeRemainingSeconds
+      levelStartedAt
+      levelEndTime
+      totalPauseDurationSeconds
+      autoAdvance
+      currentStructure {
+        id
+        tournamentId
+        levelNumber
+        smallBlind
+        bigBlind
+        ante
+        durationMinutes
+        isBreak
+        breakDurationMinutes
+      }
+      nextStructure {
+        id
+        tournamentId
+        levelNumber
+        smallBlind
+        bigBlind
+        ante
+        durationMinutes
+        isBreak
+        breakDurationMinutes
       }
     }
   }
@@ -399,49 +441,89 @@ export function useTournaments(variables?: Ref<{ clubId?: string; from?: string;
 
 export function useTournament(tournamentId: Ref<string> | string) {
   const variables = computed(() => ({ 
+    id: isRef(tournamentId) ? tournamentId.value : tournamentId 
+  }))
+  
+  return useGraphQLQuery<{
+    tournament: {
+      id: string
+      title: string
+      description: string
+      startTime: string
+      endTime: string
+      buyInCents: number
+      status: string
+      liveStatus: string
+      structure: Array<{
+        id: string
+        tournamentId: string
+        levelNumber: number
+        smallBlind: number
+        bigBlind: number
+        ante: number | null
+        durationMinutes: number
+        isBreak: boolean
+        breakDurationMinutes: number | null
+      }>
+      clock: {
+        id: string
+        tournamentId: string
+        status: string
+        currentLevel: number
+        timeRemainingSeconds: number
+        levelStartedAt: string
+        levelEndTime: string
+        totalPauseDurationSeconds: number
+        autoAdvance: boolean
+        currentStructure: {
+          id: string
+          tournamentId: string
+          levelNumber: number
+          smallBlind: number
+          bigBlind: number
+          ante: number | null
+          durationMinutes: number
+          isBreak: boolean
+          breakDurationMinutes: number | null
+        }
+        nextStructure: {
+          id: string
+          tournamentId: string
+          levelNumber: number
+          smallBlind: number
+          bigBlind: number
+          ante: number | null
+          durationMinutes: number
+          isBreak: boolean
+          breakDurationMinutes: number | null
+        } | null
+      } | null
+      registrations: Array<{
+        id: string
+        userId: string
+        registrationTime: string
+        status: string
+        notes: string | null
+      }>
+    }
+  }>(
+    TOURNAMENT_QUERY,
+    variables,
+    { cache: true }
+  )
+}
+
+export function useTournamentPlayers(tournamentId: Ref<string> | string) {
+  const variables = computed(() => ({ 
     tournamentId: isRef(tournamentId) ? tournamentId.value : tournamentId 
   }))
   
   return useGraphQLQuery<{
-    tournamentComplete: {
-      tournament: {
-        id: string
-        title: string
-        description: string
-        clubId: string
-        startTime: string
-        endTime: string
-        buyInCents: number
-        seatCap: number
-        liveStatus: string
-        createdAt: string
-        updatedAt: string
-        club: {
-          id: string
-          name: string
-          city: string
-        }
-      }
-      liveState: {
-        id: string
-        currentLevel: number
-        playersRemaining: number
-        breakUntil: string | null
-        currentSmallBlind: number
-        currentBigBlind: number
-        currentAnte: number | null
-        levelStartedAt: string
-        levelDurationMinutes: number
-        createdAt: string
-        updatedAt: string
-      } | null
-      totalRegistered: number
-    }
-    tournamentPlayers: {
+    tournamentPlayers: Array<{
       registration: {
         id: string
-        status: string
         registrationTime: string
+        status: string
         notes: string | null
       }
       user: {
@@ -450,46 +532,11 @@ export function useTournament(tournamentId: Ref<string> | string) {
         lastName: string
         username: string
         email: string
-        isActive: boolean
+        role: string
       }
-    }[]
-    tournamentSeatingChart: {
-      tables: {
-        table: {
-          id: string
-          tableNumber: number
-          maxSeats: number
-          isActive: boolean
-          tableName: string
-          createdAt: string
-        }
-        seats: {
-          assignment: {
-            id: string
-            seatNumber: number
-            stackSize: number | null
-            isCurrent: boolean
-            assignedAt: string
-            unassignedAt: string | null
-            notes: string | null
-          }
-          player: {
-            id: string
-            firstName: string
-            lastName: string
-            username: string
-          }
-        }[]
-      }[]
-      unassignedPlayers: {
-        id: string
-        firstName: string
-        lastName: string
-        username: string
-      }[]
-    }
+    }>
   }>(
-    TOURNAMENT_COMPLETE_QUERY,
+    TOURNAMENT_PLAYERS_QUERY,
     variables,
     { cache: true }
   )
@@ -498,6 +545,36 @@ export function useTournament(tournamentId: Ref<string> | string) {
 export function useMe() {
   return useGraphQLQuery<{ me: User }>(
     ME_QUERY,
+    undefined,
+    { cache: true }
+  )
+}
+
+const MY_TOURNAMENT_REGISTRATIONS_QUERY = `
+  query MyTournamentRegistrations {
+    myTournamentRegistrations {
+      id
+      tournamentId
+      userId
+      registrationTime
+      status
+      notes
+    }
+  }
+`
+
+export function useMyTournamentRegistrations() {
+  return useGraphQLQuery<{
+    myTournamentRegistrations: Array<{
+      id: string
+      tournamentId: string
+      userId: string
+      registrationTime: string
+      status: string
+      notes: string | null
+    }>
+  }>(
+    MY_TOURNAMENT_REGISTRATIONS_QUERY,
     undefined,
     { cache: true }
   )
@@ -572,6 +649,7 @@ export function useLeaderboardNew(variables?: Ref<{ period?: string; limit?: num
       entries: {
         rank: number
         user: {
+          id: string
           username: string
           firstName: string
           lastName: string
@@ -710,6 +788,54 @@ export function usePaginatedTournaments(clubId?: Ref<string | undefined>, dateRa
   }
 }
 
+// Tournament Clock Query
+export function useTournamentClockQuery(tournamentId: Ref<string> | string) {
+  const variables = computed(() => {
+    const id = isRef(tournamentId) ? tournamentId.value : tournamentId
+    return { tournamentId: id }
+  })
+  
+  return useGraphQLQuery<{
+    tournamentClock: {
+      id: string
+      tournamentId: string
+      status: string
+      currentLevel: number
+      timeRemainingSeconds: number | null
+      levelStartedAt: string | null
+      levelEndTime: string | null
+      totalPauseDurationSeconds: number
+      autoAdvance: boolean
+      currentStructure: {
+        id: string
+        tournamentId: string
+        levelNumber: number
+        smallBlind: number
+        bigBlind: number
+        ante: number | null
+        durationMinutes: number
+        isBreak: boolean
+        breakDurationMinutes: number | null
+      } | null
+      nextStructure: {
+        id: string
+        tournamentId: string
+        levelNumber: number
+        smallBlind: number
+        bigBlind: number
+        ante: number | null
+        durationMinutes: number
+        isBreak: boolean
+        breakDurationMinutes: number | null
+      } | null
+    } | null
+  }>(
+    TOURNAMENT_CLOCK_QUERY,
+    variables,
+    { cache: true }
+  )
+}
+
 // Tournament Clock Subscription
 export function useTournamentClock(tournamentId: Ref<string> | string) {
   const variables = computed(() => {
@@ -719,21 +845,37 @@ export function useTournamentClock(tournamentId: Ref<string> | string) {
   
   return useGraphQLSubscription<{
     tournamentClockUpdates: {
+      id: string
       tournamentId: string
       status: string
       currentLevel: number
-      timeRemainingSeconds: number
-      smallBlind: number
-      bigBlind: number
-      ante: number | null
-      isBreak: boolean
-      nextLevelPreview: {
+      timeRemainingSeconds: number | null
+      levelStartedAt: string | null
+      levelEndTime: string | null
+      totalPauseDurationSeconds: number
+      autoAdvance: boolean
+      currentStructure: {
+        id: string
+        tournamentId: string
         levelNumber: number
         smallBlind: number
         bigBlind: number
         ante: number | null
         durationMinutes: number
-      }
+        isBreak: boolean
+        breakDurationMinutes: number | null
+      } | null
+      nextStructure: {
+        id: string
+        tournamentId: string
+        levelNumber: number
+        smallBlind: number
+        bigBlind: number
+        ante: number | null
+        durationMinutes: number
+        isBreak: boolean
+        breakDurationMinutes: number | null
+      } | null
     }
   }>(
     TOURNAMENT_CLOCK_SUBSCRIPTION,

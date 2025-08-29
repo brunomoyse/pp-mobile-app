@@ -28,7 +28,7 @@
             <div class="pp-current-player-info">
               <div class="pp-current-player-avatar">
                 <IonAvatar class="pp-avatar">
-                  <img :src="avatarUrl" alt="Your avatar" />
+                  <img :src="currentPlayerAvatar" alt="Your avatar" @error="handleAvatarError" />
                 </IonAvatar>
                 <div class="pp-rank-badge">
                   <span class="pp-rank-number">#{{ currentPlayerRank }}</span>
@@ -317,7 +317,7 @@ import { ref, computed, watch } from 'vue'
 import { useAuth } from '~/composables/useAuth'
 import { useLeaderboardNew } from '~/composables/usePokerAPI'
 import { usePlayerAvatar } from '~/composables/usePlayerAvatar'
-import avatarUrl from '@/assets/images/players/70707070-7070-7070-7070-707070707070.png'
+import { useCurrentUser } from '~/composables/usePokerAPI'
 
 // Use custom i18n composable
 const { t } = useI18n()
@@ -328,10 +328,24 @@ const { isAuthenticated } = useAuth()
 // Player avatar helper
 const { getPlayerAvatarWithFallback } = usePlayerAvatar()
 
-// Current user data
-const currentPlayerName = 'Jean-Marie'
-const currentPlayerRank = 7
-const currentPlayerPoints = 1250
+// Get current user data
+const { data: currentUserData } = useCurrentUser()
+
+// Current user data - will be updated when we have the actual user data
+const currentPlayerName = computed(() => {
+  const user = currentUserData.value
+  if (!user) return 'Guest'
+  return user.first_name && user.last_name 
+    ? `${user.first_name} ${user.last_name}` 
+    : user.username || 'Player'
+})
+const currentPlayerId = computed(() => currentUserData.value?.id || '70707070-7070-7070-7070-707070707070')
+const currentPlayerAvatar = computed(() => {
+  const id = currentPlayerId.value
+  return `/images/players/${id}.jpg`
+})
+const currentPlayerRank = 7 // This should come from the leaderboard data
+const currentPlayerPoints = 1250 // This should come from the leaderboard data
 
 // Reactive data
 const showPointsInfo = ref(false)
@@ -373,12 +387,17 @@ const allPlayers = computed(() => {
       ? `${user.firstName} ${user.lastName.charAt(0)}.` 
       : user.username
     
+    // Generate avatar path directly - no nested computed
+    const avatarPath = user.id 
+      ? `/images/players/${user.id}.jpg`
+      : '/images/players/70707070-7070-7070-7070-707070707070.png'
+    
     return {
       id: user.username,
       userId: user.id, // Add user ID for avatar
       rank: entry.rank,
       name: displayName,
-      avatar: getPlayerAvatarWithFallback(user.id),
+      avatar: avatarPath,
       points: entry.points,
       profit: entry.netProfit / 100, // Convert cents to euros
       volume: entry.totalBuyIns / 100, // Convert cents to euros
@@ -461,8 +480,8 @@ const handleAvatarError = (event: Event) => {
   if (img.src.endsWith('.jpg')) {
     img.src = img.src.replace('.jpg', '.png')
   } else {
-    // Fallback to default avatar
-    img.src = avatarUrl
+    // Fallback to a known existing avatar in public folder
+    img.src = '/images/players/70707070-7070-7070-7070-707070707070.png'
   }
 }
 </script>

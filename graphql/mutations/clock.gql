@@ -1,0 +1,29 @@
+mutation StartTournamentClock($tournamentId: ID!) {
+  startTournamentClock(tournamentId: $tournamentId) {
+    id
+  }
+}
+
+mutation PauseTournamentClock($tournamentId: ID!) {
+  pauseTournamentClock(tournamentId: $tournamentId) {
+    id
+  }
+}
+
+mutation ResumeTournamentClock($tournamentId: ID!) {
+  resumeTournamentClock(tournamentId: $tournamentId) {
+    id
+  }
+}
+
+mutation AdvanceTournamentLevel($tournamentId: ID!) {
+  advanceTournamentLevel(tournamentId: $tournamentId) {
+    id
+  }
+}
+
+mutation RevertTournamentLevel($tournamentId: ID!) {
+  revertTournamentLevel(tournamentId: $tournamentId) {
+    id
+  }
+}

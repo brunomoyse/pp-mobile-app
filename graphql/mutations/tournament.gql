@@ -1,0 +1,8 @@
+mutation AssignTableToTournament ($input: AssignTableToTournamentInput!) {
+  assignTableToTournament(input: $input) {
+    id
+    tournamentId
+    tableNumber
+    maxSeats
+  }
+}

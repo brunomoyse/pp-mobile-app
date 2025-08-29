@@ -279,8 +279,6 @@ export function useAuth() {
 
   // Check if user has specific permissions/features
   const hasClub = computed(() => !!currentUser.value?.club)
-  const isVerified = computed(() => currentUser.value?.verified ?? false)
-  const isVip = computed(() => (currentUser.value?.vipLevel ?? 0) > 0)
 
   // Loading states
   const isLoggingIn = computed(() => loginMutation.loading.value)
@@ -304,9 +302,7 @@ export function useAuth() {
     currentUser: readonly(currentUser),
     isAuthenticated,
     hasClub,
-    isVerified,
-    isVip,
-    
+
     // Actions
     login,
     register,
@@ -329,6 +325,6 @@ export function useAuth() {
 }
 
 // Initialize auth state immediately when module loads
-if (process.client) {
+if (import.meta.client) {
   initializeAuthState()
 }

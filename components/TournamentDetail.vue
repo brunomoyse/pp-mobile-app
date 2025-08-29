@@ -1,27 +1,9 @@
 <template>
-  <IonPage class="pp-page">
-    <!-- Header -->
-    <IonHeader :translucent="true" class="pp-header">
-      <IonToolbar class="pp-toolbar">
-        <IonButtons slot="start">
-          <IonButton @click="$router.back()" class="pp-header-button">
-            <IonIcon :icon="arrowBackOutline" />
-          </IonButton>
-        </IonButtons>
-        <IonTitle class="pp-title">{{ tournament?.name || 'Tournament Details' }}</IonTitle>
-        <IonButtons slot="end">
-          <IonButton @click="shareTournament" class="pp-header-button">
-            <IonIcon :icon="shareOutline" />
-          </IonButton>
-        </IonButtons>
-      </IonToolbar>
-    </IonHeader>
-
-    <IonContent :fullscreen="true" class="pp-content">
-      <!-- Pull to refresh -->
-      <IonRefresher slot="fixed" @ionRefresh="handleRefresh">
-        <IonRefresherContent :pulling-text="t('common.pullToRefresh')" refreshing-spinner="dots" />
-      </IonRefresher>
+  <div class="pp-tournament-detail">
+    <!-- Pull to refresh -->
+    <IonRefresher slot="fixed" @ionRefresh="handleRefresh">
+      <IonRefresherContent :pulling-text="t('common.pullToRefresh')" refreshing-spinner="dots" />
+    </IonRefresher>
 
       <div v-if="tournament && !tournamentLoading">
         <!-- Tournament Header Info -->
@@ -30,20 +12,16 @@
             <div class="pp-tournament-title-section">
               <h1 class="pp-tournament-name">{{ tournament.name }}</h1>
               <div class="pp-tournament-meta">
+                <IonBadge 
+                  :class="getStatusClass(tournament.status)"
+                  class="pp-status-badge"
+                >
+                  {{ tournament.liveStatus ? t(`events.status.${tournament.liveStatus.toLowerCase()}`) : t(`events.status.${tournament.status.toLowerCase()}`) }}
+                </IonBadge>
                 <IonChip class="pp-tournament-type" :class="`pp-type-${tournament.type}`">
                   <IonLabel>{{ t(`events.types.${tournament.type}`) }}</IonLabel>
                 </IonChip>
-                <span class="pp-tournament-club">{{ tournament.club }}</span>
               </div>
-            </div>
-            
-            <div class="pp-status-section">
-              <IonBadge 
-                :class="getStatusClass(tournament.status)"
-                class="pp-status-badge"
-              >
-                {{ tournament.liveStatus ? t(`events.status.${tournament.liveStatus.toLowerCase()}`) : t(`events.status.${tournament.status.toLowerCase()}`) }}
-              </IonBadge>
             </div>
           </div>
 
@@ -78,12 +56,7 @@
               <div class="pp-info-content">
                 <div class="pp-info-label">{{ t('events.players') }}</div>
                 <div class="pp-info-value">
-                  <span v-if="tournament.status === 'IN_PROGRESS'">
-                    {{ liveStats.playersRemaining }}/{{ tournament.registered }}
-                  </span>
-                  <span v-else>
-                    {{ tournament.registered }}/{{ tournament.maxPlayers }}
-                  </span>
+                  {{ tournament.maxPlayers }}/{{ tournament.registered }}
                 </div>
               </div>
             </div>
@@ -451,20 +424,11 @@
         <h3 class="pp-error-title">Tournament not found</h3>
         <p class="pp-error-text">The tournament you're looking for doesn't exist</p>
       </div>
-    </IonContent>
-  </IonPage>
+  </div>
 </template>
 
 <script setup lang="ts">
 import {
-  IonPage,
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonButtons,
-  IonButton,
-  IonIcon,
-  IonContent,
   IonRefresher,
   IonRefresherContent,
   IonChip,
@@ -472,6 +436,7 @@ import {
   IonBadge,
   IonAvatar,
   IonSpinner,
+  IonIcon,
 } from '@ionic/vue'
 import {
   arrowBackOutline,
@@ -493,7 +458,7 @@ import {
   alertCircleOutline,
 } from 'ionicons/icons'
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
-import { useTournament, useTournamentClock } from '~/composables/usePokerAPI'
+import { useTournament, useTournamentClock, useTournamentClockQuery } from '~/composables/usePokerAPI'
 import { usePlayerAvatar } from '~/composables/usePlayerAvatar'
 
 // Props
@@ -516,6 +481,9 @@ const timer = ref<NodeJS.Timeout | null>(null)
 // Fetch tournament data from API
 const { data: tournamentData, loading: tournamentLoading, error: tournamentError, refetch: refetchTournament } = useTournament(props.tournamentId)
 
+// Fetch tournament clock data separately
+const { data: clockQueryData, loading: clockLoading, error: clockQueryError, refetch: refetchClock } = useTournamentClockQuery(props.tournamentId)
+
 // Subscribe to tournament clock updates
 const { 
   data: clockData, 
@@ -526,18 +494,19 @@ const {
 
 // Transform API data to component format
 const tournament = computed(() => {
-  if (!tournamentData.value?.tournamentComplete) return null
+  if (!tournamentData.value?.tournament) return null
   
-  const data = tournamentData.value.tournamentComplete.tournament
-  const liveState = tournamentData.value.tournamentComplete.liveState
-  const totalRegistered = tournamentData.value.tournamentComplete.totalRegistered
+  const data = tournamentData.value.tournament
+  const totalRegistered = data.registrations?.length || 0
   
   // Debug logging to see what we're getting
   console.log('📊 Tournament data debug:', {
     title: data.title,
     totalRegistered,
-    seatCap: data.seatCap,
-    registeredVsCapacity: `${totalRegistered}/${data.seatCap}`
+    clock: data.clock,
+    clockTimeRemaining: data.clock?.timeRemainingSeconds,
+    clockStatus: data.clock?.status,
+    clockCurrentLevel: data.clock?.currentLevel
   })
   
   return {
@@ -548,9 +517,9 @@ const tournament = computed(() => {
     type: 'deepstack', // Mock type for now
     status: data.status || 'UPCOMING', // Use status ENUM from API
     liveStatus: data.liveStatus, // Keep liveStatus for detailed status display
-    club: data.club.name,
-    clubId: data.clubId,
-    city: data.club.city,
+    club: 'Poker Club', // Mock club name since it's not in the new structure
+    clubId: data.id, // Mock club ID
+    city: 'City', // Mock city
     startTime: new Date(data.startTime),
     endTime: data.endTime ? new Date(data.endTime) : null,
     registrationClose: new Date(data.startTime), // Mock registration close
@@ -558,100 +527,165 @@ const tournament = computed(() => {
     buyInCents: data.buyInCents,
     structure: '20k/20min', // Mock structure
     registered: totalRegistered,
-    maxPlayers: data.seatCap,
-    spotsLeft: Math.max(0, data.seatCap - totalRegistered),
-    guarantee: `${Math.floor(data.buyInCents * data.seatCap * 0.9 / 100)}€ GTD`, // Mock guarantee
+    maxPlayers: data.seatCap || 100, // Use seatCap from GraphQL or fallback to 100
+    spotsLeft: Math.max(0, (data.seatCap || 100) - totalRegistered),
+    guarantee: `${Math.floor(data.buyInCents * 100 * 0.9 / 100)}€ GTD`, // Mock guarantee
     isRegistered: false, // Would need to check user registration
     totalPlayers: totalRegistered,
     duration: data.endTime ? 
       (new Date(data.endTime).getTime() - new Date(data.startTime).getTime()) / (1000 * 60 * 60) : 
       0,
-    // Live state data
-    liveState
+    // Clock data directly from GraphQL
+    clock: data.clock
   }
 })
 
 // Tournament players data
 const tournamentPlayers = computed(() => {
-  return tournamentData.value?.tournamentPlayers || []
+  // Players would need to be fetched separately with useTournamentPlayers
+  return []
 })
 
 // Seating chart data
 const seatingChart = computed(() => {
-  return tournamentData.value?.tournamentSeatingChart || null
+  // Seating chart would need to be fetched separately
+  return null
 })
 
-// Mock blinds structure for turbo tournament (15 min levels)
-const blindsStructure = ref([
-  { level: 1, smallBlind: '25', bigBlind: '50', ante: null, duration: '15' },
-  { level: 2, smallBlind: '50', bigBlind: '100', ante: null, duration: '15' },
-  { level: 3, smallBlind: '75', bigBlind: '150', ante: null, duration: '15' },
-  { level: 4, smallBlind: '100', bigBlind: '200', ante: '25', duration: '15' },
-  { level: 5, smallBlind: '150', bigBlind: '300', ante: '25', duration: '15' },
-  { level: 6, smallBlind: '200', bigBlind: '400', ante: '50', duration: '15' },
-  { level: 7, smallBlind: '300', bigBlind: '600', ante: '75', duration: '15' },
-  { level: 8, smallBlind: '400', bigBlind: '800', ante: '100', duration: '15' },
-  { level: 9, smallBlind: '600', bigBlind: '1200', ante: '150', duration: '15' },
-  { level: 10, smallBlind: '800', bigBlind: '1600', ante: '200', duration: '15' },
-  { level: 11, smallBlind: '1000', bigBlind: '2000', ante: '250', duration: '15' },
-  { level: 12, smallBlind: '1500', bigBlind: '3000', ante: '400', duration: '15' },
-])
+// Get blinds structure from GraphQL data with fallback to mock
+const blindsStructure = computed(() => {
+  const tournamentStructure = tournamentData.value?.tournament?.structure
+  
+  if (tournamentStructure && tournamentStructure.length > 0) {
+    return tournamentStructure.map(level => ({
+      level: level.levelNumber,
+      smallBlind: level.smallBlind.toString(),
+      bigBlind: level.bigBlind.toString(),
+      ante: level.ante ? level.ante.toString() : null,
+      duration: level.isBreak ? 
+        (level.breakDurationMinutes ? level.breakDurationMinutes.toString() : '15') : 
+        level.durationMinutes.toString()
+    }))
+  }
+  
+  // Mock fallback structure
+  return [
+    { level: 1, smallBlind: '25', bigBlind: '50', ante: null, duration: '15' },
+    { level: 2, smallBlind: '50', bigBlind: '100', ante: null, duration: '15' },
+    { level: 3, smallBlind: '75', bigBlind: '150', ante: null, duration: '15' },
+    { level: 4, smallBlind: '100', bigBlind: '200', ante: '25', duration: '15' },
+    { level: 5, smallBlind: '150', bigBlind: '300', ante: '25', duration: '15' },
+    { level: 6, smallBlind: '200', bigBlind: '400', ante: '50', duration: '15' },
+    { level: 7, smallBlind: '300', bigBlind: '600', ante: '75', duration: '15' },
+    { level: 8, smallBlind: '400', bigBlind: '800', ante: '100', duration: '15' },
+    { level: 9, smallBlind: '600', bigBlind: '1200', ante: '150', duration: '15' },
+    { level: 10, smallBlind: '800', bigBlind: '1600', ante: '200', duration: '15' },
+    { level: 11, smallBlind: '1000', bigBlind: '2000', ante: '250', duration: '15' },
+    { level: 12, smallBlind: '1500', bigBlind: '3000', ante: '400', duration: '15' },
+  ]
+})
 
 // Live tournament data from subscription or API fallback
 const currentLevel = computed(() => {
   // Use subscription data if available
   if (clockData.value?.tournamentClockUpdates) {
     const clock = clockData.value.tournamentClockUpdates
-    return {
-      level: clock.currentLevel,
-      smallBlind: clock.smallBlind.toString(),
-      bigBlind: clock.bigBlind.toString(),
-      ante: clock.ante ? clock.ante.toString() : null,
-      isBreak: clock.isBreak
+    console.log('🔄 Using subscription data for current level:', clock)
+    
+    // Use currentStructure from subscription
+    if (clock.currentStructure) {
+      return {
+        level: clock.currentLevel,
+        smallBlind: clock.currentStructure.smallBlind.toString(),
+        bigBlind: clock.currentStructure.bigBlind.toString(),
+        ante: clock.currentStructure.ante ? clock.currentStructure.ante.toString() : null,
+        isBreak: clock.currentStructure.isBreak
+      }
     }
   }
   
-  // Fallback to liveState from API
-  const liveState = tournament.value?.liveState
-  if (!liveState) return { level: 1, smallBlind: '25', bigBlind: '50', ante: null, isBreak: false }
-  
-  return {
-    level: liveState.currentLevel,
-    smallBlind: liveState.currentSmallBlind.toString(),
-    bigBlind: liveState.currentBigBlind.toString(),
-    ante: liveState.currentAnte ? liveState.currentAnte.toString() : null,
-    isBreak: false // API doesn't provide break info, subscription does
+  // Use separate clock query data with currentStructure
+  const clock = clockQueryData.value?.tournamentClock
+  if (clock && clock.currentStructure) {
+    console.log('📊 Using separate clock query data for current level:', clock.currentStructure)
+    return {
+      level: clock.currentLevel,
+      smallBlind: clock.currentStructure.smallBlind.toString(),
+      bigBlind: clock.currentStructure.bigBlind.toString(),
+      ante: clock.currentStructure.ante ? clock.currentStructure.ante.toString() : null,
+      isBreak: clock.currentStructure.isBreak || false
+    }
   }
+  
+  // Mock fallback only if no real data
+  console.log('⚠️ Using mock current level data')
+  return { level: 1, smallBlind: '25', bigBlind: '50', ante: null, isBreak: false }
 })
 
 const nextLevel = computed(() => {
   // Use subscription data if available
-  if (clockData.value?.tournamentClockUpdates?.nextLevelPreview) {
-    const next = clockData.value.tournamentClockUpdates.nextLevelPreview
+  if (clockData.value?.tournamentClockUpdates) {
+    const clock = clockData.value.tournamentClockUpdates
+    console.log('🔄 Using subscription data for next level:', clock)
     
-    // Check if next level is a break (blinds are 0/0 or specifically marked)
-    const isBreak = (next.smallBlind === 0 && next.bigBlind === 0) || next.levelNumber === 0
-    
-    return {
-      level: next.levelNumber,
-      smallBlind: next.smallBlind.toString(),
-      bigBlind: next.bigBlind.toString(),
-      ante: next.ante ? next.ante.toString() : null,
-      isBreak
+    // Use nextStructure from subscription
+    if (clock.nextStructure) {
+      return {
+        level: clock.nextStructure.levelNumber,
+        smallBlind: clock.nextStructure.smallBlind.toString(),
+        bigBlind: clock.nextStructure.bigBlind.toString(),
+        ante: clock.nextStructure.ante ? clock.nextStructure.ante.toString() : null,
+        isBreak: clock.nextStructure.isBreak
+      }
     }
   }
   
-  // Mock fallback
+  // Use separate clock query data for next level with nextStructure
+  const clock = clockQueryData.value?.tournamentClock
+  if (clock && clock.nextStructure) {
+    console.log('📊 Using separate clock query data for next level:', clock.nextStructure)
+    return {
+      level: clock.nextStructure.levelNumber,
+      smallBlind: clock.nextStructure.smallBlind.toString(),
+      bigBlind: clock.nextStructure.bigBlind.toString(),
+      ante: clock.nextStructure.ante ? clock.nextStructure.ante.toString() : null,
+      isBreak: clock.nextStructure.isBreak || false
+    }
+  }
+  
+  // Mock fallback only if no real data
+  console.log('⚠️ Using mock next level data')
   return { level: 7, smallBlind: '300', bigBlind: '600', ante: '75', isBreak: false }
 })
 
 const timeRemaining = computed(() => {
   // Use subscription data if available
   if (clockData.value?.tournamentClockUpdates) {
-    return clockData.value.tournamentClockUpdates.timeRemainingSeconds
+    console.log('⏰ Using subscription data for time remaining:', clockData.value.tournamentClockUpdates.timeRemainingSeconds)
+    return clockData.value.tournamentClockUpdates.timeRemainingSeconds || 0
   }
   
-  // Mock fallback
+  // Use separate tournament clock query data
+  const clock = clockQueryData.value?.tournamentClock
+  console.log('⏰ Separate tournament clock query data:', {
+    hasClock: !!clock,
+    clockStatus: clock?.status,
+    timeRemainingSeconds: clock?.timeRemainingSeconds,
+    currentLevel: clock?.currentLevel,
+    autoAdvance: clock?.autoAdvance,
+    hasCurrentStructure: !!clock?.currentStructure,
+    hasNextStructure: !!clock?.nextStructure
+  })
+  
+  // Use clock?.timeRemainingSeconds from separate query
+  if (clock?.timeRemainingSeconds !== undefined && clock?.timeRemainingSeconds !== null) {
+    const remaining = Math.max(0, clock.timeRemainingSeconds)
+    console.log('✅ Found valid timeRemainingSeconds from separate clock query:', remaining)
+    return remaining
+  }
+  
+  // Mock fallback only if no real data
+  console.log('⚠️ Using mock time data - no real clock data available')
   return 8 * 60 + 23
 })
 
@@ -691,11 +725,12 @@ const tablesData = computed(() => {
 
 // Live stats from tournament state
 const liveStats = computed(() => {
-  const liveState = tournament.value?.liveState
+  const clock = tournament.value?.clock
   const tournData = tournament.value
   
   return {
-    playersRemaining: liveState?.playersRemaining || 0,
+      clock: clock || null,
+    playersRemaining: 0, // Would need separate query for this
     averageStack: 25000, // Mock average stack
     totalPrizePool: tournData ? Math.floor(tournData.buyInCents * tournData.registered * 0.9 / 100) : 0
   }
@@ -807,10 +842,26 @@ const handleAvatarError = (event: Event) => {
 
 onMounted(() => {
   // Expose debug method to global scope for manual testing
-  if (process.client) {
+  if (import.meta.client) {
     // @ts-ignore
     window.debugSendInit = debugSendInit
   }
+  
+  // Set up periodic refresh for clock data every 10 seconds as fallback
+  timer.value = setInterval(() => {
+    if (!clockConnected.value) {
+      console.log('🔄 Subscription not connected, refreshing clock query...')
+      refetchClock()
+    }
+  }, 10000)
+  
+  // Monitor subscription connection status
+  watch([clockConnected, clockError], ([connected, error]) => {
+    console.log('📡 Subscription status:', { connected, error })
+    if (!connected && error) {
+      console.log('❌ Subscription error, falling back to query refresh')
+    }
+  }, { immediate: true })
 })
 
 onUnmounted(() => {
@@ -822,41 +873,8 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.pp-page {
+.pp-tournament-detail {
   font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: #18181a;
-}
-
-/* Header */
-.pp-header {
-  --background: rgba(24, 24, 26, 0.95);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-.pp-toolbar {
-  --background: transparent;
-  --border-color: #24242a;
-  border-bottom: 1px solid #24242a;
-}
-
-.pp-title {
-  color: #fee78a;
-  font-weight: 700;
-  font-size: 18px;
-}
-
-.pp-header-button {
-  --color: #54545f;
-  --color-hover: #fee78a;
-  --background-hover: rgba(254, 231, 138, 0.1);
-  border-radius: 8px;
-  transition: all 0.3s ease;
-}
-
-/* Content */
-.pp-content {
-  --background: #18181a;
 }
 
 .pp-section {

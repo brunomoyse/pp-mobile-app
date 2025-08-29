@@ -380,7 +380,7 @@ const handleAvatarError = (event: Event) => {
     img.src = img.src.replace('.jpg', '.png')
   } else {
     // Fallback to default avatar
-    img.src = '/assets/images/players/70707070-7070-7070-7070-707070707070.png'
+    img.src = '/images/players/70707070-7070-7070-7070-707070707070.png'
   }
 }
 </script>

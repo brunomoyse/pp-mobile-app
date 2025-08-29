@@ -213,6 +213,9 @@
       "bounty": "Bounty"
     },
     "status": {
+      "upcoming": "Upcoming",
+      "live": "Live",
+      "completed": "Completed",
       "not_started": "Not Started",
       "registration_open": "Registration Open",
       "late_registration": "Late Registration",
@@ -222,13 +225,19 @@
       "finished": "Finished"
     },
     "modify": "Modify",
+    "cancel": "Cancel",
     "buyIn": "Buy-in",
     "tableNotAssigned": "Table not assigned",
     "registeredOn": "Registered on",
     "investment": "Investment",
     "viewLive": "View Live",
     "viewResult": "View Result",
-    "position": "Position"
+    "position": "Position",
+    "empty": {
+      "title": "No Registrations Found",
+      "subtitle": "You haven't registered for any tournaments yet",
+      "browseEvents": "Browse Events"
+    }
   },
   "leaderboard": {
     "title": "Leaderboard",

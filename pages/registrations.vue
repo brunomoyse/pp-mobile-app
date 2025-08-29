@@ -93,7 +93,7 @@
                   :class="getStatusClass(registration.status)"
                   class="pp-status-badge"
                 >
-                  {{ t(`mySeats.status.${registration.status.toLowerCase()}`) }}
+                  {{ t(`mySeats.status.${registration.status.toLowerCase().replace(' ', '_')}`) }}
                 </IonBadge>
               </div>
             </div>
@@ -117,16 +117,12 @@
                   <span class="pp-detail-text">{{ t('mySeats.buyIn') }} {{ registration.buyIn }}</span>
                 </div>
                 <div class="pp-detail-item">
-                  <IonIcon :icon="ticketOutline" class="pp-detail-icon" />
-                  <span class="pp-detail-text"># {{ registration.seatNumber }}</span>
+                  <IonIcon :icon="locationOutline" class="pp-detail-icon" />
+                  <span class="pp-detail-text">{{ registration.table ? `Table ${registration.table} - Seat ${registration.seatNumber}` : t('mySeats.tableNotAssigned') }}</span>
                 </div>
               </div>
 
               <div class="pp-detail-row">
-                <div class="pp-detail-item">
-                  <IonIcon :icon="locationOutline" class="pp-detail-icon" />
-                  <span class="pp-detail-text">{{ registration.table ? `Table ${registration.table}` : t('mySeats.tableNotAssigned') }}</span>
-                </div>
                 <div class="pp-detail-item" v-if="registration.position">
                   <IonIcon :icon="trophyOutline" class="pp-detail-icon" />
                   <span class="pp-detail-text">{{ t('mySeats.position') }} #{{ registration.position }}</span>
@@ -233,6 +229,7 @@ import {
 } from '@ionic/vue'
 import ClubSelector from '@/components/ClubSelector.vue'
 import { useClubStore } from '~/stores/useClubStore'
+import { useTournaments, useMyTournamentRegistrations } from '~/composables/usePokerAPI'
 import {
   optionsOutline,
   calendarOutline,
@@ -244,7 +241,7 @@ import {
   checkmarkCircleOutline,
   shareOutline,
 } from 'ionicons/icons'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 
 definePageMeta({
     middleware: 'auth'
@@ -268,74 +265,79 @@ const filters = [
   { key: 'turbo', label: 'Turbo' },
 ]
 
-// Mock registration data
-const registrations = ref([
-  {
-    id: 'R001',
-    tournamentId: 'T002',
-    tournamentName: 'Wednesday Turbo',
-    type: 'turbo',
-    status: 'upcoming',
-    club: 'Liège Poker Club',
-    startTime: new Date('2025-08-14T20:30:00'),
-    buyIn: '30€',
-    seatNumber: '4B',
-    table: null,
-    position: null,
-    registeredAt: new Date('2025-08-10T14:22:00'),
-    canCancelUntil: new Date('2025-08-14T18:30:00')
-  },
-  {
-    id: 'R002',
-    tournamentId: 'T004',
-    tournamentName: 'Thursday Bounty Hunter',
-    type: 'bounty',
-    status: 'live',
-    club: 'Pokah Room Antwerp',
-    startTime: new Date('2025-08-12T19:00:00'),
-    buyIn: '75€',
-    seatNumber: '7A',
-    table: 3,
-    position: null,
-    registeredAt: new Date('2025-08-09T16:45:00'),
-    canCancelUntil: new Date('2025-08-12T17:00:00')
-  },
-  {
-    id: 'R003',
-    tournamentId: 'T005',
-    tournamentName: 'Monday Night Special',
-    type: 'deepstack',
-    status: 'completed',
-    club: 'Liège Poker Club',
-    startTime: new Date('2025-08-11T19:30:00'),
-    buyIn: '40€',
-    seatNumber: '2C',
-    table: 1,
-    position: 8,
-    registeredAt: new Date('2025-08-08T12:30:00'),
-    canCancelUntil: new Date('2025-08-11T17:30:00'),
-    payout: 0
-  },
-  {
-    id: 'R004',
-    tournamentId: 'T001',
-    tournamentName: 'Tuesday Night Deepstack',
-    type: 'deepstack',
-    status: 'upcoming',
-    club: 'Pokah Room Antwerp',
-    startTime: new Date('2025-08-13T19:00:00'),
-    buyIn: '50€',
-    seatNumber: '1A',
-    table: null,
-    position: null,
-    registeredAt: new Date('2025-08-11T10:15:00'),
-    canCancelUntil: new Date('2025-08-13T17:00:00')
+// Fetch data from API
+const { data: myRegistrations, loading: registrationsLoading, error: registrationsError } = useMyTournamentRegistrations()
+
+const tournamentsVariables = computed(() => ({
+  limit: 100, // Get enough tournaments to cover all registrations
+  clubId: clubStore.selectedClub?.id
+}))
+
+const { data: allTournaments, loading: tournamentsLoading, error: tournamentsError } = useTournaments(tournamentsVariables)
+
+// Combine registration data with tournament data
+const registrations = computed(() => {
+  if (!myRegistrations.value?.myTournamentRegistrations || !allTournaments.value?.tournaments) {
+    return []
   }
-])
+
+  const tournamentMap = new Map(allTournaments.value.tournaments.map(t => [t.id, t]))
+  
+  return myRegistrations.value.myTournamentRegistrations
+    .map(registration => {
+      const tournament = tournamentMap.get(registration.tournamentId)
+      if (!tournament) return null
+      
+      // Determine tournament type based on title or other properties
+      const tournamentType = tournament.title.toLowerCase().includes('turbo') ? 'turbo' :
+                           tournament.title.toLowerCase().includes('bounty') ? 'bounty' :
+                           tournament.title.toLowerCase().includes('deepstack') ? 'deepstack' : 'deepstack'
+      
+      // Map registration status to display status
+      const getDisplayStatus = (regStatus: string, tournamentStatus: string) => {
+        // Map based on tournament timing and registration status
+        const now = new Date()
+        const startTime = new Date(tournament.startTime)
+        const endTime = tournament.endTime ? new Date(tournament.endTime) : null
+        
+        if (endTime && now > endTime) return 'completed'
+        if (now >= startTime) return 'live'
+        return 'upcoming'
+      }
+      
+      return {
+        id: registration.id,
+        tournamentId: registration.tournamentId,
+        tournamentName: tournament.title,
+        type: tournamentType,
+        status: getDisplayStatus(registration.status, tournament.status),
+        club: 'Unknown Club', // Would need club data in tournament response
+        startTime: new Date(tournament.startTime),
+        buyIn: `${tournament.buyInCents / 100}€`,
+        seatNumber: Math.floor(Math.random() * 10) + 1, // Mock seat number - needs seating data
+        table: null, // Would need seating data
+        position: null, // Would need results data
+        registeredAt: new Date(registration.registrationTime),
+        canCancelUntil: new Date(new Date(tournament.startTime).getTime() - 2 * 60 * 60 * 1000), // 2 hours before start
+        payout: 0, // Would need results data
+        notes: registration.notes
+      }
+    })
+    .filter(Boolean)
+})
+
+// Loading and error states
+const isLoading = computed(() => registrationsLoading.value || tournamentsLoading.value)
+const hasError = computed(() => registrationsError.value || tournamentsError.value)
 
 // Computed properties
 const filteredRegistrations = computed(() => {
   let filtered = registrations.value.filter(r => r.status === selectedCategory.value)
+  
+  // Filter by selected club
+  if (clubStore.selectedClub) {
+    filtered = filtered.filter(r => r.club === clubStore.selectedClub?.name)
+  }
   
   // Apply selected filters
   if (selectedFilters.value.length > 0) {
@@ -358,16 +360,24 @@ const filteredRegistrations = computed(() => {
   return filtered.sort((a, b) => a.startTime.getTime() - b.startTime.getTime())
 })
 
-const registeredCount = computed(() => registrations.value.length)
+// Stats computed properties that also respect club filtering
+const clubFilteredRegistrations = computed(() => {
+  if (clubStore.selectedClub) {
+    return registrations.value.filter(r => r.club === clubStore.selectedClub?.name)
+  }
+  return registrations.value
+})
+
+const registeredCount = computed(() => clubFilteredRegistrations.value.length)
 
 const totalInvestment = computed(() => {
-  return registrations.value.reduce((total, reg) => {
+  return clubFilteredRegistrations.value.reduce((total, reg) => {
     return total + parseInt(reg.buyIn.replace(/[€.]/g, ''))
   }, 0)
 })
 
 const upcomingCount = computed(() => {
-  return registrations.value.filter(r => r.status === 'upcoming').length
+  return clubFilteredRegistrations.value.filter(r => r.status === 'upcoming').length
 })
 
 // Methods

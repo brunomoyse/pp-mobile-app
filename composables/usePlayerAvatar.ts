@@ -1,34 +1,23 @@
 export const usePlayerAvatar = () => {
+  // Simple function that returns the avatar path - error handling is done in the template
   const getPlayerAvatar = (userId: string | undefined): string => {
     if (!userId) {
-      // Return default avatar if no userId
-      return '/assets/images/players/default.jpg'
+      // Return fallback avatar if no userId
+      return '/images/players/70707070-7070-7070-7070-707070707070.png'
     }
     
-    // Check if image exists for this user ID
-    try {
-      // For Vue/Nuxt, we need to use dynamic imports or explicit imports
-      // Since we can't dynamically check file existence at runtime,
-      // we'll try the .jpg first, then fallback to default
-      return `/assets/images/players/${userId}.jpg`
-    } catch (error) {
-      // Fallback to default if image doesn't exist
-      return '/assets/images/players/default.jpg'
-    }
+    // Return the jpg path - the template will handle errors and try .png
+    return `/images/players/${userId}.jpg`
   }
 
   const getPlayerAvatarWithFallback = (userId: string | undefined): string => {
     if (!userId) {
-      return '/assets/images/players/default.jpg'
+      return '/images/players/70707070-7070-7070-7070-707070707070.png'
     }
-    
-    // We can also try .png extension as one of the files is .png
-    const jpgPath = `/assets/images/players/${userId}.jpg`
-    const pngPath = `/assets/images/players/${userId}.png`
     
     // Return jpg path as primary, the browser will handle 404 gracefully
     // with our onError handler in the template
-    return jpgPath
+    return `/images/players/${userId}.jpg`
   }
 
   return {

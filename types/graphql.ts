@@ -164,7 +164,6 @@ export interface TournamentTable {
   tableNumber: number
   maxSeats: number
   isActive: boolean
-  tableName: string
   createdAt: string
 }
 
