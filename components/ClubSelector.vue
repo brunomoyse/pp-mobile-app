@@ -74,7 +74,6 @@ import {
   checkmarkCircleOutline,
 } from 'ionicons/icons'
 import { ref, onMounted, watch } from 'vue'
-import { useClubs } from '~/composables/usePokerAPI'
 import { useClubStore, type Club } from '~/stores/useClubStore'
 
 // Reactive data
@@ -82,16 +81,6 @@ const showModal = ref(false)
 
 // Store
 const clubStore = useClubStore()
-
-// Dynamic clubs from API
-const { clubs } = useClubs()
-
-// Watch for clubs changes and update store
-watch(clubs, (newClubs) => {
-  if (newClubs && newClubs.length > 0) {
-    clubStore.setClubs(newClubs)
-  }
-}, { immediate: true })
 
 // Initialize store from localStorage on mount
 onMounted(() => {
@@ -152,38 +141,9 @@ const selectClub = (club: Club) => {
   margin-left: 8px;
 }
 
-/* Modal */
+/* Modal styles are now in shared.css */
 .pp-modal {
   --backdrop-opacity: 0.6;
-}
-
-.pp-modal-header {
-  --background: #18181a !important;
-  background: #18181a !important;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-.pp-modal-toolbar {
-  --background: #18181a !important;
-  background: #18181a !important;
-  --border-color: #24242a;
-  border-bottom: 1px solid #24242a;
-}
-
-.pp-modal-title {
-  color: #e2e8f0 !important;
-  font-weight: 700;
-  font-size: 18px;
-}
-
-.pp-modal-close {
-  --color: #54545f;
-  --color-hover: #fee78a;
-}
-
-.pp-modal-content {
-  --background: #18181a;
 }
 
 /* Club List */

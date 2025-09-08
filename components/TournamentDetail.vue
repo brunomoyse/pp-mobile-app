@@ -224,7 +224,6 @@
                 {{ t('events.tableAssignment') }}
               </h3>
               <IonButton 
-                @click="viewFullSeatingChart"
                 fill="clear"
                 size="small"
                 class="pp-view-all-btn"
@@ -385,7 +384,7 @@
                 <span>{{ t('events.payout') }}</span>
               </div>
               <div 
-                v-for="result in finalResults.slice(3, showAllResults ? finalResults.length : 10)" 
+                v-for="result in finalResults"
                 :key="result.position"
                 class="pp-results-row"
                 :class="{ 'pp-user-row': result.isUser }"
@@ -429,37 +428,35 @@
 
 <script setup lang="ts">
 import {
-  IonRefresher,
-  IonRefresherContent,
-  IonChip,
-  IonLabel,
-  IonBadge,
-  IonAvatar,
-  IonSpinner,
-  IonIcon,
+    IonAvatar,
+    IonBadge,
+    IonChip,
+    IonIcon,
+    IonLabel,
+    IonRefresher,
+    IonRefresherContent,
+    IonSpinner,
 } from '@ionic/vue'
 import {
-  arrowBackOutline,
-  shareOutline,
-  calendarOutline,
-  cashOutline,
-  layersOutline,
-  peopleOutline,
-  timeOutline,
-  timerOutline,
-  addOutline,
-  removeOutline,
-  gridOutline,
-  chevronForwardOutline,
-  chevronUpOutline,
-  chevronDownOutline,
-  trophyOutline,
-  personOutline,
-  alertCircleOutline,
+    addOutline,
+    alertCircleOutline,
+    calendarOutline,
+    cashOutline,
+    chevronDownOutline,
+    chevronForwardOutline,
+    chevronUpOutline,
+    gridOutline,
+    layersOutline,
+    peopleOutline,
+    personOutline,
+    removeOutline,
+    timeOutline,
+    timerOutline,
+    trophyOutline,
 } from 'ionicons/icons'
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
-import { useTournament, useTournamentClock, useTournamentClockQuery } from '~/composables/usePokerAPI'
-import { usePlayerAvatar } from '~/composables/usePlayerAvatar'
+import {computed, onMounted, ref, watch} from 'vue'
+import {usePlayerAvatar} from '~/composables/usePlayerAvatar'
+import type {Tournament} from "~/types/tournament";
 
 // Props
 interface Props {
@@ -472,14 +469,12 @@ const { t, locale } = useI18n()
 
 // Player avatar helper
 const { getPlayerAvatarWithFallback } = usePlayerAvatar()
-
-// Reactive data
-const showAllResults = ref(false)
-const currentTime = ref(new Date())
-const timer = ref<NodeJS.Timeout | null>(null)
-
+const tournament: Ref<Tournament> = ref<Tournament|null>(null)
 // Fetch tournament data from API
 const { data: tournamentData, loading: tournamentLoading, error: tournamentError, refetch: refetchTournament } = useTournament(props.tournamentId)
+
+const res = await GqlGetTournament({ id: props.tournamentId})
+tournament.value = res.tournament || null
 
 // Fetch tournament clock data separately
 const { data: clockQueryData, loading: clockLoading, error: clockQueryError, refetch: refetchClock } = useTournamentClockQuery(props.tournamentId)
@@ -491,60 +486,6 @@ const {
   error: clockError,
   sendConnectionInit: debugSendInit
 } = useTournamentClock(props.tournamentId)
-
-// Transform API data to component format
-const tournament = computed(() => {
-  if (!tournamentData.value?.tournament) return null
-  
-  const data = tournamentData.value.tournament
-  const totalRegistered = data.registrations?.length || 0
-  
-  // Debug logging to see what we're getting
-  console.log('📊 Tournament data debug:', {
-    title: data.title,
-    totalRegistered,
-    clock: data.clock,
-    clockTimeRemaining: data.clock?.timeRemainingSeconds,
-    clockStatus: data.clock?.status,
-    clockCurrentLevel: data.clock?.currentLevel
-  })
-  
-  return {
-    id: data.id,
-    name: data.title,
-    title: data.title,
-    description: data.description,
-    type: 'deepstack', // Mock type for now
-    status: data.status || 'UPCOMING', // Use status ENUM from API
-    liveStatus: data.liveStatus, // Keep liveStatus for detailed status display
-    club: 'Poker Club', // Mock club name since it's not in the new structure
-    clubId: data.id, // Mock club ID
-    city: 'City', // Mock city
-    startTime: new Date(data.startTime),
-    endTime: data.endTime ? new Date(data.endTime) : null,
-    registrationClose: new Date(data.startTime), // Mock registration close
-    buyIn: `${data.buyInCents / 100}€`,
-    buyInCents: data.buyInCents,
-    structure: '20k/20min', // Mock structure
-    registered: totalRegistered,
-    maxPlayers: data.seatCap || 100, // Use seatCap from GraphQL or fallback to 100
-    spotsLeft: Math.max(0, (data.seatCap || 100) - totalRegistered),
-    guarantee: `${Math.floor(data.buyInCents * 100 * 0.9 / 100)}€ GTD`, // Mock guarantee
-    isRegistered: false, // Would need to check user registration
-    totalPlayers: totalRegistered,
-    duration: data.endTime ? 
-      (new Date(data.endTime).getTime() - new Date(data.startTime).getTime()) / (1000 * 60 * 60) : 
-      0,
-    // Clock data directly from GraphQL
-    clock: data.clock
-  }
-})
-
-// Tournament players data
-const tournamentPlayers = computed(() => {
-  // Players would need to be fetched separately with useTournamentPlayers
-  return []
-})
 
 // Seating chart data
 const seatingChart = computed(() => {
@@ -590,8 +531,7 @@ const currentLevel = computed(() => {
   // Use subscription data if available
   if (clockData.value?.tournamentClockUpdates) {
     const clock = clockData.value.tournamentClockUpdates
-    console.log('🔄 Using subscription data for current level:', clock)
-    
+
     // Use currentStructure from subscription
     if (clock.currentStructure) {
       return {
@@ -607,7 +547,6 @@ const currentLevel = computed(() => {
   // Use separate clock query data with currentStructure
   const clock = clockQueryData.value?.tournamentClock
   if (clock && clock.currentStructure) {
-    console.log('📊 Using separate clock query data for current level:', clock.currentStructure)
     return {
       level: clock.currentLevel,
       smallBlind: clock.currentStructure.smallBlind.toString(),
@@ -618,7 +557,6 @@ const currentLevel = computed(() => {
   }
   
   // Mock fallback only if no real data
-  console.log('⚠️ Using mock current level data')
   return { level: 1, smallBlind: '25', bigBlind: '50', ante: null, isBreak: false }
 })
 
@@ -626,8 +564,7 @@ const nextLevel = computed(() => {
   // Use subscription data if available
   if (clockData.value?.tournamentClockUpdates) {
     const clock = clockData.value.tournamentClockUpdates
-    console.log('🔄 Using subscription data for next level:', clock)
-    
+
     // Use nextStructure from subscription
     if (clock.nextStructure) {
       return {
@@ -643,7 +580,6 @@ const nextLevel = computed(() => {
   // Use separate clock query data for next level with nextStructure
   const clock = clockQueryData.value?.tournamentClock
   if (clock && clock.nextStructure) {
-    console.log('📊 Using separate clock query data for next level:', clock.nextStructure)
     return {
       level: clock.nextStructure.levelNumber,
       smallBlind: clock.nextStructure.smallBlind.toString(),
@@ -654,39 +590,24 @@ const nextLevel = computed(() => {
   }
   
   // Mock fallback only if no real data
-  console.log('⚠️ Using mock next level data')
   return { level: 7, smallBlind: '300', bigBlind: '600', ante: '75', isBreak: false }
 })
 
 const timeRemaining = computed(() => {
   // Use subscription data if available
   if (clockData.value?.tournamentClockUpdates) {
-    console.log('⏰ Using subscription data for time remaining:', clockData.value.tournamentClockUpdates.timeRemainingSeconds)
     return clockData.value.tournamentClockUpdates.timeRemainingSeconds || 0
   }
   
   // Use separate tournament clock query data
   const clock = clockQueryData.value?.tournamentClock
-  console.log('⏰ Separate tournament clock query data:', {
-    hasClock: !!clock,
-    clockStatus: clock?.status,
-    timeRemainingSeconds: clock?.timeRemainingSeconds,
-    currentLevel: clock?.currentLevel,
-    autoAdvance: clock?.autoAdvance,
-    hasCurrentStructure: !!clock?.currentStructure,
-    hasNextStructure: !!clock?.nextStructure
-  })
   
   // Use clock?.timeRemainingSeconds from separate query
   if (clock?.timeRemainingSeconds !== undefined && clock?.timeRemainingSeconds !== null) {
-    const remaining = Math.max(0, clock.timeRemainingSeconds)
-    console.log('✅ Found valid timeRemainingSeconds from separate clock query:', remaining)
-    return remaining
+      return Math.max(0, clock.timeRemainingSeconds)
   }
   
-  // Mock fallback only if no real data
-  console.log('⚠️ Using mock time data - no real clock data available')
-  return 8 * 60 + 23
+  return 0
 })
 
 // User seat from seating chart
@@ -811,16 +732,6 @@ const unregisterFromTournament = () => {
   }
 }
 
-const shareTournament = () => {
-  // Share functionality
-  console.log('Share tournament')
-}
-
-const viewFullSeatingChart = () => {
-  // Navigate to full seating chart
-  console.log('View full seating chart')
-}
-
 const handleRefresh = async (ev: CustomEvent) => {
   try {
     await refetchTournament()
@@ -846,30 +757,15 @@ onMounted(() => {
     // @ts-ignore
     window.debugSendInit = debugSendInit
   }
-  
-  // Set up periodic refresh for clock data every 10 seconds as fallback
-  timer.value = setInterval(() => {
-    if (!clockConnected.value) {
-      console.log('🔄 Subscription not connected, refreshing clock query...')
-      refetchClock()
-    }
-  }, 10000)
-  
+
   // Monitor subscription connection status
   watch([clockConnected, clockError], ([connected, error]) => {
-    console.log('📡 Subscription status:', { connected, error })
     if (!connected && error) {
-      console.log('❌ Subscription error, falling back to query refresh')
+      console.error('Subscription error, falling back to query refresh')
     }
   }, { immediate: true })
 })
 
-onUnmounted(() => {
-  // Timer cleanup no longer needed since we use subscription
-  if (timer.value) {
-    clearInterval(timer.value)
-  }
-})
 </script>
 
 <style scoped>

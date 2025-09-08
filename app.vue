@@ -69,22 +69,14 @@ import {
   personCircleOutline,
   logInOutline,
 } from 'ionicons/icons'
-import { useAuth } from '~/composables/useAuth'
 
 // Use custom i18n composable
 const { t } = useI18n()
 
-// Authentication state
-const { isAuthenticated } = useAuth()
 </script>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
-
-.pp-app {
-  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: #18181a;
-}
+/* App-specific styles (navigation tab bar) */
 
 .pp-tabbar {
   --background: #18181a;

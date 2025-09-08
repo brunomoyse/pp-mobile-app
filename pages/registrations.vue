@@ -75,7 +75,6 @@
             v-for="registration in filteredRegistrations" 
             :key="registration.id" 
             class="pp-registration-card"
-            @click="viewRegistration(registration)"
           >
             <!-- Registration Header -->
             <div class="pp-registration-header">
@@ -103,11 +102,11 @@
               <div class="pp-detail-row">
                 <div class="pp-detail-item">
                   <IonIcon :icon="calendarOutline" class="pp-detail-icon" />
-                  <span class="pp-detail-text">{{ formatDate(registration.startTime) }}</span>
+                  <span class="pp-detail-text">{{ formatDate(registration.startTime, locale) }}</span>
                 </div>
                 <div class="pp-detail-item">
                   <IonIcon :icon="timeOutline" class="pp-detail-icon" />
-                  <span class="pp-detail-text">{{ formatTime(registration.startTime) }}</span>
+                  <span class="pp-detail-text">{{ formatTime(registration.startTime, locale) }}</span>
                 </div>
               </div>
               
@@ -228,8 +227,6 @@ import {
   IonBadge,
 } from '@ionic/vue'
 import ClubSelector from '@/components/ClubSelector.vue'
-import { useClubStore } from '~/stores/useClubStore'
-import { useTournaments, useMyTournamentRegistrations } from '~/composables/usePokerAPI'
 import {
   optionsOutline,
   calendarOutline,
@@ -241,20 +238,19 @@ import {
   checkmarkCircleOutline,
   shareOutline,
 } from 'ionicons/icons'
-import { ref, computed, watch } from 'vue'
+import { ref } from 'vue'
 
 definePageMeta({
     middleware: 'auth'
 })
 
 // Use custom i18n composable
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 // Reactive data
 const showFilters = ref(false)
 const selectedCategory = ref<'upcoming' | 'live' | 'completed'>('upcoming')
 const selectedFilters = ref<string[]>([])
-const clubStore = useClubStore()
 
 // Filter options
 const filters = [
@@ -264,121 +260,6 @@ const filters = [
   { key: 'deepstack', label: 'Deepstack' },
   { key: 'turbo', label: 'Turbo' },
 ]
-
-// Fetch data from API
-const { data: myRegistrations, loading: registrationsLoading, error: registrationsError } = useMyTournamentRegistrations()
-
-const tournamentsVariables = computed(() => ({
-  limit: 100, // Get enough tournaments to cover all registrations
-  clubId: clubStore.selectedClub?.id
-}))
-
-const { data: allTournaments, loading: tournamentsLoading, error: tournamentsError } = useTournaments(tournamentsVariables)
-
-// Combine registration data with tournament data
-const registrations = computed(() => {
-  if (!myRegistrations.value?.myTournamentRegistrations || !allTournaments.value?.tournaments) {
-    return []
-  }
-
-  const tournamentMap = new Map(allTournaments.value.tournaments.map(t => [t.id, t]))
-  
-  return myRegistrations.value.myTournamentRegistrations
-    .map(registration => {
-      const tournament = tournamentMap.get(registration.tournamentId)
-      if (!tournament) return null
-      
-      // Determine tournament type based on title or other properties
-      const tournamentType = tournament.title.toLowerCase().includes('turbo') ? 'turbo' :
-                           tournament.title.toLowerCase().includes('bounty') ? 'bounty' :
-                           tournament.title.toLowerCase().includes('deepstack') ? 'deepstack' : 'deepstack'
-      
-      // Map registration status to display status
-      const getDisplayStatus = (regStatus: string, tournamentStatus: string) => {
-        // Map based on tournament timing and registration status
-        const now = new Date()
-        const startTime = new Date(tournament.startTime)
-        const endTime = tournament.endTime ? new Date(tournament.endTime) : null
-        
-        if (endTime && now > endTime) return 'completed'
-        if (now >= startTime) return 'live'
-        return 'upcoming'
-      }
-      
-      return {
-        id: registration.id,
-        tournamentId: registration.tournamentId,
-        tournamentName: tournament.title,
-        type: tournamentType,
-        status: getDisplayStatus(registration.status, tournament.status),
-        club: 'Unknown Club', // Would need club data in tournament response
-        startTime: new Date(tournament.startTime),
-        buyIn: `${tournament.buyInCents / 100}€`,
-        seatNumber: Math.floor(Math.random() * 10) + 1, // Mock seat number - needs seating data
-        table: null, // Would need seating data
-        position: null, // Would need results data
-        registeredAt: new Date(registration.registrationTime),
-        canCancelUntil: new Date(new Date(tournament.startTime).getTime() - 2 * 60 * 60 * 1000), // 2 hours before start
-        payout: 0, // Would need results data
-        notes: registration.notes
-      }
-    })
-    .filter(Boolean)
-})
-
-// Loading and error states
-const isLoading = computed(() => registrationsLoading.value || tournamentsLoading.value)
-const hasError = computed(() => registrationsError.value || tournamentsError.value)
-
-// Computed properties
-const filteredRegistrations = computed(() => {
-  let filtered = registrations.value.filter(r => r.status === selectedCategory.value)
-  
-  // Filter by selected club
-  if (clubStore.selectedClub) {
-    filtered = filtered.filter(r => r.club === clubStore.selectedClub?.name)
-  }
-  
-  // Apply selected filters
-  if (selectedFilters.value.length > 0) {
-    filtered = filtered.filter(r => {
-      return selectedFilters.value.some(filter => {
-        switch(filter) {
-          case 'canCancel':
-            return r.status === 'upcoming' && canCancel(r)
-          case 'lateReg':
-            return r.registeredAt > new Date(r.startTime.getTime() - 24 * 60 * 60 * 1000)
-          case 'highStakes':
-            return parseInt(r.buyIn.replace(/[€.]/g, '')) > 100
-          default:
-            return r.type === filter
-        }
-      })
-    })
-  }
-  
-  return filtered.sort((a, b) => a.startTime.getTime() - b.startTime.getTime())
-})
-
-// Stats computed properties that also respect club filtering
-const clubFilteredRegistrations = computed(() => {
-  if (clubStore.selectedClub) {
-    return registrations.value.filter(r => r.club === clubStore.selectedClub?.name)
-  }
-  return registrations.value
-})
-
-const registeredCount = computed(() => clubFilteredRegistrations.value.length)
-
-const totalInvestment = computed(() => {
-  return clubFilteredRegistrations.value.reduce((total, reg) => {
-    return total + parseInt(reg.buyIn.replace(/[€.]/g, ''))
-  }, 0)
-})
-
-const upcomingCount = computed(() => {
-  return clubFilteredRegistrations.value.filter(r => r.status === 'upcoming').length
-})
 
 // Methods
 const toggleFilter = (filterKey: string) => {
@@ -407,109 +288,13 @@ const canCancel = (registration: any) => {
   return new Date() < new Date(registration.canCancelUntil)
 }
 
-const formatDate = (date: Date) => {
-  return date.toLocaleDateString('en-GB', { 
-    weekday: 'short', 
-    day: 'numeric', 
-    month: 'short' 
-  })
-}
-
-const formatTime = (date: Date) => {
-  return date.toLocaleTimeString('en-GB', { 
-    hour: '2-digit', 
-    minute: '2-digit' 
-  })
-}
-
-const formatDateTime = (date: Date) => {
-  return date.toLocaleDateString('en-GB', { 
-    day: 'numeric', 
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-}
-
 const handleRefresh = async (ev: CustomEvent) => {
   setTimeout(() => { (ev.target as any)?.complete?.() }, 1000)
-}
-
-const viewRegistration = (registration: any) => {
-  console.log('View registration:', registration.id)
-}
-
-const cancelRegistration = (registration: any) => {
-  console.log('Cancel registration:', registration.id)
-  // Add confirmation dialog here
-}
-
-const modifyRegistration = (registration: any) => {
-  console.log('Modify registration:', registration.id)
-}
-
-const shareRegistration = (registration: any) => {
-  console.log('Share registration:', registration.id)
-}
-
-const viewLive = (registration: any) => {
-  console.log('View live registration:', registration.id)
-}
-
-const viewResult = (registration: any) => {
-  console.log('View result:', registration.id)
 }
 </script>
 
 <style scoped>
-.pp-page {
-  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: #18181a;
-}
-
-/* Header */
-.pp-header {
-  --background: rgba(24, 24, 26, 0.95);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-.pp-toolbar {
-  --background: transparent;
-  --border-color: #24242a;
-  border-bottom: 1px solid #24242a;
-}
-
-.pp-sub-toolbar {
-  --background: transparent;
-  --border-color: #24242a;
-  padding: 0 16px;
-  min-height: 44px;
-}
-
-.pp-title {
-  color: #fee78a;
-  font-weight: 700;
-  font-size: 20px;
-}
-
-.pp-header-button {
-  --color: #54545f;
-  --color-hover: #fee78a;
-  --background-hover: rgba(254, 231, 138, 0.1);
-  border-radius: 8px;
-  transition: all 0.3s ease;
-}
-
-/* Content */
-.pp-content {
-  --background: #18181a;
-}
-
-.pp-section {
-  padding: 16px;
-  margin-bottom: 8px;
-}
+/* Registrations page specific styles */
 
 /* Stats Container */
 .pp-stats-container {
@@ -534,55 +319,18 @@ const viewResult = (registration: any) => {
   box-shadow: 0 8px 24px rgba(100, 116, 139, 0.15);
 }
 
-.pp-stat-value {
-  color: #fee78a;
-  font-size: 20px;
-  font-weight: 700;
-  margin-bottom: 4px;
-}
+/* Stats styling is inherited from shared.css */
 
-.pp-stat-label {
-  color: #94a3b8;
-  font-size: 11px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-/* Filters */
+/* Filters - registrations specific */
 .pp-filters {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 
-.pp-chip-active {
-  --background: linear-gradient(135deg, #64748b, #475569);
-  --color: white;
-  border: 1px solid #64748b;
-  padding: 4px 8px;
-}
-
-.pp-chip-inactive {
-  --background: rgba(84, 84, 95, 0.1);
-  --color: #54545f;
-  border: 1px solid #54545f;
-  padding: 4px 8px;
-}
-
-/* Segment */
-.pp-segment {
-  --background: rgba(84, 84, 95, 0.1);
-  border-radius: 8px;
-  margin-bottom: 16px;
-}
-
+/* Segment button - registrations specific font size */
 .pp-segment-button {
-  --color: #54545f;
-  --color-checked: #18181a;
-  --background-checked: #fee78a;
   font-size: 14px;
-  font-weight: 500;
 }
 
 /* Registration Cards */
@@ -634,23 +382,7 @@ const viewResult = (registration: any) => {
   padding: 4px 8px;
 }
 
-.pp-type-deepstack {
-  --background: rgba(34, 197, 94, 0.2);
-  --color: #22c55e;
-  border: 1px solid rgba(34, 197, 94, 0.4);
-}
-
-.pp-type-turbo {
-  --background: rgba(251, 146, 60, 0.2);
-  --color: #fb923c;
-  border: 1px solid rgba(251, 146, 60, 0.4);
-}
-
-.pp-type-bounty {
-  --background: rgba(239, 68, 68, 0.2);
-  --color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.4);
-}
+/* Tournament type badges are now in shared.css */
 
 .pp-registration-club {
   color: #94a3b8;
@@ -658,26 +390,7 @@ const viewResult = (registration: any) => {
   font-weight: 400;
 }
 
-.pp-status-badge {
-  font-size: 11px;
-  font-weight: 500;
-  padding: 4px 8px;
-}
-
-.pp-status-upcoming {
-  --background: rgba(34, 197, 94, 0.2);
-  --color: #22c55e;
-}
-
-.pp-status-live {
-  --background: rgba(239, 68, 68, 0.2);
-  --color: #ef4444;
-}
-
-.pp-status-completed {
-  --background: rgba(100, 116, 139, 0.2);
-  --color: #64748b;
-}
+/* Status badges are now in shared.css */
 
 .pp-registration-details {
   margin-bottom: 16px;
@@ -756,68 +469,9 @@ const viewResult = (registration: any) => {
   gap: 8px;
 }
 
-.pp-button-primary {
-  --background: linear-gradient(135deg, #64748b, #475569);
-  --color: white;
-  font-weight: 600;
-  font-size: 12px;
-  border-radius: 8px;
-  --padding-start: 16px;
-  --padding-end: 16px;
-}
-
-.pp-button-secondary {
-  --color: #64748b;
-  --color-hover: #fee78a;
-  font-weight: 500;
-  font-size: 12px;
-  --padding-start: 12px;
-  --padding-end: 12px;
-}
-
-.pp-button-live {
-  --background: linear-gradient(135deg, #ef4444, #dc2626);
-  --color: white;
-  font-weight: 600;
-  font-size: 12px;
-  border-radius: 8px;
-  --padding-start: 16px;
-  --padding-end: 16px;
-}
-
-.pp-button-warning {
-  --background: linear-gradient(135deg, #f59e0b, #d97706);
-  --color: white;
-  font-weight: 600;
-  font-size: 12px;
-  border-radius: 8px;
-  --padding-start: 16px;
-  --padding-end: 16px;
-}
-
-/* Empty State */
-.pp-empty-state {
-  text-align: center;
-  padding: 48px 24px;
-}
-
-.pp-empty-icon {
-  color: #54545f;
-  font-size: 64px;
-  margin-bottom: 16px;
-}
-
-.pp-empty-title {
-  color: #fee78a;
-  font-size: 18px;
-  font-weight: 600;
-  margin: 0 0 8px 0;
-}
-
+/* Buttons and empty state are now in shared.css */
+/* Empty text specific margin override */
 .pp-empty-text {
-  color: #94a3b8;
-  font-size: 14px;
-  font-weight: 400;
   margin: 0 0 24px 0;
 }
 </style>

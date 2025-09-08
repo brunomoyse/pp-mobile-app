@@ -251,9 +251,8 @@ import {
   notificationsOutline,
   logOutOutline,
 } from 'ionicons/icons'
-import { ref, computed } from 'vue'
-import { useAuth } from '~/composables/useAuth'
-import { useCurrentUser, useProfileUpdate } from '~/composables/usePokerAPI'
+import { ref, computed, storeToRefs } from 'vue'
+import { useAuthStore } from '~/stores/useAuthStore'
 import avatarUrl from '@/assets/images/players/70707070-7070-7070-7070-707070707070.png'
 
 // Use custom i18n composable
@@ -261,7 +260,8 @@ const { t } = useI18n()
 const router = useRouter()
 
 // Auth state
-const { isAuthenticated, currentUser, logout: authLogout } = useAuth()
+const authStore = useAuthStore()
+const { isAuthenticated, currentUser } = storeToRefs(authStore)
 
 // User data from API
 const { data: apiUserData, loading: userLoading, refetch: refetchUser } = useCurrentUser()
@@ -368,7 +368,7 @@ const handleProfileSave = async (profileData: any) => {
 
 const logout = async () => {
   try {
-    await authLogout()
+    await authStore.logout()
     router.replace('/login')
   } catch (error) {
     console.error('Logout failed:', error)
@@ -438,30 +438,9 @@ const formatCurrency = (amount: number) => {
   gap: 20px;
 }
 
+/* Avatar styles - profile page specific */
 .pp-avatar-container {
   position: relative;
-}
-
-.pp-avatar-glow {
-  position: absolute;
-  inset: -4px;
-  background: linear-gradient(45deg, #64748b, #475569);
-  border-radius: 50%;
-  filter: blur(8px);
-  opacity: 0.4;
-  animation: pulse 2s ease-in-out infinite alternate;
-}
-
-.pp-avatar {
-  position: relative;
-  width: 80px;
-  height: 80px;
-  border: 2px solid #fee78a;
-  box-shadow: 0 4px 16px rgba(254, 231, 138, 0.3);
-}
-
-.pp-avatar img {
-  border-radius: 50%;
 }
 
 .pp-edit-avatar {
@@ -597,62 +576,16 @@ const formatCurrency = (amount: number) => {
   font-weight: 500;
 }
 
-/* Action Cards */
+/* Action Cards - profile page specific layout */
 .pp-action-cards {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.pp-action-card {
-  background: linear-gradient(135deg, #24242a 0%, #1a1a1e 100%);
-  border: 1px solid #54545f;
-  border-radius: 16px;
-  padding: 16px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
+/* Profile page specific hover style */
 .pp-action-card:hover {
   border-color: #fee78a;
-  transform: translateY(-2px);
-}
-
-.pp-action-icon {
-  width: 40px;
-  height: 40px;
-  background: rgba(100, 116, 139, 0.1);
-  border: 1px solid rgba(100, 116, 139, 0.3);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #64748b;
-  font-size: 20px;
-}
-
-.pp-action-content {
-  flex: 1;
-}
-
-.pp-action-title {
-  color: #e2e8f0;
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 2px;
-}
-
-.pp-action-subtitle {
-  color: #94a3b8;
-  font-size: 12px;
-}
-
-.pp-chevron {
-  color: #54545f;
-  font-size: 20px;
 }
 
 /* Settings */
@@ -721,11 +654,7 @@ const formatCurrency = (amount: number) => {
   --handle-background: #fff;
 }
 
-/* Animations */
-@keyframes pulse {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 0.6; }
-}
+/* Animations are now in shared.css */
 
 /* Modal Styles */
 .pp-edit-modal {

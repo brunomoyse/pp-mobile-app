@@ -1,0 +1,554 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
+/* ============================================
+   Base Styles & Variables
+   ============================================ */
+
+/* Base Page Styles */
+.pp-page {
+  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #18181a;
+}
+
+/* ============================================
+   Header Styles
+   ============================================ */
+
+.pp-header {
+  --background: rgba(24, 24, 26, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.pp-toolbar {
+  --background: transparent;
+  --border-color: #24242a;
+  border-bottom: 1px solid #24242a;
+}
+
+.pp-sub-toolbar {
+  --background: transparent;
+  --border-color: #24242a;
+  padding: 0 16px;
+  min-height: 44px;
+}
+
+.pp-title {
+  color: #fee78a;
+  font-weight: 700;
+  font-size: 20px;
+}
+
+.pp-header-button {
+  --color: #54545f;
+  --color-hover: #fee78a;
+  --background-hover: rgba(254, 231, 138, 0.1);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+/* ============================================
+   Content & Sections
+   ============================================ */
+
+.pp-content {
+  --background: #18181a;
+}
+
+.pp-section {
+  padding: 16px;
+  margin-bottom: 8px;
+}
+
+.pp-section-title {
+  color: #fee78a;
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 16px 0;
+}
+
+/* ============================================
+   Cards & Containers
+   ============================================ */
+
+/* Basic Card */
+.pp-card {
+  background: linear-gradient(135deg, #24242a 0%, #18181a 100%);
+  border: 1px solid #54545f;
+  border-radius: 16px;
+  padding: 20px;
+  transition: all 0.3s ease;
+}
+
+.pp-card:hover {
+  border-color: #64748b;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(100, 116, 139, 0.15);
+}
+
+/* Action Cards */
+.pp-action-card {
+  background: linear-gradient(135deg, #24242a 0%, #18181a 100%);
+  border: 1px solid #54545f;
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.pp-action-card:hover {
+  border-color: #64748b;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(100, 116, 139, 0.15);
+}
+
+.pp-action-icon {
+  width: 40px;
+  height: 40px;
+  background: rgba(100, 116, 139, 0.1);
+  border: 1px solid rgba(100, 116, 139, 0.3);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  font-size: 20px;
+}
+
+.pp-action-content {
+  flex: 1;
+}
+
+.pp-action-title {
+  color: #e2e8f0;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.pp-action-subtitle {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+/* Stats Cards */
+.pp-stat-card {
+  background: linear-gradient(135deg, rgba(100, 116, 139, 0.08), rgba(71, 85, 105, 0.08));
+  border: 1px solid rgba(100, 116, 139, 0.3);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.pp-stat-card:hover {
+  border-color: rgba(100, 116, 139, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(100, 116, 139, 0.15);
+}
+
+.pp-stat-value {
+  color: #fee78a;
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.pp-stat-label {
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ============================================
+   Segments & Tabs
+   ============================================ */
+
+.pp-segment {
+  --background: rgba(84, 84, 95, 0.1);
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.pp-segment-button {
+  --color: #54545f;
+  --color-checked: #18181a;
+  --background-checked: #fee78a;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* ============================================
+   Chips & Filters
+   ============================================ */
+
+.pp-chip-active {
+  --background: linear-gradient(135deg, #64748b, #475569);
+  --color: white;
+  border: 1px solid #64748b;
+  padding: 4px 8px;
+}
+
+.pp-chip-inactive {
+  --background: rgba(84, 84, 95, 0.1);
+  --color: #54545f;
+  border: 1px solid #54545f;
+  padding: 4px 8px;
+}
+
+/* ============================================
+   Buttons
+   ============================================ */
+
+.pp-button-primary {
+  --background: linear-gradient(135deg, #64748b, #475569);
+  --color: white;
+  font-weight: 600;
+  font-size: 12px;
+  border-radius: 8px;
+  --padding-start: 16px;
+  --padding-end: 16px;
+}
+
+.pp-button-secondary {
+  --color: #64748b;
+  --color-hover: #fee78a;
+  font-weight: 500;
+  font-size: 12px;
+  --padding-start: 12px;
+  --padding-end: 12px;
+}
+
+.pp-button-live {
+  --background: linear-gradient(135deg, #ef4444, #dc2626);
+  --color: white;
+  font-weight: 600;
+  font-size: 12px;
+  border-radius: 8px;
+  --padding-start: 16px;
+  --padding-end: 16px;
+}
+
+.pp-button-disabled {
+  --background: rgba(84, 84, 95, 0.3);
+  --color: #54545f;
+  font-weight: 500;
+  font-size: 12px;
+  border-radius: 8px;
+  --padding-start: 16px;
+  --padding-end: 16px;
+}
+
+.pp-button-warning {
+  --background: linear-gradient(135deg, #f59e0b, #d97706);
+  --color: white;
+  font-weight: 600;
+  font-size: 12px;
+  border-radius: 8px;
+  --padding-start: 16px;
+  --padding-end: 16px;
+}
+
+.pp-button-login {
+  --background: linear-gradient(135deg, #fee78a, #fbbf24);
+  --color: #18181a;
+  font-weight: 600;
+  font-size: 12px;
+  border-radius: 8px;
+  --padding-start: 12px;
+  --padding-end: 16px;
+}
+
+/* ============================================
+   Status Badges
+   ============================================ */
+
+.pp-status-badge {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 8px;
+}
+
+.pp-status-upcoming {
+  --background: rgba(34, 197, 94, 0.2);
+  --color: #22c55e;
+}
+
+.pp-status-live {
+  --background: rgba(239, 68, 68, 0.2);
+  --color: #ef4444;
+}
+
+.pp-status-completed {
+  --background: rgba(100, 116, 139, 0.2);
+  --color: #64748b;
+}
+
+/* ============================================
+   Tournament Type Badges
+   ============================================ */
+
+.pp-type-deepstack {
+  --background: rgba(34, 197, 94, 0.2);
+  --color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.4);
+}
+
+.pp-type-turbo {
+  --background: rgba(251, 146, 60, 0.2);
+  --color: #fb923c;
+  border: 1px solid rgba(251, 146, 60, 0.4);
+}
+
+.pp-type-freezeout {
+  --background: rgba(59, 130, 246, 0.2);
+  --color: #3b82f6;
+  border: 1px solid rgba(59, 130, 246, 0.4);
+}
+
+.pp-type-bounty {
+  --background: rgba(239, 68, 68, 0.2);
+  --color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+/* ============================================
+   Avatar Styles
+   ============================================ */
+
+.pp-avatar {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border: 2px solid #fee78a;
+  box-shadow: 0 4px 16px rgba(254, 231, 138, 0.3);
+}
+
+.pp-avatar img {
+  border-radius: 50%;
+}
+
+.pp-avatar-glow {
+  position: absolute;
+  inset: -4px;
+  background: linear-gradient(45deg, #64748b, #475569);
+  border-radius: 50%;
+  filter: blur(8px);
+  opacity: 0.4;
+  animation: pulse 2s ease-in-out infinite alternate;
+}
+
+/* ============================================
+   Detail Items
+   ============================================ */
+
+.pp-detail-row {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 8px;
+}
+
+.pp-detail-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+}
+
+.pp-detail-icon {
+  color: #64748b;
+  font-size: 16px;
+}
+
+.pp-detail-text {
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+/* ============================================
+   Loading, Error & Empty States
+   ============================================ */
+
+.pp-loading-state {
+  text-align: center;
+  padding: 48px 24px;
+}
+
+.pp-loading-spinner {
+  --color: #fee78a;
+  font-size: 32px;
+  margin-bottom: 16px;
+}
+
+.pp-loading-text {
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 400;
+  margin: 0;
+}
+
+.pp-error-state {
+  text-align: center;
+  padding: 48px 24px;
+}
+
+.pp-error-icon {
+  color: #ef4444;
+  font-size: 64px;
+  margin-bottom: 16px;
+}
+
+.pp-error-title {
+  color: #ef4444;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+
+.pp-error-text {
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 400;
+  margin: 0 0 16px 0;
+}
+
+.pp-retry-button {
+  --background: linear-gradient(135deg, #64748b, #475569);
+  --color: white;
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: 8px;
+}
+
+.pp-empty-state {
+  text-align: center;
+  padding: 48px 24px;
+}
+
+.pp-empty-icon {
+  color: #54545f;
+  font-size: 64px;
+  margin-bottom: 16px;
+}
+
+.pp-empty-title {
+  color: #fee78a;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+
+.pp-empty-text {
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 400;
+  margin: 0;
+}
+
+/* ============================================
+   Modal Styles
+   ============================================ */
+
+.pp-modal {
+  --backdrop-opacity: 0.6;
+}
+
+.pp-modal-header {
+  --background: #18181a !important;
+  background: #18181a !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.pp-modal-toolbar {
+  --background: #18181a !important;
+  background: #18181a !important;
+  --border-color: #24242a;
+  border-bottom: 1px solid #24242a;
+}
+
+.pp-modal-title {
+  color: #e2e8f0 !important;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.pp-modal-close {
+  --color: #54545f;
+  --color-hover: #fee78a;
+}
+
+.pp-modal-content {
+  --background: #18181a;
+}
+
+/* ============================================
+   Popover Styles
+   ============================================ */
+
+.pp-popover {
+  --background: rgba(24, 24, 26, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.pp-popover-content {
+  --background: #18181a;
+}
+
+.pp-popover-items {
+  padding: 8px;
+}
+
+.pp-popover-item {
+  padding: 12px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.3s ease;
+}
+
+.pp-popover-item:hover {
+  background: rgba(254, 231, 138, 0.1);
+}
+
+.pp-popover-text {
+  color: #fee78a;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.pp-popover-check {
+  color: #64748b;
+  font-size: 16px;
+}
+
+/* ============================================
+   Animations
+   ============================================ */
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+}
+
+/* ============================================
+   Utility Classes
+   ============================================ */
+
+.pp-chevron {
+  color: #54545f;
+  font-size: 20px;
+}
+
+.pp-last-section {
+  padding-bottom: 100px;
+}

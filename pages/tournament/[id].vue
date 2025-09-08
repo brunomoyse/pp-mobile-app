@@ -45,45 +45,4 @@ import { useRoute } from 'vue-router'
 const route = useRoute()
 const tournamentId = route.params.id as string
 
-const shareTournament = () => {
-  // Share functionality
-}
 </script>
-
-<style scoped>
-.pp-page {
-  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: #18181a;
-}
-
-/* Header */
-.pp-header {
-  --background: rgba(24, 24, 26, 0.95);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-.pp-toolbar {
-  --background: transparent;
-  --border-color: #24242a;
-  border-bottom: 1px solid #24242a;
-}
-
-.pp-title {
-  color: #fee78a;
-  font-weight: 700;
-  font-size: 20px;
-}
-
-.pp-header-button {
-  --color: #54545f;
-  --color-hover: #fee78a;
-  --background-hover: rgba(254, 231, 138, 0.1);
-  border-radius: 8px;
-  transition: all 0.3s ease;
-}
-
-.pp-content {
-  --background: #18181a;
-}
-</style>

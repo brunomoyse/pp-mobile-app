@@ -14,7 +14,6 @@
             <img src="@/assets/icon-no-bg.png" alt="PocketPair" class="pp-logo-image" />
           </div>
           <h1 class="pp-app-title">PocketPair</h1>
-          <p class="pp-app-subtitle">{{ t('auth.welcomeBack') }}</p>
         </div>
 
         <!-- Login Form -->
@@ -83,12 +82,6 @@
             </IonButton>
           </div>
 
-          <!-- Error Display -->
-          <div v-if="authError" class="pp-auth-error">
-            <IonIcon :icon="alertCircleOutline" />
-            <span>{{ getErrorMessage(authError) }}</span>
-          </div>
-
           <!-- Login Button -->
           <IonButton
             type="submit"
@@ -96,42 +89,9 @@
             class="pp-login-button"
             :disabled="!isFormValid || isLoading"
           >
-            <IonSpinner v-if="isLoggingIn" name="dots" />
-            <span v-else>{{ t('auth.login') }}</span>
+            <span>{{ t('auth.login') }}</span>
           </IonButton>
         </form>
-
-        <!-- Divider -->
-        <div class="pp-divider">
-          <span>{{ t('auth.orContinueWith') }}</span>
-        </div>
-
-        <!-- Google OAuth Button -->
-        <IonButton
-          expand="block"
-          fill="outline"
-          class="pp-google-button"
-          @click="handleGoogleLogin"
-          :disabled="isLoading"
-        >
-          <IonIcon :icon="logoGoogle" slot="start" />
-          <IonSpinner v-if="isGoogleLogging" name="dots" />
-          <span v-else>{{ t('auth.continueWithGoogle') }}</span>
-        </IonButton>
-
-        <!-- Register Link -->
-        <div class="pp-register-link">
-          <span>{{ t('auth.noAccount') }}</span>
-          <IonButton
-            fill="clear"
-            @click="goToRegister"
-            class="pp-link-button"
-            :disabled="isLoading"
-          >
-            {{ t('auth.register') }}
-          </IonButton>
-        </div>
-
       </div>
     </IonContent>
   </IonPage>
@@ -150,24 +110,29 @@ import {
   IonInput,
   IonToggle,
   IonLabel,
-  IonSpinner,
-  alertController,
 } from '@ionic/vue'
 import {
   mailOutline,
   lockClosedOutline,
   eyeOutline,
   eyeOffOutline,
-  alertCircleOutline,
-  logoGoogle,
 } from 'ionicons/icons'
 import { ref, computed } from 'vue'
-import { useAuth } from '~/composables/useAuth'
-import type { LoginCredentials } from '~/composables/useAuth'
+import { useAuthStore, type LoginCredentials } from '~/stores/useAuthStore'
 
 const { t } = useI18n()
 const router = useRouter()
-const { login, loginWithGoogle, isLoading, isLoggingIn, isGoogleLogging, authError } = useAuth()
+const route = useRoute()
+const authStore = useAuthStore()
+const { login, isLoading, isAuthenticated } = authStore
+
+// Redirect if already authenticated
+watch(() => authStore.isAuthenticated, (authenticated) => {
+  if (authenticated) {
+    const redirectTo = (route.query.redirect as string) || '/'
+    router.replace(redirectTo)
+  }
+}, { immediate: true })
 
 // Form state
 const email = ref('')
@@ -232,85 +197,27 @@ const handleLogin = async () => {
       password: password.value,
     }
     
-    const user = await login(credentials, rememberMe.value)
-    
+    const user = await login(credentials)
     if (user) {
-      // Redirect to home or intended page
-      router.replace('/')
+      // Redirect to intended page or home
+      const redirectTo = (route.query.redirect as string) || '/'
+      
+      // Small delay to ensure store is fully updated before redirect
+      await nextTick()
+      await router.replace(redirectTo)
+    } else {
+      // Login failed - show error
+      emailError.value = 'Invalid email or password'
     }
   } catch (error) {
-    console.error('Login failed:', error)
-  }
-}
-
-// Handle Google OAuth login
-const handleGoogleLogin = async () => {
-  try {
-    // In a real implementation, you would integrate with Google OAuth SDK
-    // For now, we'll simulate the flow
-    const alert = await alertController.create({
-      header: t('auth.googleAuth'),
-      message: t('auth.googleAuthInfo'),
-      buttons: [
-        {
-          text: t('common.cancel'),
-          role: 'cancel',
-        },
-        {
-          text: t('common.continue'),
-          handler: async () => {
-            // Simulate Google token (in real app, get from Google SDK)
-            const mockGoogleToken = 'mock-google-token'
-            const user = await loginWithGoogle(mockGoogleToken)
-            
-            if (user) {
-              router.replace('/')
-            }
-          },
-        },
-      ],
-    })
-    
-    await alert.present()
-  } catch (error) {
-    console.error('Google login failed:', error)
+    // Show user-friendly error message
+    emailError.value = 'Login failed. Please check your credentials and try again.'
   }
 }
 
 // Forgot password
 const forgotPassword = async () => {
-  const alert = await alertController.create({
-    header: t('auth.forgotPassword'),
-    message: t('auth.forgotPasswordInfo'),
-    inputs: [
-      {
-        name: 'email',
-        type: 'email',
-        placeholder: t('auth.email'),
-        value: email.value,
-      },
-    ],
-    buttons: [
-      {
-        text: t('common.cancel'),
-        role: 'cancel',
-      },
-      {
-        text: t('auth.sendResetLink'),
-        handler: (data) => {
-          // In real implementation, call password reset API
-          console.log('Password reset requested for:', data.email)
-        },
-      },
-    ],
-  })
-  
-  await alert.present()
-}
-
-// Navigation
-const goToRegister = () => {
-  router.push('/register')
+  console.warn('Forgot password functionality not implemented yet.')
 }
 
 // Error message helper

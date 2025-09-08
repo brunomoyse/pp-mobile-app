@@ -313,17 +313,16 @@ import {
   informationCircleOutline,
   closeOutline,
 } from 'ionicons/icons'
-import { ref, computed, watch } from 'vue'
-import { useAuth } from '~/composables/useAuth'
-import { useLeaderboardNew } from '~/composables/usePokerAPI'
+import { ref, computed, watch, storeToRefs } from 'vue'
+import { useAuthStore } from '~/stores/useAuthStore'
 import { usePlayerAvatar } from '~/composables/usePlayerAvatar'
-import { useCurrentUser } from '~/composables/usePokerAPI'
 
 // Use custom i18n composable
 const { t } = useI18n()
 
 // Authentication state
-const { isAuthenticated } = useAuth()
+const authStore = useAuthStore()
+const { isAuthenticated } = storeToRefs(authStore)
 
 // Player avatar helper
 const { getPlayerAvatarWithFallback } = usePlayerAvatar()
@@ -487,54 +486,7 @@ const handleAvatarError = (event: Event) => {
 </script>
 
 <style scoped>
-.pp-page {
-  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: #18181a;
-}
-
-/* Header */
-.pp-header {
-  --background: rgba(24, 24, 26, 0.95);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-.pp-toolbar {
-  --background: transparent;
-  --border-color: #24242a;
-  border-bottom: 1px solid #24242a;
-}
-
-.pp-sub-toolbar {
-  --background: transparent;
-  --border-color: #24242a;
-  padding: 0 16px;
-  min-height: 44px;
-}
-
-.pp-title {
-  color: #fee78a;
-  font-weight: 700;
-  font-size: 20px;
-}
-
-.pp-header-button {
-  --color: #54545f;
-  --color-hover: #fee78a;
-  --background-hover: rgba(254, 231, 138, 0.1);
-  border-radius: 8px;
-  transition: all 0.3s ease;
-}
-
-/* Content */
-.pp-content {
-  --background: #18181a;
-}
-
-.pp-section {
-  padding: 16px;
-  margin-bottom: 8px;
-}
+/* Leaderboard page specific styles */
 
 /* Current Player Card */
 .pp-current-player-card {
@@ -601,19 +553,10 @@ const handleAvatarError = (event: Event) => {
   text-align: right;
 }
 
-.pp-stat-value {
-  color: #fee78a;
+/* Override stat value size for current player card */
+.pp-current-player-stats .pp-stat-value {
   font-size: 24px;
-  font-weight: 700;
   margin-bottom: 2px;
-}
-
-.pp-stat-label {
-  color: #94a3b8;
-  font-size: 12px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 
 /* Guest Prompt Card */
@@ -659,43 +602,16 @@ const handleAvatarError = (event: Event) => {
   font-size: 14px;
 }
 
-/* Segments */
+/* Segments - leaderboard specific */
 .pp-period-selector, .pp-category-selector {
   margin-bottom: 12px;
 }
 
-.pp-segment {
-  --background: rgba(84, 84, 95, 0.1);
-  border-radius: 8px;
-}
-
-.pp-segment-button {
-  --color: #54545f;
-  --color-checked: #18181a;
-  --background-checked: #fee78a;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-/* Filters */
+/* Filters - leaderboard specific */
 .pp-filters {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-}
-
-.pp-chip-active {
-  --background: linear-gradient(135deg, #64748b, #475569);
-  --color: white;
-  border: 1px solid #64748b;
-  padding: 4px 8px;
-}
-
-.pp-chip-inactive {
-  --background: rgba(84, 84, 95, 0.1);
-  --color: #54545f;
-  border: 1px solid #54545f;
-  padding: 4px 8px;
 }
 
 /* Podium */
@@ -926,58 +842,7 @@ const handleAvatarError = (event: Event) => {
   color: #ef4444;
 }
 
-/* Loading State */
-.pp-loading-state {
-  text-align: center;
-  padding: 48px 24px;
-}
-
-.pp-loading-spinner {
-  --color: #fee78a;
-  font-size: 32px;
-  margin-bottom: 16px;
-}
-
-.pp-loading-text {
-  color: #94a3b8;
-  font-size: 14px;
-  font-weight: 400;
-  margin: 0;
-}
-
-/* Error State */
-.pp-error-state {
-  text-align: center;
-  padding: 48px 24px;
-}
-
-.pp-error-icon {
-  color: #ef4444;
-  font-size: 64px;
-  margin-bottom: 16px;
-}
-
-.pp-error-title {
-  color: #ef4444;
-  font-size: 18px;
-  font-weight: 600;
-  margin: 0 0 8px 0;
-}
-
-.pp-error-text {
-  color: #94a3b8;
-  font-size: 14px;
-  font-weight: 400;
-  margin: 0 0 16px 0;
-}
-
-.pp-retry-button {
-  --background: linear-gradient(135deg, #64748b, #475569);
-  --color: white;
-  font-weight: 600;
-  font-size: 14px;
-  border-radius: 8px;
-}
+/* Loading and error states are now in shared.css */
 
 /* Load More */
 .pp-load-more {
@@ -992,64 +857,11 @@ const handleAvatarError = (event: Event) => {
   font-weight: 500;
 }
 
-/* Empty State */
-.pp-empty-state {
-  text-align: center;
-  padding: 48px 24px;
-}
+/* Empty state is now in shared.css */
 
-.pp-empty-icon {
-  color: #54545f;
-  font-size: 64px;
-  margin-bottom: 16px;
-}
-
-.pp-empty-title {
-  color: #fee78a;
-  font-size: 18px;
-  font-weight: 600;
-  margin: 0 0 8px 0;
-}
-
-.pp-empty-text {
-  color: #94a3b8;
-  font-size: 14px;
-  font-weight: 400;
-  margin: 0;
-}
-
-/* Points Info Modal */
+/* Modal styles are now in shared.css */
 .pp-info-modal {
   --backdrop-opacity: 0.6;
-}
-
-.pp-modal-header {
-  --background: #18181a !important;
-  background: #18181a !important;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-.pp-modal-toolbar {
-  --background: #18181a !important;
-  background: #18181a !important;
-  --border-color: #24242a;
-  border-bottom: 1px solid #24242a;
-}
-
-.pp-modal-title {
-  color: #e2e8f0 !important;
-  font-weight: 700;
-  font-size: 18px;
-}
-
-.pp-modal-close {
-  --color: #54545f;
-  --color-hover: #fee78a;
-}
-
-.pp-modal-content {
-  --background: #18181a;
 }
 
 .pp-info-content {

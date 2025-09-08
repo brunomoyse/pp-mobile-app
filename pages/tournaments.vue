@@ -252,15 +252,15 @@ import {
   trophyOutline,
   alertCircleOutline,
 } from 'ionicons/icons'
-import { ref, computed, watch } from 'vue'
-import { useAuth } from '~/composables/useAuth'
-import { useTournaments } from '~/composables/usePokerAPI'
+import { ref, computed, watch, storeToRefs } from 'vue'
+import { useAuthStore } from '~/stores/useAuthStore'
 
 // Use custom i18n composable
 const { t, locale } = useI18n()
 
 // Authentication state
-const { isAuthenticated } = useAuth()
+const authStore = useAuthStore()
+const { isAuthenticated } = storeToRefs(authStore)
 
 // Reactive data
 const searchQuery = ref('')
@@ -463,54 +463,7 @@ const viewResults = (tournament: any) => {
 </script>
 
 <style scoped>
-.pp-page {
-  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: #18181a;
-}
-
-/* Header */
-.pp-header {
-  --background: rgba(24, 24, 26, 0.95);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-.pp-toolbar {
-  --background: transparent;
-  --border-color: #24242a;
-  border-bottom: 1px solid #24242a;
-}
-
-.pp-sub-toolbar {
-  --background: transparent;
-  --border-color: #24242a;
-  padding: 0 16px;
-  min-height: 44px;
-}
-
-.pp-title {
-  color: #fee78a;
-  font-weight: 700;
-  font-size: 20px;
-}
-
-.pp-header-button {
-  --color: #54545f;
-  --color-hover: #fee78a;
-  --background-hover: rgba(254, 231, 138, 0.1);
-  border-radius: 8px;
-  transition: all 0.3s ease;
-}
-
-/* Content */
-.pp-content {
-  --background: #18181a;
-}
-
-.pp-section {
-  padding: 16px;
-  margin-bottom: 8px;
-}
+/* Tournaments page specific styles */
 
 /* Search */
 .pp-search-container {
@@ -527,7 +480,7 @@ const viewResults = (tournament: any) => {
   border: 1px solid #54545f;
 }
 
-/* Filters */
+/* Filters - tournaments page specific */
 .pp-filters {
   display: flex;
   flex-wrap: wrap;
@@ -535,31 +488,9 @@ const viewResults = (tournament: any) => {
   margin-top: 12px;
 }
 
-.pp-chip-active {
-  --background: linear-gradient(135deg, #64748b, #475569);
-  --color: white;
-  border: 1px solid #64748b;
-}
-
-.pp-chip-inactive {
-  --background: rgba(84, 84, 95, 0.1);
-  --color: #54545f;
-  border: 1px solid #54545f;
-}
-
-/* Segment */
-.pp-segment {
-  --background: rgba(84, 84, 95, 0.1);
-  border-radius: 8px;
-  margin-bottom: 16px;
-}
-
+/* Segment - tournaments specific font size */
 .pp-segment-button {
-  --color: #54545f;
-  --color-checked: #18181a;
-  --background-checked: #fee78a;
   font-size: 14px;
-  font-weight: 500;
 }
 
 .pp-segment-count {
@@ -618,29 +549,7 @@ const viewResults = (tournament: any) => {
   padding: 4px 8px;
 }
 
-.pp-type-deepstack {
-  --background: rgba(34, 197, 94, 0.2);
-  --color: #22c55e;
-  border: 1px solid rgba(34, 197, 94, 0.4);
-}
-
-.pp-type-turbo {
-  --background: rgba(251, 146, 60, 0.2);
-  --color: #fb923c;
-  border: 1px solid rgba(251, 146, 60, 0.4);
-}
-
-.pp-type-freezeout {
-  --background: rgba(59, 130, 246, 0.2);
-  --color: #3b82f6;
-  border: 1px solid rgba(59, 130, 246, 0.4);
-}
-
-.pp-type-bounty {
-  --background: rgba(239, 68, 68, 0.2);
-  --color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.4);
-}
+/* Tournament type badges are now in shared.css */
 
 .pp-tournament-club {
   color: #94a3b8;
@@ -648,26 +557,7 @@ const viewResults = (tournament: any) => {
   font-weight: 400;
 }
 
-.pp-status-badge {
-  font-size: 11px;
-  font-weight: 500;
-  padding: 4px 8px;
-}
-
-.pp-status-upcoming {
-  --background: rgba(34, 197, 94, 0.2);
-  --color: #22c55e;
-}
-
-.pp-status-live {
-  --background: rgba(239, 68, 68, 0.2);
-  --color: #ef4444;
-}
-
-.pp-status-completed {
-  --background: rgba(100, 116, 139, 0.2);
-  --color: #64748b;
-}
+/* Status badges are now in shared.css */
 
 .pp-tournament-details {
   margin-bottom: 16px;
@@ -725,121 +615,7 @@ const viewResults = (tournament: any) => {
   gap: 8px;
 }
 
-.pp-button-primary {
-  --background: linear-gradient(135deg, #64748b, #475569);
-  --color: white;
-  font-weight: 600;
-  font-size: 12px;
-  border-radius: 8px;
-  --padding-start: 16px;
-  --padding-end: 16px;
-}
+/* Buttons are now in shared.css */
 
-.pp-button-secondary {
-  --color: #64748b;
-  --color-hover: #fee78a;
-  font-weight: 500;
-  font-size: 12px;
-  --padding-start: 12px;
-  --padding-end: 12px;
-}
-
-.pp-button-live {
-  --background: linear-gradient(135deg, #ef4444, #dc2626);
-  --color: white;
-  font-weight: 600;
-  font-size: 12px;
-  border-radius: 8px;
-  --padding-start: 16px;
-  --padding-end: 16px;
-}
-
-.pp-button-disabled {
-  --background: rgba(84, 84, 95, 0.3);
-  --color: #54545f;
-  font-weight: 500;
-  font-size: 12px;
-  border-radius: 8px;
-  --padding-start: 16px;
-  --padding-end: 16px;
-}
-
-/* Loading State */
-.pp-loading-state {
-  text-align: center;
-  padding: 48px 24px;
-}
-
-.pp-loading-spinner {
-  --color: #fee78a;
-  font-size: 32px;
-  margin-bottom: 16px;
-}
-
-.pp-loading-text {
-  color: #94a3b8;
-  font-size: 14px;
-  font-weight: 400;
-  margin: 0;
-}
-
-/* Error State */
-.pp-error-state {
-  text-align: center;
-  padding: 48px 24px;
-}
-
-.pp-error-icon {
-  color: #ef4444;
-  font-size: 64px;
-  margin-bottom: 16px;
-}
-
-.pp-error-title {
-  color: #ef4444;
-  font-size: 18px;
-  font-weight: 600;
-  margin: 0 0 8px 0;
-}
-
-.pp-error-text {
-  color: #94a3b8;
-  font-size: 14px;
-  font-weight: 400;
-  margin: 0 0 16px 0;
-}
-
-.pp-retry-button {
-  --background: linear-gradient(135deg, #64748b, #475569);
-  --color: white;
-  font-weight: 600;
-  font-size: 14px;
-  border-radius: 8px;
-}
-
-/* Empty State */
-.pp-empty-state {
-  text-align: center;
-  padding: 48px 24px;
-}
-
-.pp-empty-icon {
-  color: #54545f;
-  font-size: 64px;
-  margin-bottom: 16px;
-}
-
-.pp-empty-title {
-  color: #fee78a;
-  font-size: 18px;
-  font-weight: 600;
-  margin: 0 0 8px 0;
-}
-
-.pp-empty-text {
-  color: #94a3b8;
-  font-size: 14px;
-  font-weight: 400;
-  margin: 0;
-}
+/* Loading, Error and Empty states are now in shared.css */
 </style>
