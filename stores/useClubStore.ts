@@ -54,7 +54,7 @@ export const useClubStore = defineStore('club', () => {
   }
 
   const initializeFromStorage = () => {
-    if (process.client) {
+    if (import.meta.client) {
       const savedClub = localStorage.getItem('selectedClub')
       if (savedClub) {
         try {
@@ -67,19 +67,31 @@ export const useClubStore = defineStore('club', () => {
     }
   }
 
+  const clearSelectedClub = () => {
+    selectedClub.value = null
+    if (import.meta.client) {
+      localStorage.removeItem('selectedClub')
+    }
+  }
+
+  // Alias for consistency
+  const club = computed(() => selectedClub.value)
+
   return {
     // State
     selectedClub: readonly(selectedClub),
     clubs: readonly(clubs),
-    
+
     // Getters
     hasSelectedClub,
     selectedClubName,
-    
+    club,
+
     // Actions
     setSelectedClub,
     setClubs,
-    initializeFromStorage
+    initializeFromStorage,
+    clearSelectedClub
   }
 }, {
   persist: true
