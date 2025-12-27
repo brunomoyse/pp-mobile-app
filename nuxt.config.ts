@@ -30,6 +30,6 @@ export default defineNuxtConfig({
         }
       },
     },
-    codegen: true, // Disable for now until we set up proper types
+    codegen: false, // Disable for now until we set up proper types
   },
 })
