@@ -246,6 +246,12 @@
       "title": "Geen registraties gevonden",
       "subtitle": "Je hebt je nog niet ingeschreven voor toernooien",
       "browseEvents": "Bekijk Evenementen"
+    },
+    "qrCode": {
+      "title": "Check-in QR-code",
+      "instructions": "Toon deze QR-code aan de toernooimanager om in te checken",
+      "error": "QR-code genereren mislukt",
+      "showQR": "Toon QR"
     }
   },
   "leaderboard": {

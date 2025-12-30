@@ -143,18 +143,29 @@
                 <span class="pp-investment-label">{{ t('mySeats.investment') }}</span>
                 <span class="pp-investment-value">{{ registration.buyIn }}</span>
               </div>
-              
+
               <div class="pp-action-buttons">
-                <IonButton 
-                  fill="clear" 
-                  size="small" 
+                <!-- QR Code Button for upcoming/live registrations -->
+                <IonButton
+                  v-if="registration.status === 'upcoming' || registration.status === 'live'"
+                  fill="clear"
+                  size="small"
+                  @click.stop="showQRCode(registration)"
+                  class="pp-button-qr"
+                >
+                  <IonIcon :icon="qrCodeOutline" />
+                </IonButton>
+
+                <IonButton
+                  fill="clear"
+                  size="small"
                   @click.stop="shareRegistration(registration)"
                   class="pp-button-secondary"
                 >
                   <IonIcon :icon="shareOutline" />
                 </IonButton>
-                
-                <IonButton 
+
+                <IonButton
                   v-if="registration.status === 'upcoming' && canCancel(registration)"
                   @click.stop="cancelRegistration(registration)"
                   class="pp-button-warning"
@@ -162,8 +173,8 @@
                 >
                   {{ t('mySeats.cancel') }}
                 </IonButton>
-                
-                <IonButton 
+
+                <IonButton
                   v-else-if="registration.status === 'live'"
                   @click.stop="viewLive(registration)"
                   class="pp-button-live"
@@ -171,8 +182,8 @@
                 >
                   {{ t('mySeats.viewLive') }}
                 </IonButton>
-                
-                <IonButton 
+
+                <IonButton
                   v-else-if="registration.status === 'completed'"
                   @click.stop="viewResult(registration)"
                   class="pp-button-secondary"
@@ -181,7 +192,7 @@
                   {{ t('mySeats.viewResult') }}
                 </IonButton>
 
-                <IonButton 
+                <IonButton
                   v-if="registration.status === 'upcoming'"
                   @click.stop="modifyRegistration(registration)"
                   class="pp-button-primary"
@@ -204,6 +215,13 @@
           </IonButton>
         </div>
       </section>
+
+      <!-- QR Code Modal -->
+      <QRCodeModal
+        :isOpen="showQRModal"
+        :registrationId="selectedRegistrationId"
+        @close="showQRModal = false"
+      />
     </IonContent>
   </IonPage>
 </template>
@@ -237,7 +255,9 @@ import {
   trophyOutline,
   checkmarkCircleOutline,
   shareOutline,
+  qrCodeOutline,
 } from 'ionicons/icons'
+import QRCodeModal from '@/components/QRCodeModal.vue'
 import { ref } from 'vue'
 
 definePageMeta({
@@ -251,6 +271,10 @@ const { t, locale } = useI18n()
 const showFilters = ref(false)
 const selectedCategory = ref<'upcoming' | 'live' | 'completed'>('upcoming')
 const selectedFilters = ref<string[]>([])
+
+// QR Modal state
+const showQRModal = ref(false)
+const selectedRegistrationId = ref('')
 
 // Filter options
 const filters = [
@@ -286,6 +310,12 @@ const getStatusClass = (status: string) => {
 
 const canCancel = (registration: any) => {
   return new Date() < new Date(registration.canCancelUntil)
+}
+
+// Show QR code for check-in
+const showQRCode = (registration: any) => {
+  selectedRegistrationId.value = registration.id
+  showQRModal.value = true
 }
 
 const handleRefresh = async (ev: CustomEvent) => {
@@ -467,6 +497,11 @@ const handleRefresh = async (ev: CustomEvent) => {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+/* QR Button styling */
+.pp-button-qr {
+  --color: #fee78a;
 }
 
 /* Buttons and empty state are now in shared.css */

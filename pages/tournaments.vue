@@ -252,7 +252,8 @@ import {
   trophyOutline,
   alertCircleOutline,
 } from 'ionicons/icons'
-import { ref, computed, watch, storeToRefs } from 'vue'
+import { ref, computed, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useAuthStore } from '~/stores/useAuthStore'
 
 // Use custom i18n composable

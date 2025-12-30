@@ -245,6 +245,12 @@
       "title": "Aucune inscription trouvée",
       "subtitle": "Vous ne vous êtes pas encore inscrit à des tournois",
       "browseEvents": "Parcourir les événements"
+    },
+    "qrCode": {
+      "title": "Code QR d'enregistrement",
+      "instructions": "Montrez ce code QR au directeur du tournoi pour vous enregistrer",
+      "error": "Échec de la génération du code QR",
+      "showQR": "Afficher QR"
     }
   },
   "leaderboard": {

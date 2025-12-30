@@ -251,7 +251,8 @@ import {
   notificationsOutline,
   logOutOutline,
 } from 'ionicons/icons'
-import { ref, computed, storeToRefs } from 'vue'
+import { ref, computed } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useAuthStore } from '~/stores/useAuthStore'
 import avatarUrl from '@/assets/images/players/70707070-7070-7070-7070-707070707070.png'
 

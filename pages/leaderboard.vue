@@ -313,7 +313,8 @@ import {
   informationCircleOutline,
   closeOutline,
 } from 'ionicons/icons'
-import { ref, computed, watch, storeToRefs } from 'vue'
+import { ref, computed, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useAuthStore } from '~/stores/useAuthStore'
 import { usePlayerAvatar } from '~/composables/usePlayerAvatar'
 

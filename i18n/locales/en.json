@@ -237,6 +237,12 @@
       "title": "No Registrations Found",
       "subtitle": "You haven't registered for any tournaments yet",
       "browseEvents": "Browse Events"
+    },
+    "qrCode": {
+      "title": "Check-in QR Code",
+      "instructions": "Show this QR code to the tournament manager to check in",
+      "error": "Failed to generate QR code",
+      "showQR": "Show QR"
     }
   },
   "leaderboard": {
