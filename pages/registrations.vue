@@ -132,7 +132,7 @@
               <div class="pp-registration-date">
                 <IonIcon :icon="checkmarkCircleOutline" class="pp-registration-date-icon" />
                 <span class="pp-registration-date-text">
-                  {{ t('mySeats.registeredOn') }} {{ formatDateTime(registration.registeredAt) }}
+                  {{ t('mySeats.registeredOn') }} {{ formatDateTime(registration.registeredAt, locale) }}
                 </span>
               </div>
             </div>
@@ -243,6 +243,7 @@ import {
   IonSegment,
   IonSegmentButton,
   IonBadge,
+  alertController,
 } from '@ionic/vue'
 import ClubSelector from '@/components/ClubSelector.vue'
 import {
@@ -258,6 +259,7 @@ import {
   qrCodeOutline,
 } from 'ionicons/icons'
 import QRCodeModal from '@/components/QRCodeModal.vue'
+import { formatDate, formatTime, formatDateTime } from '~/utils/datetime'
 import { ref } from 'vue'
 
 definePageMeta({
@@ -320,6 +322,61 @@ const showQRCode = (registration: any) => {
 
 const handleRefresh = async (ev: CustomEvent) => {
   setTimeout(() => { (ev.target as any)?.complete?.() }, 1000)
+}
+
+// Share registration
+const shareRegistration = async (registration: any) => {
+  const text = t('mySeats.shareMessage', { name: registration.tournamentName })
+  if (navigator.share) {
+    await navigator.share({ text })
+  } else if (navigator.clipboard) {
+    await navigator.clipboard.writeText(text)
+    const alert = await alertController.create({
+      header: t('common.copied'),
+      message: text,
+      buttons: [t('common.ok')],
+    })
+    await alert.present()
+  }
+}
+
+// Cancel registration
+const cancelRegistration = async (registration: any) => {
+  const alert = await alertController.create({
+    header: t('mySeats.cancelConfirmTitle'),
+    message: t('mySeats.cancelConfirmMessage', { name: registration.tournamentName }),
+    buttons: [
+      { text: t('common.no'), role: 'cancel' },
+      {
+        text: t('common.yes'),
+        role: 'destructive',
+        handler: async () => {
+          // TODO: Call GqlCancelRegistration mutation when available
+        },
+      },
+    ],
+  })
+  await alert.present()
+}
+
+// Modify registration (not yet available)
+const modifyRegistration = async (_registration: any) => {
+  const alert = await alertController.create({
+    header: t('mySeats.modify'),
+    message: t('common.notYetAvailable'),
+    buttons: [t('common.ok')],
+  })
+  await alert.present()
+}
+
+// View live tournament
+const viewLive = (registration: any) => {
+  navigateTo(`/tournament/${registration.tournamentId}`)
+}
+
+// View tournament result
+const viewResult = (registration: any) => {
+  navigateTo(`/tournament/${registration.tournamentId}`)
 }
 </script>
 

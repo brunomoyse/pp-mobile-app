@@ -298,8 +298,8 @@ import {
     trophyOutline,
 } from 'ionicons/icons'
 import { ref, computed, watch } from 'vue'
-import { formatDateTime } from "~/utils/datetime";
-import {currencyCents} from "~/utils/currency";
+import { formatDate, formatDateTime } from "~/utils/datetime";
+import { currency, currencyCents } from "~/utils/currency";
 
 // Language switching
 const { t, locale, switchLanguage } = useI18n()
@@ -354,33 +354,74 @@ const fetchTournaments = async () => {
 // Watch for club changes and refetch
 watch(() => clubStore.selectedClub, fetchTournaments, { immediate: true })
 
-// KPIs specific to the connected player
-const kpis = ref({ itm: 34, roi: 18, cashes: 12 })
-
-const recentResults = ref([
-    { id: 'r1', tournament: 'Tuesday Deepstack', date: 'Aug 05', place: 2, buyIn: 50, cash: 320, profit: 270 },
-    { id: 'r2', tournament: 'Weekend Freezeout', date: 'Aug 02', place: 14, buyIn: 70, cash: 0, profit: -70 },
-    { id: 'r3', tournament: 'Monthly Main', date: 'Jul 27', place: 6, buyIn: 150, cash: 420, profit: 270 },
-])
-
+// Progress range selector
 const selectedRange = ref<'week' | 'month' | 'year'>('month')
 const selectedRangeLabel = computed(() => {
-  const ranges = {
-    week: '7 days',
-    month: '30 days', 
-    year: '1 year'
-  }
+  const ranges = { week: '7 days', month: '30 days', year: '1 year' }
   return ranges[selectedRange.value]
 })
-
 const onRangeChange = (e: CustomEvent) => { selectedRange.value = e.detail.value }
+
+// KPIs fetched from API
+const statsData = ref<any>(null)
+
+const kpis = computed(() => {
+  if (!statsData.value) return { itm: 0, roi: 0, cashes: 0 }
+  const rangeMap: Record<string, string> = { week: 'last7Days', month: 'last30Days', year: 'lastYear' }
+  const period = statsData.value[rangeMap[selectedRange.value]] || statsData.value.last30Days
+  return {
+    itm: Math.round(period.itmPercentage ?? 0),
+    roi: Math.round(period.roiPercentage ?? 0),
+    cashes: period.totalItm ?? 0
+  }
+})
+
+const fetchStats = async () => {
+  if (!isAuthenticated.value) return
+  try {
+    const res = await GqlGetMyTournamentStatistics()
+    statsData.value = res.myTournamentStatistics
+  } catch (e) {
+    console.error('Error fetching statistics:', e)
+  }
+}
+
+// Recent results fetched from API
+const recentResults = ref<any[]>([])
+
+const fetchRecentResults = async () => {
+  if (!isAuthenticated.value) return
+  try {
+    const res = await GqlGetMyRecentTournamentResults({ limit: 5 })
+    recentResults.value = (res.myRecentTournamentResults || []).map((item: any) => ({
+      id: item.result.id,
+      tournament: item.tournament.title,
+      date: formatDate(item.tournament.startTime, locale.value),
+      place: item.result.finalPosition,
+      buyIn: item.tournament.buyInCents / 100,
+      cash: item.result.prizeCents / 100,
+      profit: (item.result.prizeCents - item.tournament.buyInCents) / 100
+    }))
+  } catch (e) {
+    console.error('Error fetching recent results:', e)
+    recentResults.value = []
+  }
+}
+
+// Fetch user data on mount
+if (isAuthenticated.value) {
+  fetchStats()
+  fetchRecentResults()
+}
 
 const handleRefresh = async (ev: CustomEvent) => {
     try {
-      // Refetch tournaments data
-      await fetchTournaments()
+      await Promise.all([
+        fetchTournaments(),
+        fetchStats(),
+        fetchRecentResults()
+      ])
     } finally {
-      // Complete the refresh animation
       setTimeout(() => { (ev.target as any)?.complete?.() }, 100)
     }
 }

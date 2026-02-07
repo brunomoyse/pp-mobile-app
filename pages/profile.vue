@@ -264,40 +264,32 @@ const router = useRouter()
 const authStore = useAuthStore()
 const { isAuthenticated, currentUser } = storeToRefs(authStore)
 
-// User data from API
-const { data: apiUserData, loading: userLoading, refetch: refetchUser } = useCurrentUser()
-const { mutate: updateProfile, loading: updating, error: updateError } = useProfileUpdate()
-
 // Reactive data
 const showEditProfile = ref(false)
 const notificationsEnabled = ref(true)
 
 // User profile data - fallback to mock data for demo
 const userProfile = computed(() => {
-  if (isAuthenticated.value && (currentUser.value || apiUserData.value?.me)) {
-    const user = currentUser.value || apiUserData.value?.me
-    
-    // Calculate display name based on preference
+  if (isAuthenticated.value && currentUser.value) {
+    const user = currentUser.value
+
+    // Calculate display name
     let displayName = user.username
-    if (user.display_preference === 'real_name' && user.first_name && user.last_name) {
-      displayName = `${user.first_name} ${user.last_name}`
-    } else if (user.display_preference === 'both' && user.first_name && user.last_name && user.username) {
-      displayName = `${user.first_name} "${user.username}" ${user.last_name}`
-    } else if (user.display_name) {
-      displayName = user.display_name
+    if (user.firstName && user.lastName) {
+      displayName = `${user.firstName} ${user.lastName}`
     }
-    
+
     return {
-      username: displayName,
-      avatar: user.avatar || avatarUrl,
-      memberSince: new Date(user.created_at || '2023-01-15'),
-      verified: user.is_active,
+      username: displayName || user.email,
+      avatar: avatarUrl,
+      memberSince: new Date('2023-01-15'),
+      verified: user.isActive ?? true,
       vipLevel: null,
       email: user.email,
       club: null,
     }
   }
-  
+
   // Mock data for demo purposes
   return {
     username: 'Jean-Marie VDB',
@@ -355,15 +347,8 @@ const editProfile = () => {
 }
 
 const handleProfileSave = async (profileData: any) => {
-  try {
-    const result = await updateProfile({ input: profileData })
-    if (result) {
-      showEditProfile.value = false
-      await refetchUser()
-    }
-  } catch (error) {
-    console.error('Profile update failed:', error)
-  }
+  // TODO: Wire up profile update when GQL mutation is available
+  showEditProfile.value = false
 }
 
 

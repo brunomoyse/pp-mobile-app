@@ -69,9 +69,14 @@ import {
   personCircleOutline,
   logInOutline,
 } from 'ionicons/icons'
+import { storeToRefs } from 'pinia'
 
 // Use custom i18n composable
 const { t } = useI18n()
+
+// Auth state
+const authStore = useAuthStore()
+const { isAuthenticated } = storeToRefs(authStore)
 
 </script>
 
