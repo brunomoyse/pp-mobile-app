@@ -83,7 +83,7 @@
               <IonButton 
                 v-if="!tournament.isRegistered && tournament.spotsLeft > 0"
                 @click="registerForTournament"
-                class="pp-button-primary pp-register-btn"
+                class="pp-action-button pp-action-button--primary pp-register-btn"
                 expand="block"
               >
                 <IonIcon :icon="addOutline" slot="start" />
@@ -93,7 +93,7 @@
               <IonButton 
                 v-else-if="tournament.isRegistered"
                 @click="unregisterFromTournament"
-                class="pp-button-warning pp-register-btn"
+                class="pp-action-button pp-action-button--warning pp-register-btn"
                 expand="block"
               >
                 <IonIcon :icon="removeOutline" slot="start" />
@@ -102,7 +102,7 @@
               
               <IonButton 
                 v-else
-                class="pp-button-disabled pp-register-btn"
+                class="pp-action-button pp-action-button--disabled pp-register-btn"
                 expand="block"
                 disabled
               >
@@ -155,7 +155,7 @@
             
             <div class="pp-clock-display">
               <div class="pp-time-remaining">
-                <div class="pp-time-value">{{ formatTimeRemaining(timeRemaining) }}</div>
+                <div class="pp-time-value">{{ formatDuration(timeRemaining) }}</div>
                 <div class="pp-time-label">
                   {{ currentLevel.isBreak ? t('events.breakTime') : t('events.timeRemaining') }}
                 </div>
@@ -293,7 +293,7 @@
               </div>
               <div class="pp-complete-stat">
                 <span class="pp-complete-label">{{ t('events.duration') }}:</span>
-                <span class="pp-complete-value">{{ formatDuration(tournament.duration) }}</span>
+                <span class="pp-complete-value">{{ formatHoursDuration(tournament.duration) }}</span>
               </div>
               <div class="pp-complete-stat">
                 <span class="pp-complete-label">{{ t('events.totalPlayers') }}:</span>
@@ -412,7 +412,7 @@
         <IonIcon :icon="alertCircleOutline" class="pp-error-icon" />
         <h3 class="pp-error-title">Error loading tournament</h3>
         <p class="pp-error-text">Please try again later</p>
-        <IonButton @click="refetchTournament" class="pp-retry-button">
+        <IonButton @click="refetchTournament" class="pp-action-button pp-action-button--retry">
           Retry
         </IonButton>
       </div>
@@ -457,6 +457,7 @@ import {
 import {computed, onMounted, ref, watch} from 'vue'
 import {usePlayerAvatar} from '~/composables/usePlayerAvatar'
 import type {Tournament} from "~/types/tournament";
+import {formatDuration} from "~/utils/datetime";
 
 // Props
 interface Props {
@@ -695,11 +696,6 @@ const formatDateTime = (date: Date) => {
   })
 }
 
-const formatTimeRemaining = (seconds: number) => {
-  const minutes = Math.floor(seconds / 60)
-  const remainingSeconds = seconds % 60
-  return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`
-}
 
 const formatChips = (chips: number) => {
   if (chips >= 1000000) {
@@ -710,7 +706,7 @@ const formatChips = (chips: number) => {
   return chips.toString()
 }
 
-const formatDuration = (hours: number) => {
+const formatHoursDuration = (hours: number) => {
   const h = Math.floor(hours)
   const m = Math.round((hours - h) * 60)
   return `${h}h ${m}m`
@@ -736,7 +732,7 @@ const handleRefresh = async (ev: CustomEvent) => {
   try {
     await refetchTournament()
   } finally {
-    ;(ev.target as any)?.complete?.()
+    ;(ev.target as HTMLIonRefresherElement)?.complete?.()
   }
 }
 
@@ -927,21 +923,6 @@ onMounted(() => {
 .pp-register-btn {
   margin-bottom: 12px;
   font-weight: 600;
-}
-
-.pp-button-primary {
-  --background: linear-gradient(135deg, #64748b, #475569);
-  --color: white;
-}
-
-.pp-button-warning {
-  --background: linear-gradient(135deg, #f59e0b, #d97706);
-  --color: white;
-}
-
-.pp-button-disabled {
-  --background: rgba(84, 84, 95, 0.3);
-  --color: #54545f;
 }
 
 .pp-registration-deadline {
@@ -1619,13 +1600,6 @@ onMounted(() => {
   margin: 0 0 16px 0;
 }
 
-.pp-retry-button {
-  --background: linear-gradient(135deg, #64748b, #475569);
-  --color: white;
-  font-weight: 600;
-  font-size: 14px;
-  border-radius: 8px;
-}
 
 /* Animations */
 @keyframes pulse-live {

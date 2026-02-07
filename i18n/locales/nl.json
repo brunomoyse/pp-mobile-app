@@ -52,7 +52,8 @@
     "googleAuth": "Google Authenticatie",
     "googleAuthInfo": "Dit zal je doorverwijzen naar Google om in te loggen. Doorgaan?",
     "forgotPasswordInfo": "Voer je emailadres in en we sturen je een link om je wachtwoord te resetten.",
-    "sendResetLink": "Reset Link Verzenden"
+    "sendResetLink": "Reset Link Verzenden",
+    "loginToRegister": "Inloggen om te Registreren"
   },
   "common": {
     "ok": "OK",
@@ -60,7 +61,17 @@
     "close": "Sluiten",
     "continue": "Doorgaan",
     "pullToRefresh": "Trek om te vernieuwen",
-    "note": "Opmerking"
+    "note": "Opmerking",
+    "loading": "Laden...",
+    "errorLoading": "Fout bij het laden van gegevens",
+    "tryAgainLater": "Probeer het later opnieuw",
+    "retry": "Opnieuw proberen",
+    "guest": "Gast",
+    "player": "Speler",
+    "yes": "Ja",
+    "no": "Nee",
+    "copied": "Gekopieerd",
+    "notYetAvailable": "Deze functie is nog niet beschikbaar"
   },
   "home": {
     "welcome": "Welkom",
@@ -95,6 +106,7 @@
       }
     },
     "tournaments": {
+      "title": "Volgende Toernooien",
       "seeAll": "Alles bekijken",
       "spotsLeft": "{count} plaatsen over",
       "full": "Vol",
@@ -247,6 +259,9 @@
       "subtitle": "Je hebt je nog niet ingeschreven voor toernooien",
       "browseEvents": "Bekijk Evenementen"
     },
+    "cancelConfirmTitle": "Registratie Annuleren",
+    "cancelConfirmMessage": "Weet je zeker dat je je registratie voor {name} wilt annuleren?",
+    "shareMessage": "Bekijk mijn registratie voor {name} op PocketPair!",
     "qrCode": {
       "title": "Check-in QR-code",
       "instructions": "Toon deze QR-code aan de toernooimanager om in te checken",
@@ -326,6 +341,33 @@
     "cancel": "Annuleren",
     "saving": "Opslaan...",
     "profileUpdated": "Profiel succesvol bijgewerkt",
-    "errorUpdating": "Fout bij het bijwerken van profiel"
+    "errorUpdating": "Fout bij het bijwerken van profiel",
+    "memberSince": "Lid sinds",
+    "verified": "Geverifieerd",
+    "vip": "VIP",
+    "yourStatistics": "Jouw Statistieken",
+    "totalWins": "Totaal Overwinningen",
+    "totalWinnings": "Totale Winsten",
+    "tournaments": "Toernooien",
+    "itmRate": "ITM Percentage",
+    "quickActions": "Snelle Acties",
+    "getStarted": "Aan de Slag",
+    "myRegistrations": "Mijn Registraties",
+    "upcoming": "komend",
+    "tournamentHistory": "Toernooi Geschiedenis",
+    "viewPastResults": "Bekijk eerdere resultaten",
+    "achievements": "Prestaties",
+    "unlocked": "ontgrendeld",
+    "friends": "Vrienden",
+    "accessAccount": "Toegang tot je account",
+    "createAccount": "Nieuw account aanmaken",
+    "browseTournaments": "Toernooien Bekijken",
+    "viewUpcomingEvents": "Bekijk komende evenementen",
+    "settings": "Instellingen",
+    "updateInfo": "Je informatie bijwerken",
+    "notifications": "Meldingen",
+    "tournamentAlerts": "Toernooi meldingen",
+    "logout": "Uitloggen",
+    "signOut": "Uitloggen uit je account"
   }
 }

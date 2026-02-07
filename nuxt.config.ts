@@ -4,13 +4,18 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   pages: true,
   devtools: { enabled: true },
-  modules: ['@nuxtjs/ionic', '@pinia/nuxt', 'nuxt-graphql-client'],
+  modules: ['@nuxtjs/ionic', '@pinia/nuxt', 'pinia-plugin-persistedstate/nuxt', 'nuxt-graphql-client'],
   ssr: false,
   css: ['~/assets/css/main.css', '~/assets/css/shared.css'],
   vite: {
     plugins: [
       tailwindcss(),
     ],
+  },
+  runtimeConfig: {
+    public: {
+      graphqlWsEndpoint: process.env.NUXT_GRAPHQL_WS_ENDPOINT || 'ws://localhost:8080/graphql',
+    }
   },
   'graphql-client': {
     clients: {

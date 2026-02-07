@@ -26,15 +26,15 @@
           </div>
           <div class="pp-profile-info">
             <h1 class="pp-username">{{ userProfile.username }}</h1>
-            <p class="pp-member-since">Member since {{ formatDate(userProfile.memberSince) }}</p>
+            <p class="pp-member-since">{{ t('profile.memberSince') }} {{ formatDate(userProfile.memberSince) }}</p>
             <div class="pp-badges">
               <div class="pp-badge pp-verified" v-if="userProfile.verified">
                 <IonIcon :icon="checkmarkCircleOutline" />
-                <span>Verified</span>
+                <span>{{ t('profile.verified') }}</span>
               </div>
               <div class="pp-badge pp-vip" v-if="userProfile.vipLevel">
                 <IonIcon :icon="starOutline" />
-                <span>VIP {{ userProfile.vipLevel }}</span>
+                <span>{{ t('profile.vip') }} {{ userProfile.vipLevel }}</span>
               </div>
             </div>
           </div>
@@ -43,7 +43,7 @@
 
       <!-- Stats Overview (only for authenticated users) -->
       <section v-if="isAuthenticated" class="pp-stats-section">
-        <h2 class="pp-section-title">Your Statistics</h2>
+        <h2 class="pp-section-title">{{ t('profile.yourStatistics') }}</h2>
         <div class="pp-stats-grid">
           <div class="pp-stat-card">
             <div class="pp-stat-icon">
@@ -51,7 +51,7 @@
             </div>
             <div class="pp-stat-content">
               <div class="pp-stat-value">{{ userStats.totalWins }}</div>
-              <div class="pp-stat-label">Total Wins</div>
+              <div class="pp-stat-label">{{ t('profile.totalWins') }}</div>
             </div>
           </div>
           <div class="pp-stat-card">
@@ -60,7 +60,7 @@
             </div>
             <div class="pp-stat-content">
               <div class="pp-stat-value">{{ formatCurrency(userStats.totalWinnings) }}</div>
-              <div class="pp-stat-label">Total Winnings</div>
+              <div class="pp-stat-label">{{ t('profile.totalWinnings') }}</div>
             </div>
           </div>
           <div class="pp-stat-card">
@@ -69,7 +69,7 @@
             </div>
             <div class="pp-stat-content">
               <div class="pp-stat-value">{{ userStats.tournamentsPlayed }}</div>
-              <div class="pp-stat-label">Tournaments</div>
+              <div class="pp-stat-label">{{ t('profile.tournaments') }}</div>
             </div>
           </div>
           <div class="pp-stat-card">
@@ -78,7 +78,7 @@
             </div>
             <div class="pp-stat-content">
               <div class="pp-stat-value">{{ userStats.winRate }}%</div>
-              <div class="pp-stat-label">ITM Rate</div>
+              <div class="pp-stat-label">{{ t('profile.itmRate') }}</div>
             </div>
           </div>
         </div>
@@ -86,132 +86,131 @@
 
       <!-- Quick Actions -->
       <section class="pp-actions-section">
-        <h2 class="pp-section-title">{{ isAuthenticated ? 'Quick Actions' : 'Get Started' }}</h2>
+        <h2 class="pp-section-title">{{ isAuthenticated ? t('profile.quickActions') : t('profile.getStarted') }}</h2>
         <div class="pp-action-cards">
           <!-- Authenticated user actions -->
           <template v-if="isAuthenticated">
-            <div class="pp-action-card" @click="viewRegistrations">
+            <button class="pp-action-card" @click="viewRegistrations">
               <div class="pp-action-icon">
                 <IonIcon :icon="fileTrayFullOutline" />
               </div>
               <div class="pp-action-content">
-                <div class="pp-action-title">My Registrations</div>
-                <div class="pp-action-subtitle">{{ upcomingRegistrations }} upcoming</div>
+                <div class="pp-action-title">{{ t('profile.myRegistrations') }}</div>
+                <div class="pp-action-subtitle">{{ upcomingRegistrations }} {{ t('profile.upcoming') }}</div>
               </div>
               <IonIcon :icon="chevronForwardOutline" class="pp-chevron" />
-            </div>
+            </button>
 
-            <div class="pp-action-card" @click="viewHistory">
+            <button class="pp-action-card" @click="viewHistory">
               <div class="pp-action-icon">
                 <IonIcon :icon="timeOutline" />
               </div>
               <div class="pp-action-content">
-                <div class="pp-action-title">Tournament History</div>
-                <div class="pp-action-subtitle">View past results</div>
+                <div class="pp-action-title">{{ t('profile.tournamentHistory') }}</div>
+                <div class="pp-action-subtitle">{{ t('profile.viewPastResults') }}</div>
               </div>
               <IonIcon :icon="chevronForwardOutline" class="pp-chevron" />
-            </div>
+            </button>
 
-            <div class="pp-action-card" @click="viewAchievements">
+            <button class="pp-action-card" @click="viewAchievements">
               <div class="pp-action-icon">
                 <IonIcon :icon="medalOutline" />
               </div>
               <div class="pp-action-content">
-                <div class="pp-action-title">Achievements</div>
-                <div class="pp-action-subtitle">{{ unlockedAchievements }}/{{ totalAchievements }} unlocked</div>
+                <div class="pp-action-title">{{ t('profile.achievements') }}</div>
+                <div class="pp-action-subtitle">{{ unlockedAchievements }}/{{ totalAchievements }} {{ t('profile.unlocked') }}</div>
               </div>
               <IonIcon :icon="chevronForwardOutline" class="pp-chevron" />
-            </div>
+            </button>
 
-            <div class="pp-action-card" @click="viewFriends">
+            <button class="pp-action-card" @click="viewFriends">
               <div class="pp-action-icon">
                 <IonIcon :icon="peopleOutline" />
               </div>
               <div class="pp-action-content">
-                <div class="pp-action-title">Friends</div>
-                <div class="pp-action-subtitle">{{ friendsCount }} friends</div>
+                <div class="pp-action-title">{{ t('profile.friends') }}</div>
+                <div class="pp-action-subtitle">{{ friendsCount }} {{ t('profile.friends').toLowerCase() }}</div>
               </div>
               <IonIcon :icon="chevronForwardOutline" class="pp-chevron" />
-            </div>
+            </button>
           </template>
-          
+
           <!-- Guest user actions -->
           <template v-else>
-            <div class="pp-action-card" @click="navigateTo('/login')">
+            <button class="pp-action-card" @click="navigateTo('/login')">
               <div class="pp-action-icon">
                 <IonIcon :icon="logInOutline" />
               </div>
               <div class="pp-action-content">
-                <div class="pp-action-title">Login</div>
-                <div class="pp-action-subtitle">Access your account</div>
+                <div class="pp-action-title">{{ t('auth.login') }}</div>
+                <div class="pp-action-subtitle">{{ t('profile.accessAccount') }}</div>
               </div>
               <IonIcon :icon="chevronForwardOutline" class="pp-chevron" />
-            </div>
+            </button>
 
-            <div class="pp-action-card" @click="navigateTo('/register')">
+            <button class="pp-action-card" @click="navigateTo('/register')">
               <div class="pp-action-icon">
                 <IonIcon :icon="personOutline" />
               </div>
               <div class="pp-action-content">
-                <div class="pp-action-title">Register</div>
-                <div class="pp-action-subtitle">Create new account</div>
+                <div class="pp-action-title">{{ t('auth.register') }}</div>
+                <div class="pp-action-subtitle">{{ t('profile.createAccount') }}</div>
               </div>
               <IonIcon :icon="chevronForwardOutline" class="pp-chevron" />
-            </div>
+            </button>
 
-            <div class="pp-action-card" @click="navigateTo('/tournaments')">
+            <button class="pp-action-card" @click="navigateTo('/tournaments')">
               <div class="pp-action-icon">
                 <IonIcon :icon="calendarOutline" />
               </div>
               <div class="pp-action-content">
-                <div class="pp-action-title">Browse Tournaments</div>
-                <div class="pp-action-subtitle">View upcoming events</div>
+                <div class="pp-action-title">{{ t('profile.browseTournaments') }}</div>
+                <div class="pp-action-subtitle">{{ t('profile.viewUpcomingEvents') }}</div>
               </div>
               <IonIcon :icon="chevronForwardOutline" class="pp-chevron" />
-            </div>
+            </button>
           </template>
         </div>
       </section>
 
       <!-- Settings Panel -->
       <section class="pp-settings-section" v-if="isAuthenticated">
-        <h2 class="pp-section-title">Settings</h2>
+        <h2 class="pp-section-title">{{ t('profile.settings') }}</h2>
         <div class="pp-settings-list">
-          <div class="pp-setting-item" @click="editProfile">
+          <button class="pp-setting-item" @click="editProfile">
             <div class="pp-setting-icon">
               <IonIcon :icon="personOutline" />
             </div>
             <div class="pp-setting-content">
-              <div class="pp-setting-title">Edit Profile</div>
-              <div class="pp-setting-subtitle">Update your information</div>
+              <div class="pp-setting-title">{{ t('profile.editProfile') }}</div>
+              <div class="pp-setting-subtitle">{{ t('profile.updateInfo') }}</div>
             </div>
             <IonIcon :icon="chevronForwardOutline" class="pp-chevron" />
-          </div>
+          </button>
 
           <div class="pp-setting-item">
             <div class="pp-setting-icon">
               <IonIcon :icon="notificationsOutline" />
             </div>
             <div class="pp-setting-content">
-              <div class="pp-setting-title">Notifications</div>
-              <div class="pp-setting-subtitle">Tournament alerts</div>
+              <div class="pp-setting-title">{{ t('profile.notifications') }}</div>
+              <div class="pp-setting-subtitle">{{ t('profile.tournamentAlerts') }}</div>
             </div>
-            <IonToggle 
-              v-model="notificationsEnabled" 
+            <IonToggle
+              v-model="notificationsEnabled"
               class="pp-toggle"
             />
           </div>
 
-
-          <div class="pp-setting-item" @click="logout">
+          <button class="pp-setting-item" @click="logout">
             <div class="pp-setting-icon pp-logout-icon">
               <IonIcon :icon="logOutOutline" />
             </div>
             <div class="pp-setting-content">
-              <div class="pp-setting-title pp-logout-text">Logout</div>
-              <div class="pp-setting-subtitle">Sign out of your account</div>
+              <div class="pp-setting-title pp-logout-text">{{ t('profile.logout') }}</div>
+              <div class="pp-setting-subtitle">{{ t('profile.signOut') }}</div>
             </div>
-          </div>
+          </button>
         </div>
       </section>
     </IonContent>
@@ -249,6 +248,7 @@ import {
   peopleOutline,
   personOutline,
   notificationsOutline,
+  logInOutline,
   logOutOutline,
 } from 'ionicons/icons'
 import { ref, computed } from 'vue'
@@ -318,7 +318,7 @@ const friendsCount = computed(() => isAuthenticated.value ? 28 : 0)
 
 // Methods
 const handleRefresh = async (ev: CustomEvent) => {
-  setTimeout(() => { (ev.target as any)?.complete?.() }, 1000)
+  setTimeout(() => { (ev.target as HTMLIonRefresherElement)?.complete?.() }, 1000)
 }
 
 const editAvatar = () => {
@@ -346,7 +346,7 @@ const editProfile = () => {
   showEditProfile.value = true
 }
 
-const handleProfileSave = async (profileData: any) => {
+const handleProfileSave = async (profileData: Record<string, string>) => {
   // TODO: Wire up profile update when GQL mutation is available
   showEditProfile.value = false
 }
@@ -369,7 +369,7 @@ const formatDate = (date: Date) => {
 }
 
 const formatCurrency = (amount: number) => {
-  return `${amount.toLocaleString('fr-BE', { maximumFractionDigits: 0 })}€`
+  return `${amount.toLocaleString('fr-BE', { maximumFractionDigits: 2 })}€`
 }
 </script>
 

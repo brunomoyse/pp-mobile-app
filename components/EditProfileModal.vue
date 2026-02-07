@@ -152,7 +152,7 @@ interface Props {
 
 interface Emits {
   (e: 'close'): void
-  (e: 'save', data: any): void
+  (e: 'save', data: Record<string, string>): void
 }
 
 const props = defineProps<Props>()

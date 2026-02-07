@@ -450,7 +450,7 @@ const goToLogin = () => {
 
 
 // Error message helper
-const getErrorMessage = (errors: any[]): string => {
+const getErrorMessage = (errors: Array<{ message?: string }>): string => {
   if (!errors || errors.length === 0) return ''
   return errors[0]?.message || t('auth.registrationFailed')
 }

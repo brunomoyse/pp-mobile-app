@@ -52,7 +52,8 @@
     "googleAuth": "Authentification Google",
     "googleAuthInfo": "Ceci vous redirigera vers Google pour vous connecter. Continuer ?",
     "forgotPasswordInfo": "Entrez votre adresse email et nous vous enverrons un lien pour réinitialiser votre mot de passe.",
-    "sendResetLink": "Envoyer le lien de réinitialisation"
+    "sendResetLink": "Envoyer le lien de réinitialisation",
+    "loginToRegister": "Connectez-vous pour vous inscrire"
   },
   "common": {
     "ok": "OK",
@@ -60,7 +61,17 @@
     "close": "Fermer",
     "continue": "Continuer",
     "pullToRefresh": "Tirez pour actualiser",
-    "note": "Note"
+    "note": "Note",
+    "loading": "Chargement...",
+    "errorLoading": "Erreur de chargement des données",
+    "tryAgainLater": "Veuillez réessayer plus tard",
+    "retry": "Réessayer",
+    "guest": "Invité",
+    "player": "Joueur",
+    "yes": "Oui",
+    "no": "Non",
+    "copied": "Copié",
+    "notYetAvailable": "Cette fonctionnalité n'est pas encore disponible"
   },
   "home": {
     "welcome": "Bienvenue",
@@ -95,6 +106,7 @@
       }
     },
     "tournaments": {
+      "title": "Prochains Tournois",
       "seeAll": "Voir tout",
       "spotsLeft": "{count} places restantes",
       "full": "Complet",
@@ -246,6 +258,9 @@
       "subtitle": "Vous ne vous êtes pas encore inscrit à des tournois",
       "browseEvents": "Parcourir les événements"
     },
+    "cancelConfirmTitle": "Annuler l'inscription",
+    "cancelConfirmMessage": "Êtes-vous sûr de vouloir annuler votre inscription à {name} ?",
+    "shareMessage": "Découvrez mon inscription à {name} sur PocketPair !",
     "qrCode": {
       "title": "Code QR d'enregistrement",
       "instructions": "Montrez ce code QR au directeur du tournoi pour vous enregistrer",
@@ -325,6 +340,33 @@
     "cancel": "Annuler",
     "saving": "Sauvegarde...",
     "profileUpdated": "Profil mis à jour avec succès",
-    "errorUpdating": "Erreur lors de la mise à jour du profil"
+    "errorUpdating": "Erreur lors de la mise à jour du profil",
+    "memberSince": "Membre depuis",
+    "verified": "Vérifié",
+    "vip": "VIP",
+    "yourStatistics": "Vos Statistiques",
+    "totalWins": "Total Victoires",
+    "totalWinnings": "Total Gains",
+    "tournaments": "Tournois",
+    "itmRate": "Taux ITM",
+    "quickActions": "Actions Rapides",
+    "getStarted": "Commencer",
+    "myRegistrations": "Mes Inscriptions",
+    "upcoming": "à venir",
+    "tournamentHistory": "Historique des Tournois",
+    "viewPastResults": "Voir les résultats passés",
+    "achievements": "Réalisations",
+    "unlocked": "débloquées",
+    "friends": "Amis",
+    "accessAccount": "Accéder à votre compte",
+    "createAccount": "Créer un nouveau compte",
+    "browseTournaments": "Parcourir les Tournois",
+    "viewUpcomingEvents": "Voir les événements à venir",
+    "settings": "Paramètres",
+    "updateInfo": "Mettre à jour vos informations",
+    "notifications": "Notifications",
+    "tournamentAlerts": "Alertes de tournois",
+    "logout": "Déconnexion",
+    "signOut": "Se déconnecter de votre compte"
   }
 }

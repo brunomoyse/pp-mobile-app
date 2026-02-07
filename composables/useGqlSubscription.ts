@@ -1,9 +1,9 @@
 // composables/useGqlSubscription.ts
 import type { Client } from 'graphql-ws'
 
-type ExecResult<T> = { data?: T; errors?: readonly any[] }
+type ExecResult<T> = { data?: T; errors?: readonly { message: string }[] }
 
-export function useGqlSubscription<TData = unknown, TVars extends Record<string, any> = Record<string, any>>(
+export function useGqlSubscription<TData = unknown, TVars extends Record<string, unknown> = Record<string, unknown>>(
     opts: { query: string; variables?: TVars; immediate?: boolean } )
 {
     const { $gqlWs } = useNuxtApp() as unknown as { $gqlWs: Client | null }

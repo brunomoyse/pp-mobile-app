@@ -137,16 +137,16 @@
         <!-- Loading State -->
         <div v-if="leaderboardLoading" class="pp-loading-state">
           <IonSpinner name="dots" class="pp-loading-spinner" />
-          <p class="pp-loading-text">Loading leaderboard...</p>
+          <p class="pp-loading-text">{{ t('common.loading') }}</p>
         </div>
         
         <!-- Error State -->
         <div v-else-if="leaderboardError" class="pp-error-state">
           <IonIcon :icon="alertCircleOutline" class="pp-error-icon" />
-          <h3 class="pp-error-title">Error loading leaderboard</h3>
-          <p class="pp-error-text">Please try again later</p>
-          <IonButton @click="refetchLeaderboard" class="pp-retry-button">
-            Retry
+          <h3 class="pp-error-title">{{ t('common.errorLoading') }}</h3>
+          <p class="pp-error-text">{{ t('common.tryAgainLater') }}</p>
+          <IonButton @click="refetchLeaderboard" class="pp-action-button pp-action-button--retry">
+            {{ t('common.retry') }}
           </IonButton>
         </div>
         
@@ -313,39 +313,56 @@ import {
   informationCircleOutline,
   closeOutline,
 } from 'ionicons/icons'
-import { ref, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '~/stores/useAuthStore'
-import { usePlayerAvatar } from '~/composables/usePlayerAvatar'
+interface DisplayPlayer {
+  id: string | null | undefined
+  userId: string
+  rank: number
+  name: string | null | undefined
+  avatar: string
+  points: number
+  profit: number
+  volume: number
+  tournaments: number
+  winRate: number
+  rankChange: number
+  isCurrentUser: boolean
+  firstPlaces: number
+  finalTables: number
+  roi: number
+  averageFinish: number
+  totalItm: number
+}
 
 // Use custom i18n composable
 const { t } = useI18n()
 
 // Authentication state
 const authStore = useAuthStore()
-const { isAuthenticated } = storeToRefs(authStore)
+const { isAuthenticated, currentUser } = storeToRefs(authStore)
 
-// Player avatar helper
-const { getPlayerAvatarWithFallback } = usePlayerAvatar()
-
-// Get current user data
-const { data: currentUserData } = useCurrentUser()
-
-// Current user data - will be updated when we have the actual user data
+// Current user data from auth store
 const currentPlayerName = computed(() => {
-  const user = currentUserData.value
-  if (!user) return 'Guest'
-  return user.first_name && user.last_name 
-    ? `${user.first_name} ${user.last_name}` 
-    : user.username || 'Player'
+  const user = currentUser.value
+  if (!user) return t('common.guest')
+  return user.firstName && user.lastName
+    ? `${user.firstName} ${user.lastName}`
+    : user.username || t('common.player')
 })
-const currentPlayerId = computed(() => currentUserData.value?.id || '70707070-7070-7070-7070-707070707070')
+const currentPlayerId = computed(() => currentUser.value?.id || '70707070-7070-7070-7070-707070707070')
 const currentPlayerAvatar = computed(() => {
-  const id = currentPlayerId.value
-  return `/images/players/${id}.jpg`
+  return `/images/players/${currentPlayerId.value}.jpg`
 })
-const currentPlayerRank = 7 // This should come from the leaderboard data
-const currentPlayerPoints = 1250 // This should come from the leaderboard data
+const currentPlayerRank = computed(() => {
+  const me = allPlayers.value.find(p => p.userId === currentPlayerId.value)
+  return me?.rank ?? '-'
+})
+const currentPlayerPoints = computed(() => {
+  const me = allPlayers.value.find(p => p.userId === currentPlayerId.value)
+  return me?.points ?? 0
+})
 
 // Reactive data
 const showPointsInfo = ref(false)
@@ -358,55 +375,55 @@ const hasMorePlayers = ref(true)
 const clubStore = useClubStore()
 
 // Leaderboard query variables
-const leaderboardVariables = computed(() => {
-  const periodMap = {
-    'week': 'LAST_7_DAYS',
-    'month': 'LAST_30_DAYS', 
-    'year': 'LAST_YEAR',
-    'allTime': 'ALL_TIME'
-  }
-  
-  return {
+const periodMap: Record<string, string> = {
+  'week': 'LAST_7_DAYS',
+  'month': 'LAST_30_DAYS',
+  'year': 'LAST_YEAR',
+  'allTime': 'ALL_TIME'
+}
+
+// Fetch leaderboard from API using useLazyAsyncData
+const { data: leaderboardResponse, status: leaderboardStatus, error: leaderboardError, refresh: refetchLeaderboard } = useLazyAsyncData(
+  'leaderboard',
+  () => GqlGetLeaderboard({
     period: periodMap[selectedPeriod.value] || 'ALL_TIME',
     limit: 50,
     clubId: clubStore.selectedClub?.id
-  }
-})
+  }),
+  { watch: [() => clubStore.selectedClub, selectedPeriod] }
+)
 
-// Fetch leaderboard from API
-const { data: leaderboardData, loading: leaderboardLoading, error: leaderboardError, refetch: refetchLeaderboard } = useLeaderboardNew(leaderboardVariables)
+const leaderboardLoading = computed(() => leaderboardStatus.value === 'pending')
+const leaderboardData = computed(() => leaderboardResponse.value || null)
 
 
 // Get leaderboard data from API
 const allPlayers = computed(() => {
   if (!leaderboardData.value?.leaderboard?.entries) return []
   
-  return leaderboardData.value.leaderboard.entries.map((entry, index) => {
+  return leaderboardData.value.leaderboard.entries.map((entry): DisplayPlayer => {
     const user = entry.user
-    const displayName = user.firstName && user.lastName 
-      ? `${user.firstName} ${user.lastName.charAt(0)}.` 
+    const displayName = user.firstName && user.lastName
+      ? `${user.firstName} ${user.lastName.charAt(0)}.`
       : user.username
-    
-    // Generate avatar path directly - no nested computed
-    const avatarPath = user.id 
+
+    const avatarPath = user.id
       ? `/images/players/${user.id}.jpg`
       : '/images/players/70707070-7070-7070-7070-707070707070.png'
-    
+
     return {
       id: user.username,
-      userId: user.id, // Add user ID for avatar
+      userId: user.id,
       rank: entry.rank,
       name: displayName,
       avatar: avatarPath,
       points: entry.points,
-      profit: entry.netProfit / 100, // Convert cents to euros
-      volume: entry.totalBuyIns / 100, // Convert cents to euros
+      profit: entry.netProfit / 100,
+      volume: entry.totalBuyIns / 100,
       tournaments: entry.totalTournaments,
       winRate: Math.round(entry.itmPercentage),
-      club: 'Unknown Club', // Not in API response
-      rankChange: 0, // Not available from API
-      isVerified: user.isActive, // Use isActive as verified status
-      isCurrentUser: false, // Would need to check against current user
+      rankChange: 0,
+      isCurrentUser: user.id === currentPlayerId.value,
       firstPlaces: entry.firstPlaces,
       finalTables: entry.finalTables,
       roi: Math.round(entry.roiPercentage),
@@ -416,10 +433,7 @@ const allPlayers = computed(() => {
   })
 })
 
-// Watch for club changes and refetch
-watch(() => clubStore.selectedClub, () => {
-  refetchLeaderboard()
-})
+// Club and period change watching is handled by useLazyAsyncData's watch option
 
 // Computed properties
 const filteredPlayers = computed(() => {
@@ -438,7 +452,7 @@ const remainingPlayers = computed(() => {
 
 const onPeriodChange = (e: CustomEvent) => {
   selectedPeriod.value = e.detail.value
-  refetchLeaderboard()
+  // Refetch is handled automatically by useLazyAsyncData's watch on selectedPeriod
 }
 
 const onCategoryChange = (e: CustomEvent) => {
@@ -461,7 +475,7 @@ const handleRefresh = async (ev: CustomEvent) => {
   try {
     await refetchLeaderboard()
   } finally {
-    ;(ev.target as any)?.complete?.()
+    ;(ev.target as HTMLIonRefresherElement)?.complete?.()
   }
 }
 
@@ -469,8 +483,7 @@ const goToLogin = () => {
   navigateTo('/login')
 }
 
-const viewPlayerProfile = (player: any) => {
-  console.log('View player profile:', player.id)
+const viewPlayerProfile = (player: DisplayPlayer) => {
   // Navigate to player profile page
 }
 

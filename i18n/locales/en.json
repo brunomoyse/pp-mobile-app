@@ -52,7 +52,8 @@
     "googleAuth": "Google Authentication",
     "googleAuthInfo": "This will redirect you to Google to sign in. Continue?",
     "forgotPasswordInfo": "Enter your email address and we'll send you a link to reset your password.",
-    "sendResetLink": "Send Reset Link"
+    "sendResetLink": "Send Reset Link",
+    "loginToRegister": "Login to Register"
   },
   "home": {
     "welcome": "Welcome",
@@ -87,6 +88,7 @@
       }
     },
     "tournaments": {
+      "title": "Next Tournaments",
       "seeAll": "See All",
       "spotsLeft": "{count} spots left",
       "full": "Full",
@@ -238,6 +240,9 @@
       "subtitle": "You haven't registered for any tournaments yet",
       "browseEvents": "Browse Events"
     },
+    "cancelConfirmTitle": "Cancel Registration",
+    "cancelConfirmMessage": "Are you sure you want to cancel your registration for {name}?",
+    "shareMessage": "Check out my registration for {name} on PocketPair!",
     "qrCode": {
       "title": "Check-in QR Code",
       "instructions": "Show this QR code to the tournament manager to check in",
@@ -316,7 +321,34 @@
     "cancel": "Cancel",
     "saving": "Saving...",
     "profileUpdated": "Profile updated successfully",
-    "errorUpdating": "Error updating profile"
+    "errorUpdating": "Error updating profile",
+    "memberSince": "Member since",
+    "verified": "Verified",
+    "vip": "VIP",
+    "yourStatistics": "Your Statistics",
+    "totalWins": "Total Wins",
+    "totalWinnings": "Total Winnings",
+    "tournaments": "Tournaments",
+    "itmRate": "ITM Rate",
+    "quickActions": "Quick Actions",
+    "getStarted": "Get Started",
+    "myRegistrations": "My Registrations",
+    "upcoming": "upcoming",
+    "tournamentHistory": "Tournament History",
+    "viewPastResults": "View past results",
+    "achievements": "Achievements",
+    "unlocked": "unlocked",
+    "friends": "Friends",
+    "accessAccount": "Access your account",
+    "createAccount": "Create new account",
+    "browseTournaments": "Browse Tournaments",
+    "viewUpcomingEvents": "View upcoming events",
+    "settings": "Settings",
+    "updateInfo": "Update your information",
+    "notifications": "Notifications",
+    "tournamentAlerts": "Tournament alerts",
+    "logout": "Logout",
+    "signOut": "Sign out of your account"
   },
   "common": {
     "ok": "OK",
@@ -324,6 +356,16 @@
     "close": "Close",
     "continue": "Continue",
     "pullToRefresh": "Pull to refresh",
-    "note": "Note"
+    "note": "Note",
+    "loading": "Loading...",
+    "errorLoading": "Error loading data",
+    "tryAgainLater": "Please try again later",
+    "retry": "Retry",
+    "guest": "Guest",
+    "player": "Player",
+    "yes": "Yes",
+    "no": "No",
+    "copied": "Copied",
+    "notYetAvailable": "This feature is not yet available"
   }
 }

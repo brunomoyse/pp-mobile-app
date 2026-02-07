@@ -8,8 +8,9 @@ interface AuthUser {
   username?: string | null
   firstName: string
   lastName?: string | null
-  role?: any
-  [key: string]: any // Allow additional properties
+  role?: string | null
+  isActive?: boolean
+  managedClub?: { id: string; name: string; city?: string | null } | null
 }
 
 export interface LoginCredentials {
@@ -26,9 +27,9 @@ export const useAuthStore = defineStore('auth', () => {
 
   // Getters
   const isAuthenticated = computed(() => !!authToken.value && !!currentUser.value)
-  const hasClub = computed(() => !!(currentUser.value as any)?.club)
-  const isVerified = computed(() => (currentUser.value as any)?.verified ?? false)
-  const isVip = computed(() => ((currentUser.value as any)?.vipLevel ?? 0) > 0)
+  const hasClub = computed(() => !!currentUser.value?.managedClub)
+  const isVerified = computed(() => currentUser.value?.isActive ?? false)
+  const isVip = computed(() => false)
 
   // Internal helper functions
   const clearAuthState = () => {
@@ -170,18 +171,18 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   return {
-    // State
-    currentUser: readonly(currentUser),
-    authToken: readonly(authToken),
-    isLoading: readonly(isLoading),
-    error: readonly(error),
-    
+    // State (not readonly - required for Pinia persistence plugin)
+    currentUser,
+    authToken,
+    isLoading,
+    error,
+
     // Getters
     isAuthenticated,
     hasClub,
     isVerified,
     isVip,
-    
+
     // Actions
     login,
     logout,
@@ -189,5 +190,7 @@ export const useAuthStore = defineStore('auth', () => {
     initialize,
   }
 }, {
-  persist: true
+  persist: {
+    pick: ['currentUser', 'authToken']
+  }
 })

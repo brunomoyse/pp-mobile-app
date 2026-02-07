@@ -127,7 +127,7 @@
                 <IonButton
                   v-if="tournament.status === 'live'"
                   @click.stop="viewLive(tournament)"
-                  class="pp-button-live"
+                  class="pp-action-button pp-action-button--danger"
                   size="small"
                 >
                   {{ t('events.viewLive') }}
@@ -135,7 +135,7 @@
                 <IonButton
                   v-else-if="tournament.status === 'completed'"
                   @click.stop="viewResults(tournament)"
-                  class="pp-button-secondary"
+                  class="pp-action-button pp-action-button--secondary"
                   size="small"
                 >
                   {{ t('events.results') }}
@@ -148,16 +148,16 @@
         <!-- Loading State -->
         <div v-if="tournamentsLoading" class="pp-loading-state">
           <IonSpinner name="dots" class="pp-loading-spinner" />
-          <p class="pp-loading-text">Loading tournaments...</p>
+          <p class="pp-loading-text">{{ t('events.loadingDetails') }}</p>
         </div>
         
         <!-- Error State -->
         <div v-else-if="tournamentsError" class="pp-error-state">
           <IonIcon :icon="alertCircleOutline" class="pp-error-icon" />
-          <h3 class="pp-error-title">Error loading tournaments</h3>
-          <p class="pp-error-text">Please try again later</p>
-          <IonButton @click="refetchTournaments" class="pp-retry-button">
-            Retry
+          <h3 class="pp-error-title">{{ t('common.errorLoading') }}</h3>
+          <p class="pp-error-text">{{ t('common.tryAgainLater') }}</p>
+          <IonButton @click="refetchTournaments" class="pp-action-button pp-action-button--retry">
+            {{ t('common.retry') }}
           </IonButton>
         </div>
         
@@ -203,7 +203,19 @@ import {
   alertCircleOutline,
 } from 'ionicons/icons'
 import { currencyCents } from '~/utils/currency'
-import { ref, computed, watch } from 'vue'
+import type { TournamentLiveStatus } from '~/types/tournament'
+import { ref, computed } from 'vue'
+
+interface DisplayTournament {
+  id: string
+  title: string
+  status: 'upcoming' | 'live' | 'completed'
+  liveStatus: TournamentLiveStatus
+  startTime: Date
+  buyInCents: number
+  seatCap: number | null
+  description: string | null
+}
 
 // Use custom i18n composable
 const { t, locale } = useI18n()
@@ -216,30 +228,19 @@ const selectedFilters = ref<string[]>([])
 // Club store
 const clubStore = useClubStore()
 
-// Fetch tournaments from API
-const tournamentsData = ref<any[]>([])
-const tournamentsLoading = ref(false)
-const tournamentsError = ref<Error | null>(null)
+// Fetch tournaments from API using useLazyAsyncData
+const { data: tournamentsResponse, status: tournamentsStatus, error: tournamentsError, refresh: refetchTournaments } = useLazyAsyncData(
+  'tournaments',
+  () => GqlGetTournaments({
+    clubId: clubStore.selectedClub?.id,
+    limit: 50,
+    offset: 0
+  }),
+  { watch: [() => clubStore.selectedClub] }
+)
 
-const fetchTournaments = async () => {
-  tournamentsLoading.value = true
-  tournamentsError.value = null
-  try {
-    const res = await GqlGetTournaments({
-      clubId: clubStore.selectedClub?.id,
-      limit: 50,
-      offset: 0
-    })
-    tournamentsData.value = res.tournaments || []
-  } catch (e: any) {
-    tournamentsError.value = e
-    tournamentsData.value = []
-  } finally {
-    tournamentsLoading.value = false
-  }
-}
-
-const refetchTournaments = fetchTournaments
+const tournamentsLoading = computed(() => tournamentsStatus.value === 'pending')
+const tournamentsData = computed(() => tournamentsResponse.value?.tournaments || [])
 
 // Filter options
 const filters = [
@@ -252,7 +253,7 @@ const filters = [
 const tournaments = computed(() => {
   if (!tournamentsData.value.length) return []
 
-  return tournamentsData.value.map((tournament: any) => {
+  return tournamentsData.value.map((tournament): DisplayTournament => {
     const uiStatus = tournament.status.toLowerCase() as 'upcoming' | 'in_progress' | 'completed'
 
     return {
@@ -268,9 +269,7 @@ const tournaments = computed(() => {
   })
 })
 
-// Initial fetch and watch for club changes
-fetchTournaments()
-watch(() => clubStore.selectedClub, fetchTournaments)
+// Club change watching is handled by useLazyAsyncData's watch option
 
 // Tournament counts by category
 const tournamentCounts = computed(() => {
@@ -361,23 +360,20 @@ const handleRefresh = async (ev: CustomEvent) => {
   try {
     await refetchTournaments()
   } finally {
-    ;(ev.target as any)?.complete?.()
+    ;(ev.target as HTMLIonRefresherElement)?.complete?.()
   }
 }
 
-const viewTournament = (tournament: any) => {
-  // Navigate to tournament detail page
+const viewTournament = (tournament: DisplayTournament) => {
   navigateTo(`/tournament/${tournament.id}`)
 }
 
-const viewLive = (tournament: any) => {
-  // Navigate to live tournament view
-  console.log('View live tournament:', tournament.id)
+const viewLive = (tournament: DisplayTournament) => {
+  navigateTo(`/tournament/${tournament.id}`)
 }
 
-const viewResults = (tournament: any) => {
-  // Navigate to results page
-  console.log('View results:', tournament.id)
+const viewResults = (tournament: DisplayTournament) => {
+  navigateTo(`/tournament/${tournament.id}`)
 }
 </script>
 

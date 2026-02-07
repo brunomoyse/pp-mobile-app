@@ -99,7 +99,7 @@
             <!-- Quick Actions -->
             <section class="pp-section">
               <div class="pp-actions-grid">
-                <div class="pp-action-card" @click="$router.push('/tournaments')">
+                <button class="pp-action-card" @click="$router.push('/tournaments')">
                     <div class="pp-action-icon">
                         <IonIcon :icon="calendarOutline" />
                     </div>
@@ -107,9 +107,9 @@
                       <div class="pp-action-title">{{ t('home.actions.upcoming') }}</div>
                       <div class="pp-action-subtitle">{{ t('home.actions.upcomingSubtitle') }}</div>
                     </div>
-                </div>
+                </button>
 
-                <div class="pp-action-card" @click="$router.push('/registrations')">
+                <button class="pp-action-card" @click="$router.push('/registrations')">
                     <div class="pp-action-icon">
                         <IonIcon :icon="fileTrayFullOutline" />
                     </div>
@@ -117,9 +117,9 @@
                       <div class="pp-action-title">{{ t('home.actions.myRegistrations') }}</div>
                       <div class="pp-action-subtitle">{{ t('home.actions.myRegistrationsSubtitle') }}</div>
                     </div>
-                </div>
+                </button>
 
-                <div class="pp-action-card" @click="$router.push('/leaderboard')">
+                <button class="pp-action-card" @click="$router.push('/leaderboard')">
                     <div class="pp-action-icon pp-action-icon-trophy">
                         <IonIcon :icon="trophyOutline" />
                     </div>
@@ -127,7 +127,7 @@
                         <div class="pp-action-title">{{ t('home.actions.leaderboard') }}</div>
                         <div class="pp-action-subtitle">{{ t('home.actions.leaderboardSubtitle') }}</div>
                     </div>
-                </div>
+                </button>
               </div>
             </section>
 
@@ -178,7 +178,7 @@
                 <div class="pp-section-header">
                     <h3 class="pp-section-title">
                         <IonIcon :icon="calendarNumberOutline" />
-                        Next tournaments
+                        {{ t('home.tournaments.title') }}
                     </h3>
                     <IonButton fill="clear" size="small" :routerLink="'/tournaments'" class="pp-see-all-button">{{ t('home.tournaments.seeAll') }}</IonButton>
                 </div>
@@ -196,7 +196,7 @@
                                 v-if="isAuthenticated"
                                 size="small" 
                                 :disabled="isTournamentFull(tournament)"
-                                :class="isTournamentFull(tournament)? 'pp-button-disabled' : 'pp-button-primary'"
+                                :class="isTournamentFull(tournament)? 'pp-action-button pp-action-button--disabled' : 'pp-action-button pp-action-button--primary'"
                             >
                                 {{ isTournamentFull(tournament) ? t('home.tournaments.full') : t('home.tournaments.register') }}
                             </IonButton>
@@ -204,7 +204,7 @@
                                 v-else
                                 size="small" 
                                 @click="navigateTo('/login')"
-                                class="pp-button-login"
+                                class="pp-action-button pp-action-button--login"
                             >
                                 <IonIcon :icon="logInOutline" slot="start" />
                                 {{ t('auth.loginToRegister') }}
@@ -224,7 +224,7 @@
                     <IonButton fill="clear" size="small" :routerLink="'/results'" class="pp-see-all-button">{{ t('home.results.seeAll') }}</IonButton>
                 </div>
                 <div class="pp-results-list">
-                    <div v-for="r in recentResults" :key="r.id" class="pp-result-card" @click="$router.push(`/results/${r.id}`)">
+                    <button v-for="r in recentResults" :key="r.id" class="pp-result-card" @click="$router.push(`/results/${r.id}`)">
                         <div class="pp-result-info">
                             <h4 class="pp-result-position">#{{ r.place }} · {{ r.tournament }}</h4>
                             <p class="pp-result-details">{{ r.date }} · {{ t('home.results.buyIn') }} {{ currency(r.buyIn) }} · {{ t('home.results.cash') }} {{ currency(r.cash) }}</p>
@@ -232,7 +232,7 @@
                         <IonBadge :class="r.profit >= 0 ? 'pp-profit-badge' : 'pp-loss-badge'">
                             {{ r.profit >= 0 ? '+' : '' }}{{ currency(r.profit) }}
                         </IonBadge>
-                    </div>
+                    </button>
                 </div>
             </section>
 
@@ -241,18 +241,18 @@
             <IonPopover trigger="language-trigger" :dismissOnSelect="true" class="pp-popover">
                 <IonContent class="pp-popover-content">
                     <div class="pp-popover-items">
-                        <div class="pp-popover-item" @click="switchLanguage('en')">
+                        <button class="pp-popover-item" @click="switchLanguage('en')">
                             <span class="pp-popover-text">English</span>
                             <IonIcon v-if="locale === 'en'" :icon="checkmarkOutline" class="pp-popover-check" />
-                        </div>
-                        <div class="pp-popover-item" @click="switchLanguage('fr')">
+                        </button>
+                        <button class="pp-popover-item" @click="switchLanguage('fr')">
                             <span class="pp-popover-text">Français</span>
                             <IonIcon v-if="locale === 'fr'" :icon="checkmarkOutline" class="pp-popover-check" />
-                        </div>
-                        <div class="pp-popover-item" @click="switchLanguage('nl')">
+                        </button>
+                        <button class="pp-popover-item" @click="switchLanguage('nl')">
                             <span class="pp-popover-text">Nederlands</span>
                             <IonIcon v-if="locale === 'nl'" :icon="checkmarkOutline" class="pp-popover-check" />
-                        </div>
+                        </button>
                     </div>
                 </IonContent>
             </IonPopover>
@@ -297,7 +297,8 @@ import {
     trendingUpOutline,
     trophyOutline,
 } from 'ionicons/icons'
-import { ref, computed, watch } from 'vue'
+import type { Tournament } from '~/types/tournament'
+import { ref, computed } from 'vue'
 import { formatDate, formatDateTime } from "~/utils/datetime";
 import { currency, currencyCents } from "~/utils/currency";
 
@@ -308,12 +309,12 @@ const { t, locale, switchLanguage } = useI18n()
 const authStore = useAuthStore()
 const { isAuthenticated, currentUser } = storeToRefs(authStore)
 
-const isTournamentFull = (tournament: any) => {
+const isTournamentFull = (tournament: Tournament) => {
     if (!tournament.seatCap) return false;
     return (tournament.registrations?.length || 0) >= tournament.seatCap;
 }
 
-const spotsLeft = (tournament: any) => {
+const spotsLeft = (tournament: Tournament) => {
     if (!tournament.seatCap) return '∞';
     return Math.max(tournament.seatCap - (tournament.registrations?.length || 0), 0);
 }
@@ -330,40 +331,34 @@ const username = computed(() => {
 const clubStore = useClubStore()
 
 // Next 5 tournaments
-const nextTournaments = ref<any[]>([])
+const { data: tournamentsResponse, refresh: refreshTournaments } = useLazyAsyncData(
+  'home-tournaments',
+  () => GqlGetTournaments({
+    clubId: clubStore.selectedClub?.id,
+    status: 'UPCOMING',
+    limit: 5
+  }),
+  { watch: [() => clubStore.selectedClub] }
+)
 
-const fetchTournaments = async () => {
-  if (!clubStore.selectedClub?.id) {
-    nextTournaments.value = []
-    return
-  }
-  
-  try {
-    const res = await GqlGetTournaments({ 
-      clubId: clubStore.selectedClub.id,
-      status: 'UPCOMING' as any,
-      limit: 5
-    })
-    nextTournaments.value = res.tournaments || []
-  } catch (error) {
-    console.error('Error fetching tournaments:', error)
-    nextTournaments.value = []
-  }
-}
-
-// Watch for club changes and refetch
-watch(() => clubStore.selectedClub, fetchTournaments, { immediate: true })
+const nextTournaments = computed(() => tournamentsResponse.value?.tournaments || [])
 
 // Progress range selector
 const selectedRange = ref<'week' | 'month' | 'year'>('month')
 const selectedRangeLabel = computed(() => {
-  const ranges = { week: '7 days', month: '30 days', year: '1 year' }
+  const ranges = { week: t('home.progress.timeLabels.7d'), month: t('home.progress.timeLabels.30d'), year: t('home.progress.timeLabels.1y') }
   return ranges[selectedRange.value]
 })
 const onRangeChange = (e: CustomEvent) => { selectedRange.value = e.detail.value }
 
 // KPIs fetched from API
-const statsData = ref<any>(null)
+const { data: statsResponse, refresh: refreshStats } = useLazyAsyncData(
+  'home-stats',
+  () => GqlGetMyTournamentStatistics(),
+  { immediate: isAuthenticated.value }
+)
+
+const statsData = computed(() => statsResponse.value?.myTournamentStatistics || null)
 
 const kpis = computed(() => {
   if (!statsData.value) return { itm: 0, roi: 0, cashes: 0 }
@@ -376,53 +371,35 @@ const kpis = computed(() => {
   }
 })
 
-const fetchStats = async () => {
-  if (!isAuthenticated.value) return
-  try {
-    const res = await GqlGetMyTournamentStatistics()
-    statsData.value = res.myTournamentStatistics
-  } catch (e) {
-    console.error('Error fetching statistics:', e)
-  }
-}
-
 // Recent results fetched from API
-const recentResults = ref<any[]>([])
+const { data: resultsResponse, refresh: refreshResults } = useLazyAsyncData(
+  'home-results',
+  () => GqlGetMyRecentTournamentResults({ limit: 5 }),
+  { immediate: isAuthenticated.value }
+)
 
-const fetchRecentResults = async () => {
-  if (!isAuthenticated.value) return
-  try {
-    const res = await GqlGetMyRecentTournamentResults({ limit: 5 })
-    recentResults.value = (res.myRecentTournamentResults || []).map((item: any) => ({
-      id: item.result.id,
-      tournament: item.tournament.title,
-      date: formatDate(item.tournament.startTime, locale.value),
-      place: item.result.finalPosition,
-      buyIn: item.tournament.buyInCents / 100,
-      cash: item.result.prizeCents / 100,
-      profit: (item.result.prizeCents - item.tournament.buyInCents) / 100
-    }))
-  } catch (e) {
-    console.error('Error fetching recent results:', e)
-    recentResults.value = []
-  }
-}
-
-// Fetch user data on mount
-if (isAuthenticated.value) {
-  fetchStats()
-  fetchRecentResults()
-}
+const recentResults = computed(() => {
+  if (!resultsResponse.value?.myRecentTournamentResults) return []
+  return resultsResponse.value.myRecentTournamentResults.map((item) => ({
+    id: item.result.id,
+    tournament: item.tournament.title,
+    date: formatDate(item.tournament.startTime, locale.value),
+    place: item.result.finalPosition,
+    buyIn: item.tournament.buyInCents / 100,
+    cash: item.result.prizeCents / 100,
+    profit: (item.result.prizeCents - item.tournament.buyInCents) / 100
+  }))
+})
 
 const handleRefresh = async (ev: CustomEvent) => {
     try {
       await Promise.all([
-        fetchTournaments(),
-        fetchStats(),
-        fetchRecentResults()
+        refreshTournaments(),
+        refreshStats(),
+        refreshResults()
       ])
     } finally {
-      setTimeout(() => { (ev.target as any)?.complete?.() }, 100)
+      setTimeout(() => { (ev.target as HTMLIonRefresherElement)?.complete?.() }, 100)
     }
 }
 

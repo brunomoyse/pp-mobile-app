@@ -117,7 +117,7 @@
                 </div>
                 <div class="pp-detail-item">
                   <IonIcon :icon="locationOutline" class="pp-detail-icon" />
-                  <span class="pp-detail-text">{{ registration.table ? `Table ${registration.table} - Seat ${registration.seatNumber}` : t('mySeats.tableNotAssigned') }}</span>
+                  <span class="pp-detail-text">{{ registration.table ? `${t('events.table')} ${registration.table} - ${t('events.seat')} ${registration.seatNumber}` : t('mySeats.tableNotAssigned') }}</span>
                 </div>
               </div>
 
@@ -151,7 +151,7 @@
                   fill="clear"
                   size="small"
                   @click.stop="showQRCode(registration)"
-                  class="pp-button-qr"
+                  class="pp-action-button--qr"
                 >
                   <IonIcon :icon="qrCodeOutline" />
                 </IonButton>
@@ -160,7 +160,7 @@
                   fill="clear"
                   size="small"
                   @click.stop="shareRegistration(registration)"
-                  class="pp-button-secondary"
+                  class="pp-action-button pp-action-button--secondary"
                 >
                   <IonIcon :icon="shareOutline" />
                 </IonButton>
@@ -168,7 +168,7 @@
                 <IonButton
                   v-if="registration.status === 'upcoming' && canCancel(registration)"
                   @click.stop="cancelRegistration(registration)"
-                  class="pp-button-warning"
+                  class="pp-action-button pp-action-button--warning"
                   size="small"
                 >
                   {{ t('mySeats.cancel') }}
@@ -177,7 +177,7 @@
                 <IonButton
                   v-else-if="registration.status === 'live'"
                   @click.stop="viewLive(registration)"
-                  class="pp-button-live"
+                  class="pp-action-button pp-action-button--danger"
                   size="small"
                 >
                   {{ t('mySeats.viewLive') }}
@@ -186,7 +186,7 @@
                 <IonButton
                   v-else-if="registration.status === 'completed'"
                   @click.stop="viewResult(registration)"
-                  class="pp-button-secondary"
+                  class="pp-action-button pp-action-button--secondary"
                   size="small"
                 >
                   {{ t('mySeats.viewResult') }}
@@ -195,7 +195,7 @@
                 <IonButton
                   v-if="registration.status === 'upcoming'"
                   @click.stop="modifyRegistration(registration)"
-                  class="pp-button-primary"
+                  class="pp-action-button pp-action-button--primary"
                   size="small"
                 >
                   {{ t('mySeats.modify') }}
@@ -210,7 +210,7 @@
           <IonIcon :icon="ticketOutline" class="pp-empty-icon" />
           <h3 class="pp-empty-title">{{ t('mySeats.empty.title') }}</h3>
           <p class="pp-empty-text">{{ t('mySeats.empty.subtitle') }}</p>
-          <IonButton @click="$router.push('/tournaments')" class="pp-button-primary">
+          <IonButton @click="$router.push('/tournaments')" class="pp-action-button pp-action-button--primary">
             {{ t('mySeats.empty.browseEvents') }}
           </IonButton>
         </div>
@@ -262,6 +262,22 @@ import QRCodeModal from '@/components/QRCodeModal.vue'
 import { formatDate, formatTime, formatDateTime } from '~/utils/datetime'
 import { ref } from 'vue'
 
+interface DisplayRegistration {
+  id: string
+  tournamentId: string
+  tournamentName: string
+  type: string
+  club: string
+  status: string
+  startTime: string
+  buyIn: string
+  table: string | null
+  seatNumber: number | null
+  position: number | null
+  registeredAt: string
+  canCancelUntil: string
+}
+
 definePageMeta({
     middleware: 'auth'
 })
@@ -310,22 +326,22 @@ const getStatusClass = (status: string) => {
   }
 }
 
-const canCancel = (registration: any) => {
+const canCancel = (registration: DisplayRegistration) => {
   return new Date() < new Date(registration.canCancelUntil)
 }
 
 // Show QR code for check-in
-const showQRCode = (registration: any) => {
+const showQRCode = (registration: DisplayRegistration) => {
   selectedRegistrationId.value = registration.id
   showQRModal.value = true
 }
 
 const handleRefresh = async (ev: CustomEvent) => {
-  setTimeout(() => { (ev.target as any)?.complete?.() }, 1000)
+  setTimeout(() => { (ev.target as HTMLIonRefresherElement)?.complete?.() }, 1000)
 }
 
 // Share registration
-const shareRegistration = async (registration: any) => {
+const shareRegistration = async (registration: DisplayRegistration) => {
   const text = t('mySeats.shareMessage', { name: registration.tournamentName })
   if (navigator.share) {
     await navigator.share({ text })
@@ -341,7 +357,7 @@ const shareRegistration = async (registration: any) => {
 }
 
 // Cancel registration
-const cancelRegistration = async (registration: any) => {
+const cancelRegistration = async (registration: DisplayRegistration) => {
   const alert = await alertController.create({
     header: t('mySeats.cancelConfirmTitle'),
     message: t('mySeats.cancelConfirmMessage', { name: registration.tournamentName }),
@@ -360,7 +376,7 @@ const cancelRegistration = async (registration: any) => {
 }
 
 // Modify registration (not yet available)
-const modifyRegistration = async (_registration: any) => {
+const modifyRegistration = async (_registration: DisplayRegistration) => {
   const alert = await alertController.create({
     header: t('mySeats.modify'),
     message: t('common.notYetAvailable'),
@@ -370,12 +386,12 @@ const modifyRegistration = async (_registration: any) => {
 }
 
 // View live tournament
-const viewLive = (registration: any) => {
+const viewLive = (registration: DisplayRegistration) => {
   navigateTo(`/tournament/${registration.tournamentId}`)
 }
 
 // View tournament result
-const viewResult = (registration: any) => {
+const viewResult = (registration: DisplayRegistration) => {
   navigateTo(`/tournament/${registration.tournamentId}`)
 }
 </script>
@@ -557,7 +573,7 @@ const viewResult = (registration: any) => {
 }
 
 /* QR Button styling */
-.pp-button-qr {
+.pp-action-button--qr {
   --color: #fee78a;
 }
 

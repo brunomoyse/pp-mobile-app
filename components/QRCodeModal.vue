@@ -27,7 +27,7 @@
 
       <!-- Footer -->
       <div class="qr-modal-footer">
-        <IonButton @click="close" expand="block" class="pp-button-secondary">
+        <IonButton @click="close" expand="block" class="pp-action-button pp-action-button--secondary">
           {{ t('common.close') }}
         </IonButton>
       </div>
