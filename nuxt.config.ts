@@ -15,6 +15,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       graphqlWsEndpoint: process.env.NUXT_GRAPHQL_WS_ENDPOINT || 'ws://localhost:8080/graphql',
+      authBaseUrl: process.env.NUXT_AUTH_BASE_URL || 'http://localhost:8080',
     }
   },
   'graphql-client': {
