@@ -1,6 +1,6 @@
 # PocketPair Mobile App
 
-A poker tournament management mobile application built with Nuxt 3, Ionic Vue, and TypeScript. Track your poker tournaments, manage registrations, and analyze your performance with a sleek dark theme interface.
+A poker tournament management mobile application built with Nuxt 4, Ionic Vue, and TypeScript. Track your poker tournaments, manage registrations, and analyze your performance with a sleek dark theme interface.
 
 ## Features
 
@@ -43,7 +43,7 @@ A poker tournament management mobile application built with Nuxt 3, Ionic Vue, a
 
 ## Tech Stack
 
-- **Frontend Framework**: [Nuxt 3](https://nuxt.com/) - The Intuitive Vue Framework
+- **Frontend Framework**: [Nuxt 4](https://nuxt.com/) - The Intuitive Vue Framework
 - **Mobile Framework**: [Ionic Vue](https://ionicframework.com/docs/vue/overview) - Native mobile components
 - **Language**: [TypeScript](https://www.typescriptlang.org/) - Type-safe JavaScript
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework
@@ -99,25 +99,22 @@ npm run typecheck    # Run TypeScript checks
 
 ```
 pp-mobile/
+├── app.vue                    # Root component (IonApp + IonTabs bottom navigation)
+├── nuxt.config.ts             # Nuxt config (modules, GraphQL, runtime config)
+├── capacitor.config.ts        # App ID: com.pocketpair.app
 ├── assets/
-│   ├── css/
-│   │   └── main.css           # Global styles & Ionic variables
-│   └── images/
-├── composables/
-│   └── useI18n.ts             # Custom i18n composable
-├── i18n/
-│   └── locales/
-│       ├── en.json            # English translations
-│       ├── fr.json            # French translations
-│       └── nl.json            # Dutch translations
-├── pages/
-│   ├── index.vue              # Home dashboard
-│   ├── tournaments.vue        # Events/tournaments page
-│   └── registrations.vue      # My Seats page
-├── plugins/
-│   └── i18n.client.ts         # Vue I18n setup
-├── app.vue                    # Root component with navigation
-└── nuxt.config.ts             # Nuxt configuration
+│   ├── css/main.css           # Tailwind import + scrollbar hiding
+│   └── css/shared.css         # Design system (pp-* component classes, animations)
+├── components/                # ClubSelector, QRCodeModal, EditProfileModal, TournamentDetail
+├── composables/               # useAuth, useI18n, useGqlSubscription, usePlayerAvatar
+├── graphql/                   # queries/, mutations/, subscriptions/ (.gql files)
+├── i18n/locales/              # en.json, fr.json, nl.json
+├── middleware/auth.ts         # Route guard (redirects to /login)
+├── pages/                     # index, login, register, profile, tournaments, registrations, leaderboard, tournament/[id]
+├── plugins/                   # i18n.client.ts
+├── stores/                    # useAuthStore, useClubStore, useTournamentStore
+├── types/                     # user.ts, tournament.ts, clock.ts, seating.ts, graphql.ts
+└── utils/                     # currency.ts, datetime.ts
 ```
 
 ## Design System
@@ -162,25 +159,6 @@ The app supports three languages with complete UI translations:
 - **Image optimization** for avatars and assets
 - **Efficient state management** with Vue 3 reactivity
 - **Minimal bundle size** with tree-shaking
-
-## Future Enhancements
-
-### Planned Features
-- **User authentication** with secure login
-- **Real-time notifications** for tournament updates
-- **Advanced analytics** with charts and graphs
-- **Social features** (player profiles, leaderboards)
-- **Live tournament tracking** with chip counts
-- **Results export** (PDF, CSV formats)
-
-### Technical Roadmap
-- **API integration** with backend services
-- **Offline support** with PWA capabilities
-- **Push notifications** for tournament reminders
-- **Deep linking** for sharing tournaments
-- **Camera integration** for receipt scanning
-- **Biometric authentication** (fingerprint, face ID)
-
 
 ## Author
 
