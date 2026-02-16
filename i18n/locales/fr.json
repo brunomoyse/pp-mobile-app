@@ -155,6 +155,9 @@
     "buyIn": "Buy-in",
     "guarantee": "GTD",
     "spotsLeft": "{count} places restantes",
+    "joinWaitlist": "Rejoindre la file d'attente",
+    "onWaitlist": "En file d'attente",
+    "waitlistPosition": "Position {position} en file d'attente",
     "full": "Complet",
     "register": "S'inscrire",
     "unregister": "Se désinscrire",
@@ -261,11 +264,37 @@
     "cancelConfirmTitle": "Annuler l'inscription",
     "cancelConfirmMessage": "Êtes-vous sûr de vouloir annuler votre inscription à {name} ?",
     "shareMessage": "Découvrez mon inscription à {name} sur PocketPair !",
+    "registrationStatus": {
+      "REGISTERED": "Inscrit",
+      "CHECKED_IN": "Enregistré",
+      "SEATED": "Assis",
+      "BUSTED": "Éliminé",
+      "WAITLISTED": "En attente",
+      "CANCELLED": "Annulé",
+      "NO_SHOW": "Absent"
+    },
     "qrCode": {
       "title": "Code QR d'enregistrement",
       "instructions": "Montrez ce code QR au directeur du tournoi pour vous enregistrer",
       "error": "Échec de la génération du code QR",
       "showQR": "Afficher QR"
+    }
+  },
+  "checkIn": {
+    "scanQR": {
+      "title": "Scanner le QR d'enregistrement",
+      "instructions": "Positionnez le code QR dans le cadre pour scanner",
+      "orEnterManually": "Ou entrez le code manuellement",
+      "enterCodePlaceholder": "Entrez le code d'enregistrement",
+      "submit": "Soumettre",
+      "errors": {
+        "noElement": "Élément du scanner introuvable",
+        "cameraAccess": "Impossible d'accéder à la caméra. Veuillez accorder l'autorisation."
+      }
+    },
+    "success": {
+      "title": "Enregistré!",
+      "message": "Enregistrement réussi avec le code: {code}"
     }
   },
   "leaderboard": {
@@ -368,5 +397,16 @@
     "tournamentAlerts": "Alertes de tournois",
     "logout": "Déconnexion",
     "signOut": "Se déconnecter de votre compte"
+  },
+  "error": {
+    "boundary": {
+      "title": "Une erreur s'est produite",
+      "defaultMessage": "Une erreur inattendue s'est produite. Veuillez réessayer.",
+      "retryFailed": "La tentative a échoué. Veuillez réessayer plus tard.",
+      "retry": "Réessayer",
+      "reset": "Réinitialiser",
+      "showDetails": "Afficher les détails",
+      "hideDetails": "Masquer les détails"
+    }
   }
 }

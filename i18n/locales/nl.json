@@ -5,7 +5,7 @@
   "nav": {
     "home": "Home",
     "events": "Evenementen",
-    "mySeats": "Mijn Plaatsen", 
+    "mySeats": "Mijn Plaatsen",
     "leaders": "Leiders",
     "me": "Ik",
     "login": "Inloggen"
@@ -155,6 +155,9 @@
     "buyIn": "Buy-in",
     "guarantee": "GTD",
     "spotsLeft": "{count} plaatsen over",
+    "joinWaitlist": "Wachtlijst",
+    "onWaitlist": "Op wachtlijst",
+    "waitlistPosition": "Positie {position} op wachtlijst",
     "full": "Vol",
     "register": "Registreren",
     "unregister": "Uitschrijven",
@@ -262,11 +265,37 @@
     "cancelConfirmTitle": "Registratie Annuleren",
     "cancelConfirmMessage": "Weet je zeker dat je je registratie voor {name} wilt annuleren?",
     "shareMessage": "Bekijk mijn registratie voor {name} op PocketPair!",
+    "registrationStatus": {
+      "REGISTERED": "Geregistreerd",
+      "CHECKED_IN": "Ingecheckt",
+      "SEATED": "Gezeten",
+      "BUSTED": "Uitgeschakeld",
+      "WAITLISTED": "Wachtlijst",
+      "CANCELLED": "Geannuleerd",
+      "NO_SHOW": "Afwezig"
+    },
     "qrCode": {
       "title": "Check-in QR-code",
       "instructions": "Toon deze QR-code aan de toernooimanager om in te checken",
       "error": "QR-code genereren mislukt",
       "showQR": "Toon QR"
+    }
+  },
+  "checkIn": {
+    "scanQR": {
+      "title": "Scan Check-in QR",
+      "instructions": "Plaats de QR-code binnen het kader om te scannen",
+      "orEnterManually": "Of voer code handmatig in",
+      "enterCodePlaceholder": "Voer check-in code in",
+      "submit": "Indienen",
+      "errors": {
+        "noElement": "Scanner element niet gevonden",
+        "cameraAccess": "Kan geen toegang krijgen tot camera. Geef alstublieft toestemming."
+      }
+    },
+    "success": {
+      "title": "Ingecheckt!",
+      "message": "Succesvol ingecheckt met code: {code}"
     }
   },
   "leaderboard": {
@@ -369,5 +398,16 @@
     "tournamentAlerts": "Toernooi meldingen",
     "logout": "Uitloggen",
     "signOut": "Uitloggen uit je account"
+  },
+  "error": {
+    "boundary": {
+      "title": "Er is iets misgegaan",
+      "defaultMessage": "Er is een onverwachte fout opgetreden. Probeer het opnieuw.",
+      "retryFailed": "Opnieuw proberen is mislukt. Probeer het later opnieuw.",
+      "retry": "Opnieuw proberen",
+      "reset": "Resetten",
+      "showDetails": "Details tonen",
+      "hideDetails": "Details verbergen"
+    }
   }
 }

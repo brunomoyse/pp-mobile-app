@@ -4,7 +4,7 @@
   },
   "nav": {
     "home": "Home",
-    "events": "Events", 
+    "events": "Events",
     "mySeats": "My Seats",
     "leaders": "Leaders",
     "me": "Me",
@@ -37,7 +37,7 @@
     "passwordRequirements": "Password requirements:",
     "passwordLength": "At least 8 characters",
     "passwordLowercase": "One lowercase letter",
-    "passwordUppercase": "One uppercase letter", 
+    "passwordUppercase": "One uppercase letter",
     "passwordNumber": "One number",
     "passwordRequirementsNotMet": "Password does not meet requirements",
     "agreeToTerms": "I agree to the",
@@ -83,7 +83,7 @@
       "chartPlaceholder": "Performance Chart",
       "timeLabels": {
         "7d": "7D",
-        "30d": "30D", 
+        "30d": "30D",
         "1y": "1Y"
       }
     },
@@ -109,6 +109,9 @@
     "buyIn": "Buy-in",
     "guarantee": "Guarantee",
     "spotsLeft": "{count} spots left",
+    "joinWaitlist": "Join Waitlist",
+    "onWaitlist": "On Waitlist",
+    "waitlistPosition": "Position {position} on waitlist",
     "viewLive": "View Live",
     "results": "Results",
     "search": {
@@ -116,7 +119,7 @@
     },
     "filters": {
       "lowStakes": "Low Stakes",
-      "midStakes": "Mid Stakes", 
+      "midStakes": "Mid Stakes",
       "highStakes": "High Stakes",
       "deepstack": "Deepstack",
       "turbo": "Turbo",
@@ -135,7 +138,7 @@
     },
     "status": {
       "upcoming": "Upcoming",
-      "live": "Live", 
+      "live": "Live",
       "completed": "Completed",
       "not_started": "Not Started",
       "registration_open": "Registration Open",
@@ -243,11 +246,37 @@
     "cancelConfirmTitle": "Cancel Registration",
     "cancelConfirmMessage": "Are you sure you want to cancel your registration for {name}?",
     "shareMessage": "Check out my registration for {name} on PocketPair!",
+    "registrationStatus": {
+      "REGISTERED": "Registered",
+      "CHECKED_IN": "Checked In",
+      "SEATED": "Seated",
+      "BUSTED": "Busted",
+      "WAITLISTED": "Waitlisted",
+      "CANCELLED": "Cancelled",
+      "NO_SHOW": "No Show"
+    },
     "qrCode": {
       "title": "Check-in QR Code",
       "instructions": "Show this QR code to the tournament manager to check in",
       "error": "Failed to generate QR code",
       "showQR": "Show QR"
+    }
+  },
+  "checkIn": {
+    "scanQR": {
+      "title": "Scan Check-in QR",
+      "instructions": "Position the QR code within the frame to scan",
+      "orEnterManually": "Or enter code manually",
+      "enterCodePlaceholder": "Enter check-in code",
+      "submit": "Submit",
+      "errors": {
+        "noElement": "Scanner element not found",
+        "cameraAccess": "Unable to access camera. Please grant permission."
+      }
+    },
+    "success": {
+      "title": "Checked In!",
+      "message": "Successfully checked in with code: {code}"
     }
   },
   "leaderboard": {
@@ -259,7 +288,7 @@
     "points": "Points",
     "periods": {
       "week": "Week",
-      "month": "Month", 
+      "month": "Month",
       "year": "Year",
       "allTime": "All Time"
     },
@@ -367,5 +396,16 @@
     "no": "No",
     "copied": "Copied",
     "notYetAvailable": "This feature is not yet available"
+  },
+  "error": {
+    "boundary": {
+      "title": "Something went wrong",
+      "defaultMessage": "An unexpected error occurred. Please try again.",
+      "retryFailed": "Retry failed. Please try again later.",
+      "retry": "Try Again",
+      "reset": "Reset",
+      "showDetails": "Show Details",
+      "hideDetails": "Hide Details"
+    }
   }
 }
