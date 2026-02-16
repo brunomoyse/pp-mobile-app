@@ -398,6 +398,17 @@
     "logout": "Déconnexion",
     "signOut": "Se déconnecter de votre compte"
   },
+  "qrScanner": {
+    "scanTournament": "Scanner QR Code",
+    "unknownQR": "QR Code inconnu",
+    "unknownQRMessage": "Ce QR code n'est pas reconnu. Veuillez scanner un QR code PocketPair valide.",
+    "tournamentNotFound": "Tournoi introuvable",
+    "checkInSuccess": "Présence confirmée",
+    "checkInFailed": "Échec de la présence",
+    "checkInFailedMessage": "Impossible de confirmer la présence. Veuillez réessayer ou contacter le responsable du tournoi.",
+    "loginRequired": "Connexion requise",
+    "loginRequiredMessage": "Vous devez être connecté pour confirmer votre présence. Souhaitez-vous vous connecter ?"
+  },
   "error": {
     "boundary": {
       "title": "Une erreur s'est produite",

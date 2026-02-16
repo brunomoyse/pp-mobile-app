@@ -397,6 +397,17 @@
     "copied": "Copied",
     "notYetAvailable": "This feature is not yet available"
   },
+  "qrScanner": {
+    "scanTournament": "Scan QR Code",
+    "unknownQR": "Unknown QR Code",
+    "unknownQRMessage": "This QR code is not recognized. Please scan a valid PocketPair QR code.",
+    "tournamentNotFound": "Tournament not found",
+    "checkInSuccess": "Check-in Successful",
+    "checkInFailed": "Check-in Failed",
+    "checkInFailedMessage": "Could not check in. Please try again or contact the tournament manager.",
+    "loginRequired": "Login Required",
+    "loginRequiredMessage": "You need to be logged in to check in. Would you like to log in now?"
+  },
   "error": {
     "boundary": {
       "title": "Something went wrong",

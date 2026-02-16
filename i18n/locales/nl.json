@@ -399,6 +399,17 @@
     "logout": "Uitloggen",
     "signOut": "Uitloggen uit je account"
   },
+  "qrScanner": {
+    "scanTournament": "Scan QR Code",
+    "unknownQR": "Onbekende QR Code",
+    "unknownQRMessage": "Deze QR-code wordt niet herkend. Scan een geldige PocketPair QR-code.",
+    "tournamentNotFound": "Toernooi niet gevonden",
+    "checkInSuccess": "Inchecken geslaagd",
+    "checkInFailed": "Inchecken mislukt",
+    "checkInFailedMessage": "Kon niet inchecken. Probeer het opnieuw of neem contact op met de toernooi beheerder.",
+    "loginRequired": "Inloggen vereist",
+    "loginRequiredMessage": "Je moet ingelogd zijn om in te checken. Wil je nu inloggen?"
+  },
   "error": {
     "boundary": {
       "title": "Er is iets misgegaan",
