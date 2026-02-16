@@ -1,0 +1,24 @@
+query GetMyRegistrations {
+  myTournamentRegistrations {
+    id
+    tournamentId
+    status
+    registrationTime
+    notes
+    waitlistPosition
+    tournament {
+      id
+      title
+      startTime
+      endTime
+      buyInCents
+      liveStatus
+      status
+      club {
+        id
+        name
+        city
+      }
+    }
+  }
+}

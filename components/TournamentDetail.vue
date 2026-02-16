@@ -10,17 +10,14 @@
         <section class="pp-section">
           <div class="pp-tournament-header-card">
             <div class="pp-tournament-title-section">
-              <h1 class="pp-tournament-name">{{ tournament.name }}</h1>
+              <h1 class="pp-tournament-name">{{ tournament.title }}</h1>
               <div class="pp-tournament-meta">
-                <IonBadge 
+                <IonBadge
                   :class="getStatusClass(tournament.status)"
                   class="pp-status-badge"
                 >
                   {{ tournament.liveStatus ? t(`events.status.${tournament.liveStatus.toLowerCase()}`) : t(`events.status.${tournament.status.toLowerCase()}`) }}
                 </IonBadge>
-                <IonChip class="pp-tournament-type" :class="`pp-type-${tournament.type}`">
-                  <IonLabel>{{ t(`events.types.${tournament.type}`) }}</IonLabel>
-                </IonChip>
               </div>
             </div>
           </div>
@@ -39,7 +36,7 @@
               <IonIcon :icon="cashOutline" class="pp-info-icon" />
               <div class="pp-info-content">
                 <div class="pp-info-label">{{ t('events.buyIn') }}</div>
-                <div class="pp-info-value">{{ tournament.buyIn }}</div>
+                <div class="pp-info-value">{{ buyIn }}</div>
               </div>
             </div>
             
@@ -56,7 +53,7 @@
               <div class="pp-info-content">
                 <div class="pp-info-label">{{ t('events.players') }}</div>
                 <div class="pp-info-value">
-                  {{ tournament.maxPlayers }}/{{ tournament.registered }}
+                  {{ registered }}/{{ tournament.seatCap }}
                 </div>
               </div>
             </div>
@@ -72,26 +69,17 @@
             <div class="pp-registration-header">
               <h3 class="pp-section-title">{{ t('events.registration') }}</h3>
               <div class="pp-registration-status">
-                <span v-if="tournament.spotsLeft > 0" class="pp-spots-available">
-                  {{ t('events.spotsLeft', { count: tournament.spotsLeft }) }}
+                <span v-if="spotsLeft > 0" class="pp-spots-available">
+                  {{ t('events.spotsLeft', { count: spotsLeft }) }}
                 </span>
                 <span v-else class="pp-spots-full">{{ t('events.full') }}</span>
               </div>
             </div>
-            
+
             <div class="pp-registration-actions">
-              <IonButton 
-                v-if="!tournament.isRegistered && tournament.spotsLeft > 0"
-                @click="registerForTournament"
-                class="pp-action-button pp-action-button--primary pp-register-btn"
-                expand="block"
-              >
-                <IonIcon :icon="addOutline" slot="start" />
-                {{ t('events.register') }} {{ tournament.buyIn }}
-              </IonButton>
-              
-              <IonButton 
-                v-else-if="tournament.isRegistered"
+              <!-- User is registered (confirmed) -->
+              <IonButton
+                v-if="isRegistered && !isWaitlisted"
                 @click="unregisterFromTournament"
                 class="pp-action-button pp-action-button--warning pp-register-btn"
                 expand="block"
@@ -99,14 +87,42 @@
                 <IonIcon :icon="removeOutline" slot="start" />
                 {{ t('events.unregister') }}
               </IonButton>
-              
-              <IonButton 
-                v-else
-                class="pp-action-button pp-action-button--disabled pp-register-btn"
+
+              <!-- User is on waitlist -->
+              <div v-else-if="isWaitlisted" class="pp-waitlist-info">
+                <IonButton
+                  @click="unregisterFromTournament"
+                  class="pp-action-button pp-action-button--warning pp-register-btn"
+                  expand="block"
+                >
+                  <IonIcon :icon="removeOutline" slot="start" />
+                  {{ t('events.onWaitlist') }}
+                </IonButton>
+                <div v-if="userRegistration?.waitlistPosition" class="pp-waitlist-position">
+                  {{ t('events.waitlistPosition', { position: userRegistration.waitlistPosition }) }}
+                </div>
+              </div>
+
+              <!-- Not registered, spots available -->
+              <IonButton
+                v-else-if="spotsLeft > 0"
+                @click="registerForTournament"
+                class="pp-action-button pp-action-button--primary pp-register-btn"
                 expand="block"
-                disabled
               >
-                {{ t('events.full') }}
+                <IonIcon :icon="addOutline" slot="start" />
+                {{ t('events.register') }} {{ buyIn }}
+              </IonButton>
+
+              <!-- Not registered, full -> join waitlist -->
+              <IonButton
+                v-else
+                @click="registerForTournament"
+                class="pp-action-button pp-action-button--secondary pp-register-btn"
+                expand="block"
+              >
+                <IonIcon :icon="addOutline" slot="start" />
+                {{ t('events.joinWaitlist') }}
               </IonButton>
             </div>
             
@@ -430,6 +446,7 @@
 import {
     IonAvatar,
     IonBadge,
+    IonButton,
     IonChip,
     IonIcon,
     IonLabel,
@@ -470,23 +487,121 @@ const { t, locale } = useI18n()
 
 // Player avatar helper
 const { getPlayerAvatarWithFallback } = usePlayerAvatar()
-const tournament: Ref<Tournament> = ref<Tournament|null>(null)
+
 // Fetch tournament data from API
-const { data: tournamentData, loading: tournamentLoading, error: tournamentError, refetch: refetchTournament } = useTournament(props.tournamentId)
+const { tournament, loading: tournamentLoading, error: tournamentError, refresh: refetchTournament, registered, spotsLeft, buyIn, totalPlayers, duration } = useTournament(props.tournamentId)
 
-const res = await GqlGetTournament({ id: props.tournamentId})
-tournament.value = res.tournament || null
-
-// Fetch tournament clock data separately
-const { data: clockQueryData, loading: clockLoading, error: clockQueryError, refetch: refetchClock } = useTournamentClockQuery(props.tournamentId)
+// Import useTournamentClock from useLiveClock
+const { useTournamentClock } = await import('~/composables/useLiveClock')
 
 // Subscribe to tournament clock updates
-const { 
-  data: clockData, 
-  connected: clockConnected, 
-  error: clockError,
-  sendConnectionInit: debugSendInit
+const {
+  clockData,
+  currentLevel: liveCurrentLevel,
+  nextLevel: liveNextLevel,
+  timeRemaining,
+  isRunning,
+  isPaused,
 } = useTournamentClock(props.tournamentId)
+
+// Subscribe to tournament registration changes
+const { data: registrationsData, execute: subscribeToRegistrations } = useGqlSubscription({
+  query: `
+    subscription TournamentRegistrations($tournamentId: ID!) {
+      tournamentRegistrations(tournamentId: $tournamentId) {
+        tournamentId
+        player {
+          user {
+            id
+            firstName
+            lastName
+            username
+            email
+          }
+          registration {
+            id
+            registrationTime
+            status
+            notes
+          }
+        }
+        eventType
+      }
+    }
+  `,
+  variables: { tournamentId: props.tournamentId },
+  immediate: true
+})
+
+// Watch for registration updates
+watch(registrationsData, (newData) => {
+  if (newData?.tournamentRegistrations) {
+    console.log('Registration update:', newData.tournamentRegistrations)
+    // Refresh tournament data to get updated registration count
+    refetchTournament()
+  }
+})
+
+// Check if current user is registered
+const authStore = useAuthStore()
+const userRegistration = computed(() => {
+  if (!authStore.currentUser || !tournament.value?.registrations) return null
+  return tournament.value.registrations.find(
+    r => r.userId === authStore.currentUser?.id && r.status !== 'CANCELLED' && r.status !== 'NO_SHOW'
+  ) || null
+})
+const isRegistered = computed(() => !!userRegistration.value)
+const isWaitlisted = computed(() => userRegistration.value?.status === 'WAITLISTED')
+
+// Subscribe to seating changes if user has a club selected
+const clubStore = useClubStore()
+const { data: seatingData, execute: subscribeToSeating, stop: stopSeatingSubscription } = useGqlSubscription({
+  query: `
+    subscription SeatingChanges($clubId: ID!) {
+      clubSeatingChanges(clubId: $clubId) {
+        eventType
+        tournamentId
+        clubId
+        affectedAssignment {
+          id
+          tournamentId
+          clubTableId
+          userId
+          seatNumber
+          stackSize
+          isCurrent
+          assignedAt
+        }
+        affectedPlayer {
+          id
+          firstName
+          lastName
+          username
+        }
+        message
+        timestamp
+      }
+    }
+  `,
+  immediate: false
+})
+
+// Start seating subscription when club is selected
+watch(() => clubStore.selectedClub?.id, (clubId) => {
+  if (clubId) {
+    subscribeToSeating({ clubId })
+  } else {
+    stopSeatingSubscription()
+  }
+}, { immediate: true })
+
+// Watch for seating updates
+watch(seatingData, (newData) => {
+  if (newData?.clubSeatingChanges && newData.clubSeatingChanges.tournamentId === props.tournamentId) {
+    console.log('Seating update:', newData.clubSeatingChanges)
+    // TODO: Update seating chart data
+  }
+})
 
 // Seating chart data
 const seatingChart = computed(() => {
@@ -496,7 +611,7 @@ const seatingChart = computed(() => {
 
 // Get blinds structure from GraphQL data with fallback to mock
 const blindsStructure = computed(() => {
-  const tournamentStructure = tournamentData.value?.tournament?.structure
+  const tournamentStructure = tournament.value?.structure
   
   if (tournamentStructure && tournamentStructure.length > 0) {
     return tournamentStructure.map(level => ({
@@ -527,89 +642,11 @@ const blindsStructure = computed(() => {
   ]
 })
 
-// Live tournament data from subscription or API fallback
-const currentLevel = computed(() => {
-  // Use subscription data if available
-  if (clockData.value?.tournamentClockUpdates) {
-    const clock = clockData.value.tournamentClockUpdates
+// Use clock data from composable
+const currentLevel = liveCurrentLevel
+const nextLevel = liveNextLevel
 
-    // Use currentStructure from subscription
-    if (clock.currentStructure) {
-      return {
-        level: clock.currentLevel,
-        smallBlind: clock.currentStructure.smallBlind.toString(),
-        bigBlind: clock.currentStructure.bigBlind.toString(),
-        ante: clock.currentStructure.ante ? clock.currentStructure.ante.toString() : null,
-        isBreak: clock.currentStructure.isBreak
-      }
-    }
-  }
-  
-  // Use separate clock query data with currentStructure
-  const clock = clockQueryData.value?.tournamentClock
-  if (clock && clock.currentStructure) {
-    return {
-      level: clock.currentLevel,
-      smallBlind: clock.currentStructure.smallBlind.toString(),
-      bigBlind: clock.currentStructure.bigBlind.toString(),
-      ante: clock.currentStructure.ante ? clock.currentStructure.ante.toString() : null,
-      isBreak: clock.currentStructure.isBreak || false
-    }
-  }
-  
-  // Mock fallback only if no real data
-  return { level: 1, smallBlind: '25', bigBlind: '50', ante: null, isBreak: false }
-})
-
-const nextLevel = computed(() => {
-  // Use subscription data if available
-  if (clockData.value?.tournamentClockUpdates) {
-    const clock = clockData.value.tournamentClockUpdates
-
-    // Use nextStructure from subscription
-    if (clock.nextStructure) {
-      return {
-        level: clock.nextStructure.levelNumber,
-        smallBlind: clock.nextStructure.smallBlind.toString(),
-        bigBlind: clock.nextStructure.bigBlind.toString(),
-        ante: clock.nextStructure.ante ? clock.nextStructure.ante.toString() : null,
-        isBreak: clock.nextStructure.isBreak
-      }
-    }
-  }
-  
-  // Use separate clock query data for next level with nextStructure
-  const clock = clockQueryData.value?.tournamentClock
-  if (clock && clock.nextStructure) {
-    return {
-      level: clock.nextStructure.levelNumber,
-      smallBlind: clock.nextStructure.smallBlind.toString(),
-      bigBlind: clock.nextStructure.bigBlind.toString(),
-      ante: clock.nextStructure.ante ? clock.nextStructure.ante.toString() : null,
-      isBreak: clock.nextStructure.isBreak || false
-    }
-  }
-  
-  // Mock fallback only if no real data
-  return { level: 7, smallBlind: '300', bigBlind: '600', ante: '75', isBreak: false }
-})
-
-const timeRemaining = computed(() => {
-  // Use subscription data if available
-  if (clockData.value?.tournamentClockUpdates) {
-    return clockData.value.tournamentClockUpdates.timeRemainingSeconds || 0
-  }
-  
-  // Use separate tournament clock query data
-  const clock = clockQueryData.value?.tournamentClock
-  
-  // Use clock?.timeRemainingSeconds from separate query
-  if (clock?.timeRemainingSeconds !== undefined && clock?.timeRemainingSeconds !== null) {
-      return Math.max(0, clock.timeRemainingSeconds)
-  }
-  
-  return 0
-})
+// timeRemaining is already provided by the composable
 
 // User seat from seating chart
 const userSeat = computed(() => {
@@ -649,12 +686,12 @@ const tablesData = computed(() => {
 const liveStats = computed(() => {
   const clock = tournament.value?.clock
   const tournData = tournament.value
-  
+
   return {
       clock: clock || null,
     playersRemaining: 0, // Would need separate query for this
     averageStack: 25000, // Mock average stack
-    totalPrizePool: tournData ? Math.floor(tournData.buyInCents * tournData.registered * 0.9 / 100) : 0
+    totalPrizePool: tournData ? Math.floor(tournData.buyInCents * registered.value * 0.9 / 100) : 0
   }
 })
 
@@ -923,6 +960,14 @@ onMounted(() => {
 .pp-register-btn {
   margin-bottom: 12px;
   font-weight: 600;
+}
+
+.pp-waitlist-position {
+  text-align: center;
+  color: #f59e0b;
+  font-size: 13px;
+  font-weight: 500;
+  margin-top: 4px;
 }
 
 .pp-registration-deadline {

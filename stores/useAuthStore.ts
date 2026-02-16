@@ -162,6 +162,53 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  const register = async (registerData: {
+    email: string
+    password: string
+    username: string
+    firstName?: string
+    lastName?: string
+  }): Promise<AuthUser | null> => {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      const result = await GqlRegisterUser({
+        input: {
+          email: registerData.email,
+          password: registerData.password,
+          username: registerData.username,
+          firstName: registerData.firstName || '',
+          lastName: registerData.lastName || '',
+        },
+      })
+
+      if (result?.registerUser?.token && result?.registerUser?.user) {
+        const { token, user } = result.registerUser
+        storeAuthState(token, user)
+
+        // Store managedClub in club store if available
+        if (user.managedClub) {
+          const clubStore = useClubStore()
+          clubStore.setSelectedClub({
+            id: user.managedClub.id,
+            name: user.managedClub.name,
+            city: ''
+          })
+        }
+
+        return user
+      }
+
+      return null
+    } catch (err) {
+      error.value = err as Error
+      throw err
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   const logout = async (): Promise<void> => {
     isLoading.value = true
     error.value = null
@@ -278,6 +325,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     // Actions
     login,
+    register,
     logout,
     fetchMe,
     initialize,

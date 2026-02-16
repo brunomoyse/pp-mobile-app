@@ -21,6 +21,22 @@
         <IonRefresherContent :pulling-text="t('common.pullToRefresh')" refreshing-spinner="dots" />
       </IonRefresher>
 
+      <!-- Loading State -->
+      <div v-if="isLoading" class="pp-loading-container">
+        <IonSpinner name="crescent" />
+        <p>{{ t('mySeats.loading') }}</p>
+      </div>
+
+      <!-- Error State -->
+      <div v-else-if="hasError" class="pp-error-container">
+        <IonIcon :icon="alertCircleOutline" size="large" />
+        <p>{{ t('mySeats.error') }}</p>
+        <IonButton @click="refetchRegistrations">{{ t('common.retry') }}</IonButton>
+      </div>
+
+      <!-- Content -->
+      <div v-else>
+
       <!-- Quick Stats -->
       <section class="pp-section">
         <div class="pp-stats-container">
@@ -88,11 +104,11 @@
                 </div>
               </div>
               <div class="pp-registration-status">
-                <IonBadge 
-                  :class="getStatusClass(registration.status)"
+                <IonBadge
+                  :class="getRegistrationStatusClass(registration.registrationStatus)"
                   class="pp-status-badge"
                 >
-                  {{ t(`mySeats.status.${registration.status.toLowerCase().replace(' ', '_')}`) }}
+                  {{ t(`mySeats.registrationStatus.${registration.registrationStatus}`) }}
                 </IonBadge>
               </div>
             </div>
@@ -125,6 +141,10 @@
                 <div class="pp-detail-item" v-if="registration.position">
                   <IonIcon :icon="trophyOutline" class="pp-detail-icon" />
                   <span class="pp-detail-text">{{ t('mySeats.position') }} #{{ registration.position }}</span>
+                </div>
+                <div class="pp-detail-item" v-if="registration.registrationStatus === 'WAITLISTED' && registration.waitlistPosition">
+                  <IonIcon :icon="timeOutline" class="pp-detail-icon pp-detail-icon--waitlist" />
+                  <span class="pp-detail-text pp-detail-text--waitlist">{{ t('events.waitlistPosition', { position: registration.waitlistPosition }) }}</span>
                 </div>
               </div>
 
@@ -166,7 +186,7 @@
                 </IonButton>
 
                 <IonButton
-                  v-if="registration.status === 'upcoming' && canCancel(registration)"
+                  v-if="registration.status === 'upcoming' && canCancel(registration) && (registration.registrationStatus === 'REGISTERED' || registration.registrationStatus === 'WAITLISTED')"
                   @click.stop="cancelRegistration(registration)"
                   class="pp-action-button pp-action-button--warning"
                   size="small"
@@ -216,11 +236,13 @@
         </div>
       </section>
 
-      <!-- QR Code Modal -->
-      <QRCodeModal
+      </div><!-- End v-else content wrapper -->
+
+      <!-- QR Code Scanner -->
+      <QRCodeScanner
         :isOpen="showQRModal"
-        :registrationId="selectedRegistrationId"
         @close="showQRModal = false"
+        @scanned="handleQRScanned"
       />
     </IonContent>
   </IonPage>
@@ -243,6 +265,7 @@ import {
   IonSegment,
   IonSegmentButton,
   IonBadge,
+  IonSpinner,
   alertController,
 } from '@ionic/vue'
 import ClubSelector from '@/components/ClubSelector.vue'
@@ -257,8 +280,9 @@ import {
   checkmarkCircleOutline,
   shareOutline,
   qrCodeOutline,
+  alertCircleOutline,
 } from 'ionicons/icons'
-import QRCodeModal from '@/components/QRCodeModal.vue'
+import QRCodeScanner from '@/components/QRCodeScanner.vue'
 import { formatDate, formatTime, formatDateTime } from '~/utils/datetime'
 import { ref } from 'vue'
 
@@ -269,6 +293,7 @@ interface DisplayRegistration {
   type: string
   club: string
   status: string
+  registrationStatus: string
   startTime: string
   buyIn: string
   table: string | null
@@ -276,6 +301,7 @@ interface DisplayRegistration {
   position: number | null
   registeredAt: string
   canCancelUntil: string
+  waitlistPosition: number | null
 }
 
 definePageMeta({
@@ -303,6 +329,88 @@ const filters = [
   { key: 'turbo', label: 'Turbo' },
 ]
 
+// Fetch user's registrations from API
+const { data: registrationsResponse, status: registrationsStatus, error: registrationsError, refresh: refetchRegistrations } = useLazyAsyncData(
+  'my-registrations',
+  () => GqlGetMyRegistrations(),
+  {
+    immediate: true,
+  }
+)
+
+// Transform to DisplayRegistration format
+const registrations = computed<DisplayRegistration[]>(() => {
+  const regs = registrationsResponse.value?.myTournamentRegistrations || []
+
+  return regs.map(reg => {
+    // Determine status category based on tournament live status
+    let statusCategory = 'upcoming'
+    if (reg.tournament?.liveStatus) {
+      const liveStatus = reg.tournament.liveStatus.toLowerCase()
+      if (liveStatus === 'in_progress' || liveStatus === 'late_registration' || liveStatus === 'break' || liveStatus === 'final_table') {
+        statusCategory = 'live'
+      } else if (liveStatus === 'finished') {
+        statusCategory = 'completed'
+      }
+    } else if (reg.tournament?.status === 'COMPLETED' || reg.tournament?.status === 'FINISHED') {
+      statusCategory = 'completed'
+    }
+
+    return {
+      id: reg.id,
+      tournamentId: reg.tournamentId,
+      tournamentName: reg.tournament?.title || 'Unknown Tournament',
+      type: statusCategory,
+      club: reg.tournament?.club?.name || 'Unknown Club',
+      status: statusCategory,
+      registrationStatus: reg.status || 'REGISTERED',
+      startTime: reg.tournament?.startTime || '',
+      buyIn: reg.tournament?.buyInCents
+        ? `€${(reg.tournament.buyInCents / 100).toFixed(2)}`
+        : '€0.00',
+      table: null, // TODO: Fetch from seating when available
+      seatNumber: null, // TODO: Fetch from seating when available
+      position: null, // TODO: Fetch from results when available
+      registeredAt: reg.registrationTime,
+      canCancelUntil: reg.tournament?.startTime || '', // Can cancel until start
+      waitlistPosition: reg.waitlistPosition ?? null,
+    }
+  })
+})
+
+// Loading and error states
+const isLoading = computed(() => registrationsStatus.value === 'pending')
+const hasError = computed(() => !!registrationsError.value)
+
+// Filter registrations by category
+const filteredRegistrations = computed(() => {
+  return registrations.value.filter(reg => {
+    // Filter by selected category
+    if (selectedCategory.value !== reg.status) return false
+
+    // Filter by selected filters
+    if (selectedFilters.value.length > 0) {
+      // TODO: Implement filter logic when filter properties are available
+    }
+
+    return true
+  })
+})
+
+// Stats computed properties
+const registeredCount = computed(() => registrations.value.length)
+
+const totalInvestment = computed(() => {
+  return registrations.value.reduce((total, reg) => {
+    const amount = parseFloat(reg.buyIn.replace('€', '').replace(',', '.'))
+    return total + amount
+  }, 0).toFixed(2)
+})
+
+const upcomingCount = computed(() => {
+  return registrations.value.filter(reg => reg.status === 'upcoming').length
+})
+
 // Methods
 const toggleFilter = (filterKey: string) => {
   const index = selectedFilters.value.indexOf(filterKey)
@@ -326,18 +434,44 @@ const getStatusClass = (status: string) => {
   }
 }
 
+const getRegistrationStatusClass = (status: string) => {
+  switch(status) {
+    case 'REGISTERED': return 'pp-status-upcoming'
+    case 'CHECKED_IN': return 'pp-status-upcoming'
+    case 'SEATED': return 'pp-status-live'
+    case 'BUSTED': return 'pp-status-completed'
+    case 'WAITLISTED': return 'pp-status-waitlisted'
+    case 'CANCELLED': return 'pp-status-completed'
+    case 'NO_SHOW': return 'pp-status-completed'
+    default: return 'pp-status-default'
+  }
+}
+
 const canCancel = (registration: DisplayRegistration) => {
   return new Date() < new Date(registration.canCancelUntil)
 }
 
-// Show QR code for check-in
+// Open QR scanner for check-in
 const showQRCode = (registration: DisplayRegistration) => {
   selectedRegistrationId.value = registration.id
   showQRModal.value = true
 }
 
+// Handle scanned QR code
+const handleQRScanned = async (code: string) => {
+  console.log('Scanned QR code:', code)
+  // TODO: Call GqlCheckInRegistration mutation with scanned code
+  const alert = await alertController.create({
+    header: t('checkIn.success.title'),
+    message: t('checkIn.success.message', { code }),
+    buttons: [t('common.ok')],
+  })
+  await alert.present()
+}
+
 const handleRefresh = async (ev: CustomEvent) => {
-  setTimeout(() => { (ev.target as HTMLIonRefresherElement)?.complete?.() }, 1000)
+  await refetchRegistrations()
+  ;(ev.target as HTMLIonRefresherElement)?.complete?.()
 }
 
 // Share registration
@@ -357,6 +491,7 @@ const shareRegistration = async (registration: DisplayRegistration) => {
 }
 
 // Cancel registration
+const authStore = useAuthStore()
 const cancelRegistration = async (registration: DisplayRegistration) => {
   const alert = await alertController.create({
     header: t('mySeats.cancelConfirmTitle'),
@@ -367,7 +502,17 @@ const cancelRegistration = async (registration: DisplayRegistration) => {
         text: t('common.yes'),
         role: 'destructive',
         handler: async () => {
-          // TODO: Call GqlCancelRegistration mutation when available
+          try {
+            await GqlCancelRegistration({
+              input: {
+                tournamentId: registration.tournamentId,
+                userId: authStore.currentUser?.id,
+              },
+            })
+            await refetchRegistrations()
+          } catch (err) {
+            console.error('Failed to cancel registration:', err)
+          }
         },
       },
     ],
@@ -575,6 +720,22 @@ const viewResult = (registration: DisplayRegistration) => {
 /* QR Button styling */
 .pp-action-button--qr {
   --color: #fee78a;
+}
+
+/* Waitlisted status */
+.pp-status-waitlisted {
+  --background: rgba(245, 158, 11, 0.2);
+  --color: #f59e0b;
+}
+
+/* Waitlist detail styling */
+.pp-detail-icon--waitlist {
+  color: #f59e0b;
+}
+
+.pp-detail-text--waitlist {
+  color: #f59e0b;
+  font-weight: 500;
 }
 
 /* Buttons and empty state are now in shared.css */

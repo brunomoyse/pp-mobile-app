@@ -309,6 +309,42 @@ const { t, locale, switchLanguage } = useI18n()
 const authStore = useAuthStore()
 const { isAuthenticated, currentUser } = storeToRefs(authStore)
 
+// Subscribe to user notifications when authenticated
+const { data: notificationsData, execute: subscribeToNotifications, stop: stopNotifications } = useGqlSubscription({
+  query: `
+    subscription UserNotifications {
+      userNotifications {
+        id
+        userId
+        notificationType
+        title
+        message
+        tournamentId
+        createdAt
+      }
+    }
+  `,
+  immediate: false
+})
+
+// Start/stop subscription based on auth status
+watch(isAuthenticated, (authenticated) => {
+  if (authenticated) {
+    subscribeToNotifications()
+  } else {
+    stopNotifications()
+  }
+}, { immediate: true })
+
+// Watch for new notifications
+watch(notificationsData, (newData) => {
+  if (newData?.userNotifications) {
+    const notification = newData.userNotifications
+    console.log('New notification received:', notification)
+    // TODO: Show toast notification using Ionic's toast controller
+  }
+})
+
 const isTournamentFull = (tournament: Tournament) => {
     if (!tournament.seatCap) return false;
     return (tournament.registrations?.length || 0) >= tournament.seatCap;

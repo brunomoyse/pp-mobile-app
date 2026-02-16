@@ -74,3 +74,23 @@ mutation UpdateTournamentStatus($input: UpdateTournamentStatusInput!) {
     status
   }
 }
+
+mutation CancelRegistration($input: CancelRegistrationInput!) {
+  cancelRegistration(input: $input) {
+    registration {
+      id
+      status
+    }
+    promotedPlayer {
+      registration {
+        id
+        status
+      }
+      user {
+        id
+        firstName
+        lastName
+      }
+    }
+  }
+}
