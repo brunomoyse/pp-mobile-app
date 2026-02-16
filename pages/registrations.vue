@@ -284,6 +284,7 @@ import {
 } from 'ionicons/icons'
 import QRCodeScanner from '@/components/QRCodeScanner.vue'
 import { formatDate, formatTime, formatDateTime } from '~/utils/datetime'
+import { parseQRCode } from '~/utils/qrCodeRouter'
 import { ref } from 'vue'
 
 interface DisplayRegistration {
@@ -459,14 +460,62 @@ const showQRCode = (registration: DisplayRegistration) => {
 
 // Handle scanned QR code
 const handleQRScanned = async (code: string) => {
-  console.log('Scanned QR code:', code)
-  // TODO: Call GqlCheckInRegistration mutation with scanned code
-  const alert = await alertController.create({
-    header: t('checkIn.success.title'),
-    message: t('checkIn.success.message', { code }),
-    buttons: [t('common.ok')],
-  })
-  await alert.present()
+  const parsed = parseQRCode(code)
+
+  switch (parsed.type) {
+    case 'tournament': {
+      // Self check-in via tournament QR
+      try {
+        const result = await GqlSelfCheckIn({
+          input: { tournamentId: parsed.payload },
+        })
+        const response = result.selfCheckIn
+        const alert = await alertController.create({
+          header: t('qrScanner.checkInSuccess'),
+          message: response.message,
+          buttons: [
+            {
+              text: t('common.ok'),
+              handler: () => {
+                navigateTo(`/tournament/${parsed.payload}`)
+              },
+            },
+          ],
+        })
+        await alert.present()
+        // Refresh registrations list
+        await refetchRegistrations()
+      } catch (err: any) {
+        const errorMessage = err?.gqlErrors?.[0]?.message || err?.message || t('qrScanner.checkInFailedMessage')
+        const alert = await alertController.create({
+          header: t('qrScanner.checkInFailed'),
+          message: errorMessage,
+          buttons: [t('common.ok')],
+        })
+        await alert.present()
+      }
+      break
+    }
+    case 'checkin':
+      // Legacy per-player check-in codes
+      {
+        const alert = await alertController.create({
+          header: t('checkIn.success.title'),
+          message: t('checkIn.success.message', { code: parsed.payload }),
+          buttons: [t('common.ok')],
+        })
+        await alert.present()
+      }
+      break
+    default: {
+      const alert = await alertController.create({
+        header: t('qrScanner.unknownQR'),
+        message: t('qrScanner.unknownQRMessage'),
+        buttons: [t('common.ok')],
+      })
+      await alert.present()
+    }
+  }
 }
 
 const handleRefresh = async (ev: CustomEvent) => {

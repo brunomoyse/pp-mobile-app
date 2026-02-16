@@ -168,6 +168,20 @@
           <p class="pp-empty-text">{{ t('events.empty.subtitle') }}</p>
         </div>
       </section>
+
+      <!-- QR Scanner FAB -->
+      <IonFab vertical="bottom" horizontal="end" slot="fixed">
+        <IonFabButton @click="showQRScanner = true" class="pp-fab-button">
+          <IonIcon :icon="scanOutline" />
+        </IonFabButton>
+      </IonFab>
+
+      <!-- QR Code Scanner -->
+      <QRCodeScanner
+        :isOpen="showQRScanner"
+        @close="showQRScanner = false"
+        @scanned="handleQRScanned"
+      />
     </IonContent>
   </IonPage>
 </template>
@@ -191,9 +205,14 @@ import {
   IonSegmentButton,
   IonBadge,
   IonSpinner,
+  IonFab,
+  IonFabButton,
+  alertController,
 } from '@ionic/vue'
 import ClubSelector from '@/components/ClubSelector.vue'
+import QRCodeScanner from '@/components/QRCodeScanner.vue'
 import { useClubStore } from '~/stores/useClubStore'
+import { parseQRCode } from '~/utils/qrCodeRouter'
 import {
   optionsOutline,
   calendarOutline,
@@ -201,6 +220,7 @@ import {
   cashOutline,
   peopleOutline,
   alertCircleOutline,
+  scanOutline,
 } from 'ionicons/icons'
 import { currencyCents } from '~/utils/currency'
 import type { TournamentLiveStatus } from '~/types/tournament'
@@ -223,6 +243,7 @@ const { t, locale } = useI18n()
 // Reactive data
 const searchQuery = ref('')
 const showFilters = ref(false)
+const showQRScanner = ref(false)
 const selectedCategory = ref<'upcoming' | 'live' | 'completed'>('upcoming')
 const selectedFilters = ref<string[]>([])
 // Club store
@@ -375,6 +396,78 @@ const viewLive = (tournament: DisplayTournament) => {
 const viewResults = (tournament: DisplayTournament) => {
   navigateTo(`/tournament/${tournament.id}`)
 }
+
+// Handle scanned QR code
+const { isAuthenticated } = useAuth()
+
+const handleQRScanned = async (code: string) => {
+  const parsed = parseQRCode(code)
+
+  switch (parsed.type) {
+    case 'tournament': {
+      // Check if user is logged in
+      if (!isAuthenticated.value) {
+        const alert = await alertController.create({
+          header: t('qrScanner.loginRequired'),
+          message: t('qrScanner.loginRequiredMessage'),
+          buttons: [
+            { text: t('common.cancel'), role: 'cancel' },
+            {
+              text: t('auth.login'),
+              handler: () => {
+                navigateTo(`/login?redirect=${encodeURIComponent(`/tournament/${parsed.payload}`)}`)
+              },
+            },
+          ],
+        })
+        await alert.present()
+        return
+      }
+
+      // Call selfCheckIn mutation
+      try {
+        const result = await GqlSelfCheckIn({
+          input: { tournamentId: parsed.payload },
+        })
+        const response = result.selfCheckIn
+        const alert = await alertController.create({
+          header: t('qrScanner.checkInSuccess'),
+          message: response.message,
+          buttons: [
+            {
+              text: t('common.ok'),
+              handler: () => {
+                navigateTo(`/tournament/${parsed.payload}`)
+              },
+            },
+          ],
+        })
+        await alert.present()
+      } catch (err: any) {
+        const errorMessage = err?.gqlErrors?.[0]?.message || err?.message || t('qrScanner.checkInFailedMessage')
+        const alert = await alertController.create({
+          header: t('qrScanner.checkInFailed'),
+          message: errorMessage,
+          buttons: [t('common.ok')],
+        })
+        await alert.present()
+      }
+      break
+    }
+    case 'checkin':
+      // Legacy per-player check-in codes - navigate to registrations
+      navigateTo('/registrations')
+      break
+    default: {
+      const alert = await alertController.create({
+        header: t('qrScanner.unknownQR'),
+        message: t('qrScanner.unknownQRMessage'),
+        buttons: [t('common.ok')],
+      })
+      await alert.present()
+    }
+  }
+}
 </script>
 
 <style scoped>
@@ -513,4 +606,11 @@ const viewResults = (tournament: DisplayTournament) => {
 /* Buttons are now in shared.css */
 
 /* Loading, Error and Empty states are now in shared.css */
+
+/* FAB button */
+.pp-fab-button {
+  --background: #fee78a;
+  --background-activated: #e5d07c;
+  --color: #18181a;
+}
 </style>
