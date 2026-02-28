@@ -387,7 +387,7 @@ const { data: leaderboardResponse, status: leaderboardStatus, error: leaderboard
   'leaderboard',
   () => GqlGetLeaderboard({
     period: periodMap[selectedPeriod.value] || 'ALL_TIME',
-    limit: 50,
+    pagination: { limit: 50 },
     clubId: clubStore.selectedClub?.id
   }),
   { watch: [() => clubStore.selectedClub, selectedPeriod] }
@@ -399,9 +399,9 @@ const leaderboardData = computed(() => leaderboardResponse.value || null)
 
 // Get leaderboard data from API
 const allPlayers = computed(() => {
-  if (!leaderboardData.value?.leaderboard?.entries) return []
-  
-  return leaderboardData.value.leaderboard.entries.map((entry): DisplayPlayer => {
+  if (!leaderboardData.value?.leaderboard?.items) return []
+
+  return leaderboardData.value.leaderboard.items.map((entry): DisplayPlayer => {
     const user = entry.user
     const displayName = user.firstName && user.lastName
       ? `${user.firstName} ${user.lastName.charAt(0)}.`

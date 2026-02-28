@@ -372,12 +372,12 @@ const { data: tournamentsResponse, refresh: refreshTournaments } = useLazyAsyncD
   () => GqlGetTournaments({
     clubId: clubStore.selectedClub?.id,
     status: 'UPCOMING',
-    limit: 5
+    pagination: { limit: 5 }
   }),
   { watch: [() => clubStore.selectedClub] }
 )
 
-const nextTournaments = computed(() => tournamentsResponse.value?.tournaments || [])
+const nextTournaments = computed(() => tournamentsResponse.value?.tournaments?.items || [])
 
 // Progress range selector
 const selectedRange = ref<'week' | 'month' | 'year'>('month')

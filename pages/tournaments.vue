@@ -254,14 +254,13 @@ const { data: tournamentsResponse, status: tournamentsStatus, error: tournaments
   'tournaments',
   () => GqlGetTournaments({
     clubId: clubStore.selectedClub?.id,
-    limit: 50,
-    offset: 0
+    pagination: { limit: 50, offset: 0 }
   }),
   { watch: [() => clubStore.selectedClub] }
 )
 
 const tournamentsLoading = computed(() => tournamentsStatus.value === 'pending')
-const tournamentsData = computed(() => tournamentsResponse.value?.tournaments || [])
+const tournamentsData = computed(() => tournamentsResponse.value?.tournaments?.items || [])
 
 // Filter options
 const filters = [
