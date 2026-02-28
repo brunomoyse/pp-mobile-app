@@ -195,6 +195,7 @@ const handleLogin = async () => {
     const credentials: LoginCredentials = {
       email: email.value,
       password: password.value,
+      rememberMe: rememberMe.value,
     }
     
     const user = await login(credentials)
