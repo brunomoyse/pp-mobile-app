@@ -36,6 +36,6 @@ export default defineNuxtConfig({
         }
       },
     },
-    codegen: true,
+    codegen: process.env.DISABLE_CODEGEN !== 'true',
   },
 })
