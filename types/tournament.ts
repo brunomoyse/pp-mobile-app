@@ -4,6 +4,7 @@ import type {TournamentClock} from "~/types/clock";
 export interface Tournament {
     id: string;
     buyInCents: number;
+    rakeCents: number;
     clubId?: string;
     createdAt?: string;
     description?: string | null;

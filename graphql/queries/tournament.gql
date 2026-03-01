@@ -8,6 +8,7 @@ query GetTournaments($clubId: UUID, $from: DateTime, $to: DateTime, $status: Tou
       startTime
       endTime
       buyInCents
+      rakeCents
       seatCap
       status
       liveStatus
@@ -29,6 +30,7 @@ query GetTournament($id: UUID!) {
     startTime
     endTime
     buyInCents
+    rakeCents
     status
     liveStatus
     lateRegistrationLevel
@@ -247,6 +249,7 @@ query GetMyRecentTournamentResults($limit: Int) {
       title
       startTime
       buyInCents
+      rakeCents
     }
   }
 }

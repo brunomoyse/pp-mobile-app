@@ -12,6 +12,7 @@ query GetMyRegistrations {
       startTime
       endTime
       buyInCents
+      rakeCents
       liveStatus
       status
       club {

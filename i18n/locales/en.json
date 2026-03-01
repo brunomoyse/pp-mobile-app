@@ -107,6 +107,7 @@
     "unregister": "Unregister",
     "full": "Full",
     "buyIn": "Buy-in",
+    "rake": "Rake",
     "guarantee": "Guarantee",
     "spotsLeft": "{count} spots left",
     "joinWaitlist": "Join Waitlist",

@@ -153,6 +153,7 @@
       "finished": "Terminé"
     },
     "buyIn": "Buy-in",
+    "rake": "Rake",
     "guarantee": "GTD",
     "spotsLeft": "{count} places restantes",
     "joinWaitlist": "Rejoindre la file d'attente",
