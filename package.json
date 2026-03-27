@@ -15,7 +15,7 @@
   "dependencies": {
     "@capacitor/android": "^8.2.0",
     "@capacitor/core": "^8.1.0",
-    "@capacitor/ios": "^8.2.0",
+    "@capacitor/ios": "^8.3.0",
     "@nuxtjs/ionic": "^1.0.2",
     "@pinia/nuxt": "^0.11.3",
     "@tailwindcss/vite": "^4.2.1",
